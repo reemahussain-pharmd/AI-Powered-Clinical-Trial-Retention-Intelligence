@@ -49,7 +49,9 @@ footer{visibility:hidden!important}
 /* Sidebar */
 [data-testid="stSidebar"]{background-color:#0D1B2A}
 [data-testid="stSidebar"] *{color:#FFFFFF!important}
-[data-testid="stSidebar"] .stButton button{color:#0D1B2A!important;font-weight:600;font-size:13px}
+[data-testid="stSidebar"] .stButton button{background-color:#1a2f45!important;border:1px solid #1D9E75!important;color:#FFFFFF!important;font-weight:600!important;font-size:13px!important}
+[data-testid="stSidebar"] .stButton button p{color:#FFFFFF!important}
+[data-testid="stSidebar"] .stButton button:hover{background-color:#1D9E75!important;border-color:#1D9E75!important}
 [data-testid="stSidebar"] .stSelectbox label,
 [data-testid="stSidebar"] .stSlider label,
 [data-testid="stSidebar"] .stNumberInput label{color:#AADDCC!important}
