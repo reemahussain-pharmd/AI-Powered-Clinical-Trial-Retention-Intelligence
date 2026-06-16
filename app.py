@@ -53,11 +53,9 @@ footer{visibility:hidden!important}
 [data-testid="stSidebar"] .stButton button p{color:#FFFFFF!important}
 [data-testid="stSidebar"] .stButton button:hover{background-color:#1D9E75!important;border-color:#1D9E75!important}
 [data-testid="stSidebar"] .stExpander{background-color:#1a2f45!important;border:1px solid #2a4a6a!important;border-radius:6px!important}
-[data-testid="stSidebar"] .stExpander summary{color:#AADDCC!important;font-weight:600!important}
 [data-testid="stSidebar"] .stExpander details{background-color:#1a2f45!important}
 [data-testid="stSidebar"] [data-testid="stExpanderToggleIcon"]{color:#1D9E75!important}
-[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] div{background-color:#2a4a6a!important}
-[data-testid="stSidebar"] .stNumberInput input{background-color:#1a2f45!important;border-color:#2a4a6a!important;color:#FFFFFF!important}
+[data-testid="stSidebar"] details summary{background-color:#1a2f45!important;color:#AADDCC!important;font-weight:600!important;padding:8px 10px!important;border-radius:6px!important}
 [data-testid="stSidebar"] .stSelectbox label,
 [data-testid="stSidebar"] .stSlider label,
 [data-testid="stSidebar"] .stNumberInput label{color:#AADDCC!important}
@@ -67,8 +65,7 @@ footer{visibility:hidden!important}
 [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] div,
 [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] input{color:#FFFFFF!important}
 [data-testid="stSidebar"] .stSelectbox svg{fill:#AADDCC!important}
-[data-testid="stSidebar"] details summary{color:#AADDCC!important;font-weight:600}
-[data-testid="stSidebar"] .stExpander{border:1px solid #1a3a5c!important;border-radius:6px!important;margin-bottom:6px!important}
+[data-testid="stSidebar"] .stExpander{margin-bottom:6px!important}
 
 /* Main */
 .main{background-color:#F8FAFC}
