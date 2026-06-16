@@ -429,12 +429,10 @@ def render_sidebar() -> pd.DataFrame:
         "letter-spacing:0.5px;margin:8px 0 6px'>Quick Demo Profiles</div>",
         unsafe_allow_html=True,
     )
-    d1, d2 = st.sidebar.columns(2)
-    if d1.button("🔴 High-Risk",    key="demo_hr", use_container_width=True): _load_demo("high_risk")
-    if d2.button("🌾 Rural",        key="demo_ru", use_container_width=True): _load_demo("rural")
-    d3, d4 = st.sidebar.columns(2)
-    if d3.button("💊 Polypharmacy", key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
-    if d4.button("🟢 Low-Risk",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
+    if st.sidebar.button("🔴 High-Risk Participant",    key="demo_hr", use_container_width=True): _load_demo("high_risk")
+    if st.sidebar.button("🌾 Rural Participant",        key="demo_ru", use_container_width=True): _load_demo("rural")
+    if st.sidebar.button("💊 Polypharmacy Participant", key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
+    if st.sidebar.button("🟢 Low-Risk Participant",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
     st.sidebar.divider()
 
     # Demographics
