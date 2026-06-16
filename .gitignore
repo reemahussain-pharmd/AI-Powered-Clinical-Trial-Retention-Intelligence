@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.env
+
+# MLflow tracking (training artefacts, not needed for serving)
+mlruns/
+catboost_info/
+
+# Test cache
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Reports (regenerated at runtime)
+reports/*.pdf
+
+# Logs
+*.log

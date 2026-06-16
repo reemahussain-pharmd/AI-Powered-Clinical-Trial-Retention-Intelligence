@@ -1,0 +1,25 @@
+model:
+  version: "v1"
+  random_seed: 42
+  test_size: 0.15
+  val_size: 0.15
+  target_auc: 0.82
+
+thresholds:
+  low_risk: 0.30
+  medium_risk: 0.60
+
+costs:
+  patient_replacement_cost: 18000
+  intervention_transport: 300
+  intervention_safety_call: 150
+  intervention_liaison: 500
+  intervention_protocol_review: 1200
+  intervention_pharmacist: 200
+  intervention_site_support: 800
+
+personas:
+  - High Burden Elderly Patient
+  - Young Mobile Professional
+  - Polypharmacy High-Risk Patient
+  - Long-Distance Rural Participant

@@ -1,0 +1,93 @@
+[
+  {
+    "id": "ev_001",
+    "topic": "transportation_barrier",
+    "source": "FDA (2012). Guidance for Industry: Patient Retention in Clinical Trials.",
+    "evidence": "Logistical barriers including transportation were identified as modifiable factors affecting patient retention. The guidance specifically recommends that sponsors proactively identify and address site access challenges prior to trial initiation.",
+    "recommendation": "Trial sponsors should consider transportation reimbursement as a standard retention strategy, particularly for participants residing more than 50 km from the investigational site."
+  },
+  {
+    "id": "ev_002",
+    "topic": "side_effect_management",
+    "source": "ICH E6(R2). Good Clinical Practice: Integrated Addendum to ICH E6(R1). (2016).",
+    "evidence": "Adverse event monitoring and subject safety are central obligations of the investigator. ICH E6(R2) reinforces that timely adverse event management, including proactive contact with participants, is a GCP requirement that also supports retention.",
+    "recommendation": "Weekly safety monitoring calls for participants reporting moderate-to-severe adverse events at week 2 may reduce dropout by addressing emerging concerns before they become dropout triggers."
+  },
+  {
+    "id": "ev_003",
+    "topic": "protocol_complexity",
+    "source": "Getz KA, Wenger J, Campo RA, Seguine ES, Kaitin KI. (2008). Assessing the impact of protocol design changes on clinical trial performance. Am J Ther, 15(5), 450-457.",
+    "evidence": "Protocol amendments and increasing protocol complexity are associated with participant burden and site burden, contributing to slower enrolment and higher attrition rates. Protocols with more than 10 endpoints per phase show disproportionate visit fatigue.",
+    "recommendation": "Sponsors should conduct protocol burden assessments prior to study initiation. Non-critical secondary endpoints should be evaluated for elimination or consolidation to reduce participant visit burden."
+  },
+  {
+    "id": "ev_004",
+    "topic": "visit_burden",
+    "source": "FDA (2023). Decentralized Clinical Trials for Drugs, Biological Products, and Devices: Guidance for Industry.",
+    "evidence": "The FDA's decentralised clinical trial (DCT) guidance acknowledges that frequent in-person visits represent a retention barrier, and recommends remote visit alternatives where scientifically appropriate. Hybrid and decentralised models are endorsed to improve participant retention and diversity.",
+    "recommendation": "Trials with visit frequency exceeding 6 per month should evaluate remote monitoring, home nursing visits, or digital data collection as alternatives to in-person attendance, consistent with FDA DCT guidance."
+  },
+  {
+    "id": "ev_005",
+    "topic": "patient_liaison",
+    "source": "Clinical Trials Transformation Initiative (CTTI). (2014). Recommendations: Patient Groups and Clinical Trials.",
+    "evidence": "Patient advocacy involvement and dedicated liaison programmes are associated with improved participant retention and trust. Participants with a named contact person report higher satisfaction and are more likely to complete the trial.",
+    "recommendation": "Participants with prior adverse event history or complex medical profiles should be assigned a named patient liaison who provides consistent, proactive communication throughout the trial."
+  },
+  {
+    "id": "ev_006",
+    "topic": "polypharmacy",
+    "source": "Maher RL, Hanlon J, Hajjar ER. (2014). Clinical consequences of polypharmacy in elderly. Expert Opin Drug Saf, 13(1), 57-65.",
+    "evidence": "Polypharmacy (≥5 concomitant medications) significantly increases the risk of drug-drug interactions and adverse events. In clinical trial populations, polypharmacy patients experience higher AE rates, which is a primary driver of early study discontinuation.",
+    "recommendation": "Participants on 8 or more concomitant medications should receive pharmacist-led medication reconciliation at baseline and at each visit to identify and manage interaction risks before they contribute to dropout."
+  },
+  {
+    "id": "ev_007",
+    "topic": "site_quality",
+    "source": "FDA (2013). Guidance for Industry: Oversight of Clinical Investigations — A Risk-Based Approach to Monitoring.",
+    "evidence": "Site performance variability is a known source of data quality and retention inconsistency. Sites with less experienced investigators or inadequate infrastructure demonstrate higher participant dropout and protocol deviation rates.",
+    "recommendation": "Sponsors should implement enhanced site monitoring for sites with investigator experience under 5 years, including on-site support visits and standardised retention training."
+  },
+  {
+    "id": "ev_008",
+    "topic": "consent_complexity",
+    "source": "National Commission for the Protection of Human Subjects of Biomedical and Behavioral Research. (1979). The Belmont Report.",
+    "evidence": "Informed consent must be comprehensible and voluntary. Overly complex consent documents create confusion and may erode participant trust, increasing likelihood of withdrawal. Plain-language summaries have been associated with improved participant understanding and retention.",
+    "recommendation": "Consent documents with a Flesch-Kincaid reading level above grade 8 should be revised with plain-language summaries. Comprehension checks at consent should be documented per GCP requirements."
+  },
+  {
+    "id": "ev_009",
+    "topic": "phase1_risk",
+    "source": "Shamley D, Wright J. (2012). Informed consent: A guide for clinical trial practitioners. S Afr J Bioethics Law, 5(2), 74-79.",
+    "evidence": "Phase 1 trial participants face greater uncertainty regarding safety and therapeutic benefit. This uncertainty is associated with higher dropout rates in the early weeks of Phase 1 trials, particularly after first dose.",
+    "recommendation": "Phase 1 trials should implement enhanced week-2 and week-4 check-in protocols. Participants should be provided with clear, accessible explanations of what adverse events are expected versus unexpected."
+  },
+  {
+    "id": "ev_010",
+    "topic": "investigator_training",
+    "source": "ICH E6(R2). Good Clinical Practice: Integrated Addendum to ICH E6(R1). Section 4.2. (2016).",
+    "evidence": "ICH E6(R2) specifies that investigators must be qualified by education, training, and experience to assume responsibility for the proper conduct of the trial, including participant safety and retention.",
+    "recommendation": "Sites with investigators having fewer than 5 years of experience should receive structured mentorship, GCP refresher training, and a pre-study support visit from the sponsor's CRA team."
+  },
+  {
+    "id": "ev_011",
+    "topic": "employment_burden",
+    "source": "Getz KA et al. (2016). Measuring the incidence, causes and repercussions of protocol amendments. Ther Innov Regul Sci, 50(4), 435-441.",
+    "evidence": "Employed participants, particularly those in full-time roles, report scheduling conflicts as a leading barrier to trial attendance. Work absenteeism required for trial visits is a modifiable dropout driver.",
+    "recommendation": "For employed participants, trial scheduling should offer flexible appointment windows including early morning, evening, and remote options where feasible. Reimbursement for lost wages should be considered."
+  },
+  {
+    "id": "ev_012",
+    "topic": "digital_engagement",
+    "source": "Tenaerts P, Madre L, Bhatt DL. (2020). The Clinical Trials Transformation Initiative: innovation in clinical trial design and conduct. Eur Heart J, 41(36), 3505-3507.",
+    "evidence": "Digital engagement tools — including app-based symptom diaries, automated reminder systems, and telemedicine check-ins — have been associated with improved participant retention in contemporary hybrid trial designs.",
+    "recommendation": "Trials should consider integrating digital engagement platforms to maintain participant contact between in-person visits, reducing attrition from loss of trial awareness."
+  },
+  {
+    "id": "ev_013",
+    "topic": "elderly_participants",
+    "source": "McMurdo ME et al. (2011). Too old to participate? BMJ, 343, d7030.",
+    "evidence": "Elderly participants (age ≥65) are frequently under-represented in clinical trials and face unique retention challenges including comorbidity burden, caregiver dependency, and cognitive fatigue from complex protocols.",
+    "recommendation": "Elderly participants should receive simplified visit schedules, caregiver communication options, and home nurse visit alternatives where clinically appropriate."
+  }
+]
