@@ -33,17 +33,22 @@ from sklearn.metrics import (
 from sklearn.calibration import calibration_curve, CalibratedClassifierCV
 
 import xgboost as xgb
-import lightgbm as lgb
-import catboost as cb
-import optuna
-import mlflow
-import mlflow.sklearn
 
-from imblearn.over_sampling import SMOTE
-from lifelines import KaplanMeierFitter
+# Training-only dependencies — not required for inference/serving
+try:
+    import lightgbm as lgb
+    import catboost as cb
+    import optuna
+    import mlflow
+    import mlflow.sklearn
+    from imblearn.over_sampling import SMOTE
+    from lifelines import KaplanMeierFitter
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    _TRAINING_DEPS = True
+except ImportError:
+    _TRAINING_DEPS = False
 
 warnings.filterwarnings("ignore")
-optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 PROJECT_ROOT = Path(__file__).parent.parent
 CONFIG_PATH = PROJECT_ROOT / "config.yaml"
