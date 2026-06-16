@@ -49,6 +49,7 @@ footer{visibility:hidden!important}
 /* Sidebar */
 [data-testid="stSidebar"]{background-color:#0D1B2A}
 [data-testid="stSidebar"] *{color:#FFFFFF!important}
+[data-testid="stSidebar"] .stButton button{color:#0D1B2A!important;font-weight:600;font-size:13px}
 [data-testid="stSidebar"] .stSelectbox label,
 [data-testid="stSidebar"] .stSlider label,
 [data-testid="stSidebar"] .stNumberInput label{color:#AADDCC!important}
