@@ -31,7 +31,7 @@ DATA_PATH    = PROJECT_ROOT / "data" / "clinical_trial_data.csv"
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Clinical Trial Retention Intelligence",
+    page_title="AI-Powered Clinical Trial Retention Intelligence",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -430,11 +430,11 @@ def render_sidebar() -> pd.DataFrame:
         unsafe_allow_html=True,
     )
     d1, d2 = st.sidebar.columns(2)
-    if d1.button("🔴 High-Risk",     key="demo_hr",  use_container_width=True): _load_demo("high_risk")
-    if d2.button("🌾 Rural",         key="demo_ru",  use_container_width=True): _load_demo("rural")
+    if d1.button("🔴 High-Risk",    key="demo_hr", use_container_width=True): _load_demo("high_risk")
+    if d2.button("🌾 Rural",        key="demo_ru", use_container_width=True): _load_demo("rural")
     d3, d4 = st.sidebar.columns(2)
-    if d3.button("💊 Polypharmacy",  key="demo_pp",  use_container_width=True): _load_demo("polypharmacy")
-    if d4.button("🟢 Low-Risk",      key="demo_lr",  use_container_width=True): _load_demo("low_risk")
+    if d3.button("💊 Polypharmacy", key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
+    if d4.button("🟢 Low-Risk",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
     st.sidebar.divider()
 
     # Demographics
@@ -1302,7 +1302,7 @@ def render_landing():
     st.markdown(
         "<div style='padding:4px 0 2px'>"
         "<div style='font-size:26px;font-weight:800;color:#0D1B2A;line-height:1.2'>"
-        "🧬 Clinical Trial Retention Intelligence</div>"
+        "🧬 AI-Powered Clinical Trial Retention Intelligence</div>"
         "<div style='font-size:14px;color:#1D9E75;font-weight:600;margin:6px 0 4px'>"
         "Predict &nbsp;·&nbsp; Explain &nbsp;·&nbsp; Intervene &nbsp;·&nbsp; Simulate &nbsp;·&nbsp; Report"
         "</div>"
