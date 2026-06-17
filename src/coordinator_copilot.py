@@ -172,13 +172,30 @@ class ActionItem:
 
 @dataclass
 class CoordinatorSummary:
-    risk_narrative:          str
-    reasoning_text:          str
-    primary_drivers:         List[str]
-    action_items:            List[ActionItem]
+    risk_narrative:           str
+    reasoning_text:           str
+    primary_drivers:          List[str]
+    action_items:             List[ActionItem]
     expected_improvement_low:  int
     expected_improvement_high: int
-    combo_scenarios:         List[Dict]
+    combo_scenarios:          List[Dict]
+    budget_recommendation:    str = ""    # short "if budget limited" advisory
+
+
+def _normalise_cat(raw: str) -> str:
+    """Map any risk category string to the 4-tier title-case standard."""
+    mapping = {
+        "critical": "Critical", "high": "High",
+        "medium": "Moderate", "moderate": "Moderate", "low": "Low",
+    }
+    return mapping.get(raw.strip().lower(), "Moderate")
+
+
+def _cat_from_pct(pct: int) -> str:
+    if pct >= 81: return "Critical"
+    if pct >= 61: return "High"
+    if pct >= 31: return "Moderate"
+    return "Low"
 
 
 class CoordinatorCopilot:
@@ -191,33 +208,35 @@ class CoordinatorCopilot:
         self,
         risk_pct:           int,
         risk_cat:           str,
-        top3_risk_factors:  List[Tuple],   # [(feat_name, shap_val, human_label), ...]
+        top3_risk_factors:  List[Tuple],
         top3_protective:    List[Tuple],
         interventions:      List[Dict],
         participant_data:   Dict[str, Any],
+        dropout_window:     str = "",
     ) -> CoordinatorSummary:
 
-        phrase, action_note = _RISK_TEXT.get(risk_cat, _RISK_TEXT["Moderate"])
+        # Always derive 4-tier category from percentage to avoid case/format mismatches
+        risk_cat_norm   = _cat_from_pct(risk_pct)
+        phrase, action_note = _RISK_TEXT.get(risk_cat_norm, _RISK_TEXT["Moderate"])
         primary_drivers     = [label for _, _, label in top3_risk_factors[:3]]
         protective_factors  = [label for _, _, label in top3_protective[:2]]
 
-        driver_text    = self._driver_phrase(primary_drivers)
-        risk_narrative = (
-            f"This participant {phrase} ({risk_pct}%). "
-            f"Primary retention concerns identified: {driver_text}. "
-            f"{action_note}"
+        risk_narrative = self._build_narrative(
+            risk_pct, risk_cat_norm, primary_drivers, dropout_window, phrase, action_note
         )
 
         reasoning_text = self._build_reasoning(
-            risk_pct, risk_cat, primary_drivers, protective_factors, participant_data
+            risk_pct, risk_cat_norm, primary_drivers, protective_factors,
+            participant_data, dropout_window
         )
 
-        action_items   = self._build_actions(primary_drivers, risk_cat)
+        action_items    = self._build_actions(primary_drivers, risk_cat_norm)
         combo_scenarios = self._build_combos(risk_pct, action_items)
+        budget_rec      = self._budget_recommendation(combo_scenarios)
 
         if action_items:
             reds = [a.expected_reduction for a in action_items]
-            low  = max(round(min(reds[:2], default=reds[0]) * 0.55), 3)
+            low  = max(round(reds[0] * 0.55), 3)
             high = min(round(sum(sorted(reds, reverse=True)[:3]) * 0.75), 35)
         else:
             low, high = 0, 0
@@ -230,40 +249,72 @@ class CoordinatorCopilot:
             expected_improvement_low=low,
             expected_improvement_high=high,
             combo_scenarios=combo_scenarios,
+            budget_recommendation=budget_rec,
         )
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
-    def _driver_phrase(self, drivers: List[str]) -> str:
-        if not drivers:
-            return "multiple clinical and logistical factors"
-        dl = [d.lower() for d in drivers]
-        if len(dl) == 1:
-            return dl[0]
-        if len(dl) == 2:
-            return f"{dl[0]} and {dl[1]}"
-        return f"{dl[0]}, {dl[1]}, and {dl[2]}"
+    def _build_narrative(
+        self,
+        risk_pct:    int,
+        risk_cat:    str,
+        drivers:     List[str],
+        dropout_window: str,
+        phrase:      str,
+        action_note: str,
+    ) -> str:
+        """Personalised 2-3 sentence risk narrative referencing specific drivers and timing."""
+        combined = " ".join(drivers).lower()
+
+        # Identify the primary risk domain for the opening sentence
+        if any(k in combined for k in ["week 2 side effect", "side effect severity", "week 2 adverse"]):
+            driver_combo = "early adverse event burden combined with protocol and logistical pressures"
+            timing_note  = f"The combination suggests elevated vulnerability during the {dropout_window or 'early treatment'} period."
+            focus_note   = "Priority should be placed on proactive safety engagement rather than protocol modification."
+        elif any(k in combined for k in ["logistic friction", "distance from trial", "no transportation"]):
+            driver_combo = "logistical barriers — particularly travel distance and transportation access"
+            timing_note  = f"These barriers tend to accumulate progressively, with dropout risk peaking around {dropout_window or 'Weeks 4-8'}."
+            focus_note   = "Priority should be placed on logistical support activation before the next scheduled visit."
+        elif any(k in combined for k in ["visit burden", "visit frequency", "protocol complexity"]):
+            driver_combo = "high protocol visit burden combined with participant fatigue indicators"
+            timing_note  = f"Protocol burden typically drives disengagement between {dropout_window or 'Weeks 4-12'}, as cumulative fatigue outweighs initial motivation."
+            focus_note   = "Priority should be placed on visit consolidation and protocol review rather than clinical monitoring escalation."
+        elif any(k in combined for k in ["polypharmacy", "concomitant medication", "comorbid"]):
+            driver_combo = "polypharmacy complexity and comorbidity burden"
+            timing_note  = f"Medication-related dropout typically emerges during {dropout_window or 'Weeks 2-8'} as drug-drug interactions and AE cascade risks compound."
+            focus_note   = "Priority should be placed on pharmacist-led medication reconciliation and close AE monitoring."
+        else:
+            driver_combo = " and ".join(d.lower() for d in drivers[:2]) if len(drivers) >= 2 else (drivers[0].lower() if drivers else "multiple risk factors")
+            timing_note  = f"Risk is expected to escalate during {dropout_window or 'the early treatment period'}."
+            focus_note   = "A multi-pronged retention approach is indicated."
+
+        return (
+            f"This participant's risk profile is primarily driven by {driver_combo}, resulting in a {risk_cat.lower()} "
+            f"estimated dropout probability of {risk_pct}%. "
+            f"{timing_note} "
+            f"{focus_note}"
+        )
 
     def _build_reasoning(
         self,
-        risk_pct:  int,
-        risk_cat:  str,
-        drivers:   List[str],
-        protective: List[str],
-        pdata:     Dict,
+        risk_pct:       int,
+        risk_cat:       str,
+        drivers:        List[str],
+        protective:     List[str],
+        pdata:          Dict,
+        dropout_window: str = "",
     ) -> str:
         paras = []
-        cat_lower = risk_cat.lower()
         paras.append(
-            f"The participant demonstrates a {cat_lower} ({risk_pct}%) estimated probability "
+            f"The participant demonstrates a {risk_cat.lower()} ({risk_pct}%) estimated probability "
             "of early clinical trial discontinuation based on the AI retention risk model."
         )
 
         if drivers:
             ds = "; ".join(d.lower() for d in drivers)
             paras.append(
-                f"The primary predictors associated with this risk classification are: {ds}. "
-                "These are among the strongest determinants of attrition in this participant's profile, "
+                f"The primary predictors are: {ds}. "
+                "These factors are among the strongest determinants of attrition in this participant's profile, "
                 "consistent with published clinical trial retention literature (FDA, 2012; ICH E6(R2), 2016)."
             )
 
@@ -271,42 +322,73 @@ class CoordinatorCopilot:
 
         if any(k in combined for k in ["week 2", "side effect", "adverse event"]):
             paras.append(
-                "Early adverse event burden at Week 2 is the strongest modifiable predictor in this model, "
-                "with a SHAP contribution approximately 3x greater than the next factor. "
-                "Proactive pharmacovigilance contact at this window is both low-cost and high-impact."
+                "Early adverse event burden at Week 2 is the strongest modifiable predictor in this model "
+                "(SHAP contribution ~3x the next factor). Proactive pharmacovigilance contact at this window "
+                "is both low-cost and high-impact — and is the recommended first action for this participant."
             )
         if any(k in combined for k in ["transport", "distance", "logistic", "travel"]):
             paras.append(
-                "Logistical barriers — particularly travel distance in the absence of reliable "
-                "transportation — create a hard friction point independent of clinical profile. "
-                "Transportation reimbursement provides clinically meaningful risk reduction at "
-                "minimal cost per unit benefit (FDA, 2012)."
+                "Logistical barriers — particularly travel distance in the absence of reliable transportation — "
+                "create a hard friction point independent of clinical profile. "
+                "Transportation reimbursement provides clinically meaningful risk reduction at minimal cost "
+                "per unit benefit (FDA Patient Retention Guidance, 2012)."
             )
         if any(k in combined for k in ["visit burden", "visit frequency"]):
             paras.append(
                 "High protocol visit burden elevates participant fatigue risk over the trial duration. "
                 "ICH E6(R2)'s principle of proportionate monitoring supports review of non-critical "
-                "assessment windows for consolidation or telemedicine delivery."
+                "assessment windows for consolidation or telemedicine substitution."
             )
         if any(k in combined for k in ["medication", "polypharmacy", "comorbid"]):
             paras.append(
-                "Polypharmacy complexity and comorbidity burden amplify the cognitive and logistical "
-                "load of trial participation. Pharmacist-led medication management support can "
-                "reduce this burden and improve adherence to trial requirements."
+                "Polypharmacy complexity amplifies the cognitive and logistical load of trial participation. "
+                "Pharmacist-led medication management and close AE surveillance can reduce this burden "
+                "and improve adherence to trial protocol requirements."
+            )
+
+        if dropout_window:
+            paras.append(
+                f"Based on the participant's profile, the highest-risk attrition window is estimated at "
+                f"{dropout_window}. Coordinator interventions deployed before this window have the greatest "
+                "expected impact on retention outcomes."
             )
 
         if protective:
             ps = " and ".join(p.lower() for p in protective)
             paras.append(
-                f"Protective factors identified include {ps}, which partially offset the risk "
-                "profile and may be reinforced in the retention strategy."
+                f"Protective factors include {ps}, which partially offset the overall risk profile "
+                "and should be reinforced in the retention engagement strategy."
             )
 
         paras.append(
             "The coordinator action plan below addresses each primary risk driver with "
-            "evidence-based interventions, prioritised by clinical urgency and expected impact."
+            "evidence-based interventions, prioritised by clinical urgency and expected retention impact."
         )
         return " ".join(paras)
+
+    def _budget_recommendation(self, combo_scenarios: List[Dict]) -> str:
+        """Generate a short budget-constrained advisory from the combo scenarios."""
+        if not combo_scenarios:
+            return ""
+        roi_combos = [c for c in combo_scenarios if c.get("badge") == "Best ROI"]
+        ret_combos = [c for c in combo_scenarios if c.get("badge") == "Max Retention"]
+        if roi_combos:
+            sc = roi_combos[0]
+            ivs = " + ".join(sc["interventions"][:2])
+            return (
+                f"If budget is constrained, implement: {ivs}. "
+                f"Projected risk reduction: {sc['risk_reduction_pp']:.0f} percentage points "
+                f"at an estimated cost of ${sc['est_cost']:,}. "
+                f"This represents the highest retention gain per dollar across all intervention combinations."
+            )
+        if ret_combos:
+            sc = ret_combos[0]
+            return (
+                f"For maximum retention impact, implement all {sc['n_interventions']} recommended interventions. "
+                f"Projected risk reduction: {sc['risk_reduction_pp']:.0f} percentage points "
+                f"at an estimated cost of ${sc['est_cost']:,}."
+            )
+        return ""
 
     def _build_actions(self, primary_drivers: List[str], risk_cat: str) -> List[ActionItem]:
         actions      = []

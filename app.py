@@ -587,19 +587,21 @@ def render_coordinator_copilot(analysis: dict, risk_cat: str):
     """Retention Coordinator Copilot — Module 5 + 6 + 7 + 8."""
     from coordinator_copilot import CoordinatorCopilot
 
-    risk_pct    = analysis.get("risk_pct", 0)
-    top3_risk   = analysis.get("top3_risk_factors", [])
-    top3_prot   = analysis.get("top3_protective_factors", [])
-    interventions = analysis.get("interventions", [])
+    risk_pct       = analysis.get("risk_pct", 0)
+    top3_risk      = analysis.get("top3_risk_factors", [])
+    top3_prot      = analysis.get("top3_protective_factors", [])
+    interventions  = analysis.get("interventions", [])
+    dropout_window = analysis.get("dropout_window", "")
 
     copilot  = CoordinatorCopilot()
     summary  = copilot.generate(
         risk_pct=risk_pct,
-        risk_cat=risk_cat,
+        risk_cat=risk_cat,          # normalised inside copilot from pct
         top3_risk_factors=top3_risk,
         top3_protective=top3_prot,
         interventions=interventions,
         participant_data={},
+        dropout_window=str(dropout_window),
     )
 
     # Store for PDF
@@ -701,6 +703,10 @@ def render_coordinator_copilot(analysis: dict, risk_cat: str):
             "Diminishing returns model applied — each additional intervention is ~80% as effective as its "
             "isolated estimate. Costs are modelled approximations. Clinical review required."
         )
+
+    # Budget recommendation
+    if summary.budget_recommendation:
+        st.info(f"💡 **If budget is constrained:** {summary.budget_recommendation}")
 
 
 def render_tab_batch():

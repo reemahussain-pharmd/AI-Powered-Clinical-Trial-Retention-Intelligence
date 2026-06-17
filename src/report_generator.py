@@ -376,15 +376,61 @@ def generate_report(
     confidence  = int(round(max(risk_score, 1 - risk_score) * 100))
     conf_label  = "High" if confidence >= 80 else ("Moderate" if confidence >= 65 else "Low")
 
-    pdf.kv_row("Participant ID",          patient_id)
-    pdf.kv_row("Participant Persona",     analysis.get("persona", "—"))
+    pdf.kv_row("Participant ID",           patient_id)
+    pdf.kv_row("Risk Category",            f"{risk_cat_label} ({risk_pct}%)", bold_value=True)
+    pdf.kv_row("Prediction Confidence",    f"{conf_label} ({confidence}%)", bold_value=True)
+    # Confidence explanation
+    conf_explain = (
+        f"{confidence}% confidence reflects calibrated probability output from the XGBoost classifier "
+        f"(LogReg ensemble). Values above 80% indicate strong predictor signal alignment; "
+        f"values between 60-80% indicate moderate agreement with clinically plausible uncertainty."
+    )
+    pdf.set_font("Helvetica", "I", 7.5)
+    pdf.set_text_color(100, 100, 100)
+    pdf.safe_multi_cell(0, 4.5, conf_explain)
+    pdf.set_text_color(20, 20, 20)
+    pdf.ln(2)
     pdf.kv_row("Estimated Dropout Window", analysis.get("dropout_window", "—"))
-    pdf.kv_row("Risk Category",           f"{risk_cat_label} ({risk_pct}%)", bold_value=True)
-    pdf.kv_row("Prediction Confidence",   f"{conf_label} ({confidence}%)", bold_value=True)
-    pdf.kv_row("Data Source",             doc_source)
+    pdf.kv_row("Data Source",              doc_source)
     if doc_source != "Manual Entry":
-        pdf.kv_row("Extraction Method",   "Rule-Based Clinical Parser")
+        pdf.kv_row("Extraction Method",    "Rule-Based Clinical Parser")
+
+    # Persona + characteristics
+    persona_name = analysis.get("persona", "—")
+    pdf.kv_row("Participant Persona",      persona_name)
+    from personas import PERSONA_DESCRIPTIONS
+    persona_desc = PERSONA_DESCRIPTIONS.get(persona_name, "")
+    if persona_desc:
+        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_text_color(80, 80, 80)
+        # Split on ". " to show as bullets
+        for sentence in [s.strip() for s in persona_desc.split(". ") if s.strip()]:
+            pdf.set_x(pdf.l_margin + 4)
+            pdf.safe_multi_cell(pdf.epw - 4, 4.5, f"- {sentence}.")
+        pdf.set_text_color(20, 20, 20)
     pdf.ln(4)
+
+    # Clinical timeline
+    dropout_window = str(analysis.get("dropout_window", ""))
+    pdf.section_heading("Estimated Clinical Risk Timeline")
+    timeline_steps = [
+        ("Week 0",  "Enrolment & Screening",                 TEAL),
+        ("Week 2",  "AE Signal Window — pharmacovigilance contact recommended", AMBER_RISK),
+        ("Week 4",  "Risk Escalation — logistical barriers compound",           ORANGE_RISK),
+        (dropout_window or "Week 6", "Critical Retention Window — highest dropout probability", RED_RISK),
+        ("Post-window", "Stabilisation if interventions deployed",              TEAL),
+    ]
+    for wk, desc, color in timeline_steps:
+        r, g, b = color
+        pdf.set_fill_color(r, g, b)
+        pdf.set_text_color(*WHITE)
+        pdf.set_font("Helvetica", "B", 7.5)
+        pdf.cell(28, 5.5, _safe(wk), fill=True, ln=False, align="C")
+        pdf.set_fill_color(*LIGHT_GRAY)
+        pdf.set_text_color(30, 30, 30)
+        pdf.set_font("Helvetica", "", 8)
+        pdf.cell(0, 5.5, f"  {_safe(desc)}", fill=True, ln=True)
+    pdf.ln(3)
 
     # -- SHAP Risk Factors --
     shap_heading = "Residual Risk Factors (SHAP Analysis)" if risk_cat_label == "Low" else "Top Dropout Risk Factors (SHAP Analysis)"
@@ -419,43 +465,75 @@ def generate_report(
     # ── PAGE 2 ───────────────────────────────────────────────────────────────
     pdf.add_page()
 
-    # -- Interventions table (with Priority column) --
-    pdf.section_heading("Recommended Retention Interventions")
-    col_w   = [50, 33, 41, 20, 36]   # total = 180
-    headers = ["Intervention", "Owner", "Est. Risk Reduction", "Cost", "Priority"]
+    # -- Interventions scorecard --
+    pdf.section_heading("Intervention Scorecard")
+
+    def _impact_score(reduction_text: str) -> str:
+        t = reduction_text.lower()
+        if "high" in t and "moderate" not in t and "low" not in t:
+            return "9.5/10"
+        if "moderate-high" in t or "high-moderate" in t:
+            return "7.5/10"
+        if "moderate" in t and "low" not in t:
+            return "6.5/10"
+        if "low-moderate" in t or "moderate-low" in t:
+            return "5.0/10"
+        return "3.5/10"
+
+    def _cost_tier(cost: float) -> str:
+        if cost == 0:       return "Zero"
+        if cost <= 200:     return "Very Low"
+        if cost <= 500:     return "Low"
+        if cost <= 900:     return "Medium"
+        return "High"
+
+    col_w   = [44, 26, 26, 22, 28, 34]   # total = 180
+    headers = ["Intervention", "Owner", "Impact", "Cost Tier", "Cost (USD)", "Priority"]
 
     pdf.set_fill_color(*NAVY)
     pdf.set_text_color(*WHITE)
-    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_font("Helvetica", "B", 7.5)
     for h, w in zip(headers, col_w):
         pdf.cell(w, 7, h, border=1, fill=True, ln=False, align="C")
     pdf.ln()
 
     priority_color = {"Critical": RED_RISK, "High": AMBER_RISK, "Medium": TEAL}
+    impact_color   = {"9.5/10": GREEN_RISK, "7.5/10": TEAL, "6.5/10": AMBER_RISK,
+                      "5.0/10": ORANGE_RISK, "3.5/10": MID_GRAY}
     pdf.set_text_color(20, 20, 20)
     for i, iv in enumerate(interventions):
-        fill = i % 2 == 0
-        bg   = LIGHT_GRAY if fill else WHITE
+        fill      = i % 2 == 0
+        bg        = LIGHT_GRAY if fill else WHITE
         pdf.set_fill_color(*bg)
-        reduction_short = iv["estimated_potential_risk_reduction"].replace(
+        reduction = iv["estimated_potential_risk_reduction"].replace(
             "Estimated Potential Risk Reduction: ", ""
         )
-        priority = _intervention_priority(iv)
-        row_vals = [
-            iv["name"][:42],
-            iv["owner"][:24],
-            reduction_short,
-            f"${iv['cost']:,.0f}",
-        ]
+        impact    = _impact_score(reduction)
+        cost_tier = _cost_tier(float(iv.get("cost", 0)))
+        priority  = _intervention_priority(iv)
+
         pdf.set_font("Helvetica", "", 7)
         pdf.set_text_color(20, 20, 20)
-        for val, w in zip(row_vals, col_w[:-1]):
-            pdf.cell(w, 6, val, border=1, fill=fill, ln=False)
+        pdf.cell(col_w[0], 6, _safe(iv["name"][:36]), border=1, fill=fill, ln=False)
+        pdf.cell(col_w[1], 6, _safe(iv["owner"][:20]), border=1, fill=fill, ln=False)
+
+        # Impact cell — coloured
+        ir, ig, ib = impact_color.get(impact, MID_GRAY)
+        pdf.set_fill_color(ir, ig, ib)
+        pdf.set_text_color(*WHITE)
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.cell(col_w[2], 6, impact, border=1, fill=True, ln=False, align="C")
+        pdf.set_fill_color(*bg)
+        pdf.set_text_color(20, 20, 20)
+        pdf.set_font("Helvetica", "", 7)
+        pdf.cell(col_w[3], 6, cost_tier, border=1, fill=fill, ln=False, align="C")
+        pdf.cell(col_w[4], 6, f"${float(iv.get('cost',0)):,.0f}", border=1, fill=fill, ln=False, align="C")
+
         pr, pg, pb = priority_color.get(priority, MID_GRAY)
         pdf.set_fill_color(pr, pg, pb)
         pdf.set_text_color(*WHITE)
         pdf.set_font("Helvetica", "B", 7)
-        pdf.cell(col_w[-1], 6, priority, border=1, fill=True, ln=False, align="C")
+        pdf.cell(col_w[5], 6, priority, border=1, fill=True, ln=False, align="C")
         pdf.ln()
         pdf.set_text_color(20, 20, 20)
     pdf.ln(4)
