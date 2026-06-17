@@ -799,9 +799,33 @@ def render_tab_batch():
                   help="Estimated savings minus intervention cost. Modelled estimate only.")
         st.caption("_Modelled estimates. $18,000 average replacement cost (Getz KA et al., 2016)._")
 
-    # Ranked risk table
-    section_header("Participant Risk Ranking")
     results_df = result["results_df"].copy()
+
+    # ── Filters ───────────────────────────────────────────────────────────────
+    section_header("Participant Risk Ranking")
+    fc1, fc2, fc3 = st.columns(3)
+    with fc1:
+        search_pt = st.text_input("Search Patient ID", "", placeholder="e.g. PT-0001")
+    with fc2:
+        sites_opts = ["All Sites"] + sorted(results_df["Site"].unique().tolist())
+        filter_site = st.selectbox("Filter by Site", sites_opts)
+    with fc3:
+        filter_cat = st.selectbox(
+            "Filter by Risk Category",
+            ["All", "Critical", "High", "Moderate", "Low"],
+        )
+
+    filtered_df = results_df.copy()
+    if search_pt:
+        filtered_df = filtered_df[
+            filtered_df["Patient ID"].str.contains(search_pt, case=False, na=False)
+        ]
+    if filter_site != "All Sites":
+        filtered_df = filtered_df[filtered_df["Site"] == filter_site]
+    if filter_cat != "All":
+        filtered_df = filtered_df[filtered_df["Risk Category"] == filter_cat]
+
+    st.caption(f"Showing {len(filtered_df)} of {len(results_df)} participants")
 
     _ROW_COLORS = {
         "Critical": "background-color:#FEE2E2",
@@ -814,18 +838,142 @@ def render_tab_batch():
         color = _ROW_COLORS.get(row["Risk Category"], "")
         return [color] * len(row)
 
-    styled = results_df.style.apply(risk_color_row, axis=1)
+    styled = filtered_df.style.apply(risk_color_row, axis=1)
     st.dataframe(styled, use_container_width=True, hide_index=True)
 
-    # CSV download
+    dl1, dl2 = st.columns(2)
+    with dl1:
+        st.download_button(
+            "📥 Download Full Rankings CSV",
+            data=results_df.to_csv(index=False),
+            file_name="batch_risk_ranking.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    with dl2:
+        st.download_button(
+            "📥 Download Filtered View CSV",
+            data=filtered_df.to_csv(index=False),
+            file_name="batch_risk_filtered.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+    # ── Priority Queue ────────────────────────────────────────────────────────
+    section_header("Participant Priority Queue")
+    st.markdown(
+        "_Coordinator-ready ranked action list. Top 10 highest-risk participants shown._"
+    )
+
+    _PRIORITY_ACTIONS = {
+        "Critical": "Immediate Outreach — contact within 4 hours",
+        "High":     "Immediate Outreach — schedule safety call within 24h",
+        "Moderate": "Monitor Weekly — review transportation and visit status",
+        "Low":      "Routine Follow-up — standard site engagement",
+    }
+    _PRIORITY_BADGE = {
+        "Critical": "🔴",
+        "High":     "🔴",
+        "Moderate": "🟡",
+        "Low":      "🟢",
+    }
+
+    top10 = results_df.head(10).copy()
+    pq_df = pd.DataFrame({
+        "Rank":               range(1, len(top10) + 1),
+        "Patient ID":         top10["Patient ID"].values,
+        "Site":               top10["Site"].values,
+        "Risk Score (%)":     top10["Risk Score (%)"].values,
+        "Risk Category":      top10["Risk Category"].values,
+        "Action Recommended": top10["Risk Category"].map(_PRIORITY_ACTIONS).values,
+    })
+
+    def pq_color_row(row):
+        color = _ROW_COLORS.get(row["Risk Category"], "")
+        return [color] * len(row)
+
+    st.dataframe(
+        pq_df.style.apply(pq_color_row, axis=1),
+        use_container_width=True,
+        hide_index=True,
+    )
     st.download_button(
-        "📥 Download Risk Rankings CSV",
-        data=results_df.to_csv(index=False),
-        file_name="batch_risk_ranking.csv",
+        "📥 Download Priority Queue CSV",
+        data=pq_df.to_csv(index=False),
+        file_name="coordinator_priority_queue.csv",
         mime="text/csv",
     )
 
-    # Site summary
+    # ── Coordinator Worklist ──────────────────────────────────────────────────
+    section_header("Coordinator Worklist")
+    st.markdown(
+        "_Today's retention tasks, auto-generated from batch risk scoring. "
+        "High and Critical participants require immediate action._"
+    )
+
+    _WORKLIST_TASKS = {
+        "Critical": [
+            "Schedule emergency safety call — target: within 4 hours",
+            "Escalate to Principal Investigator immediately",
+            "Review and document current AE burden per ICH E6(R2)",
+            "Initiate emergency retention protocol if applicable",
+        ],
+        "High": [
+            "Schedule proactive safety call — target: within 24 hours",
+            "Confirm transportation availability for next scheduled visit",
+            "Review adverse event burden with study nurse",
+            "Escalate to site investigator if AE symptoms meet CTCAE Grade >= 2",
+        ],
+        "Moderate": [
+            "Conduct weekly monitoring check-in call",
+            "Review transportation and logistical status",
+            "Confirm next visit attendance and address any barriers",
+            "Document retention risk status in site risk register",
+        ],
+        "Low": [
+            "Routine follow-up per protocol schedule",
+            "No immediate intervention required",
+            "Maintain standard site engagement",
+        ],
+    }
+    _CARD_COLORS = {
+        "Critical": ("#FEE2E2", "#DC2626"),
+        "High":     ("#FEF3C7", "#D97706"),
+        "Moderate": ("#FFF7ED", "#EA580C"),
+        "Low":      ("#D1FAE5", "#059669"),
+    }
+
+    # Show only Critical + High + up to 5 Moderate; skip Low to keep list actionable
+    worklist_rows = results_df[
+        results_df["Risk Category"].isin(["Critical", "High", "Moderate"])
+    ].copy()
+    if worklist_rows.empty:
+        worklist_rows = results_df.head(5).copy()
+
+    for _, row in worklist_rows.iterrows():
+        cat        = row["Risk Category"]
+        badge      = _PRIORITY_BADGE.get(cat, "🟢")
+        bg, border = _CARD_COLORS.get(cat, ("#F9FAFB", "#6B7280"))
+        tasks      = _WORKLIST_TASKS.get(cat, _WORKLIST_TASKS["Low"])
+        task_html  = "".join(f"<li>{t}</li>" for t in tasks)
+        st.markdown(
+            f"""
+<div style="background:{bg};border-left:4px solid {border};
+            border-radius:6px;padding:10px 14px;margin-bottom:8px;">
+  <div style="font-weight:700;font-size:15px;margin-bottom:4px;">
+    {badge} {row['Patient ID']}
+    <span style="font-weight:400;font-size:13px;color:#555;margin-left:8px;">
+      {cat} Risk ({row['Risk Score (%)']}%) — {row['Site']}
+    </span>
+  </div>
+  <ul style="margin:4px 0 0 16px;padding:0;font-size:13px;color:#333;">
+    {task_html}
+  </ul>
+</div>""",
+            unsafe_allow_html=True,
+        )
+
+    # ── Site summary ──────────────────────────────────────────────────────────
     if not result["site_summary"].empty:
         section_header("Site-Level Retention Summary")
         st.dataframe(result["site_summary"], use_container_width=True, hide_index=True)
