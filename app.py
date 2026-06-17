@@ -810,26 +810,29 @@ def render_tab_intake():
             FIELD_LABELS[k] for k in EXTRACTION_ORDER
             if k in fv and str(fv[k]) != str(results[k].value)
         ]
-        # Push confirmed values into sidebar session state
-        st.session_state["sb_age"]                        = int(fv["age"])
-        st.session_state["sb_gender"]                     = fv["gender"]
-        st.session_state["sb_bmi"]                        = float(fv["bmi"])
-        st.session_state["sb_distance_from_site_km"]      = int(fv["distance_from_site_km"])
-        st.session_state["sb_transportation_access"]      = fv["transportation_access"]
-        st.session_state["sb_insurance_status"]           = fv["insurance_status"]
-        st.session_state["sb_prior_trial_participation"]  = int(fv["prior_trial_participation"])
-        st.session_state["sb_visit_frequency_per_month"]  = int(fv["visit_frequency_per_month"])
-        st.session_state["sb_disease_severity_score"]     = float(fv["disease_severity_score"])
-        st.session_state["sb_number_of_comorbidities"]    = int(fv["number_of_comorbidities"])
-        st.session_state["sb_concomitant_medications"]    = int(fv["concomitant_medications"])
-        st.session_state["sb_side_effect_severity_at_week2"] = float(fv["side_effect_severity_at_week2"])
-        st.session_state["sb_trial_phase"]                = int(fv["trial_phase"])
-        st.session_state["sb_consent_complexity_score"]   = float(fv["consent_complexity_score"])
-        # Save document metadata for PDF report
-        st.session_state["doc_source"]            = f"Document Upload ({uploaded.name})"
+        # Store values under a neutral key — Streamlit forbids writing widget-bound
+        # session state keys (sb_*) after those widgets have already rendered.
+        # main() reads _intake_pending BEFORE the sidebar renders and applies them.
+        st.session_state["_intake_pending"] = {
+            "sb_age":                           int(fv["age"]),
+            "sb_gender":                        fv["gender"],
+            "sb_bmi":                           float(fv["bmi"]),
+            "sb_distance_from_site_km":         int(fv["distance_from_site_km"]),
+            "sb_transportation_access":         fv["transportation_access"],
+            "sb_insurance_status":              fv["insurance_status"],
+            "sb_prior_trial_participation":     int(fv["prior_trial_participation"]),
+            "sb_visit_frequency_per_month":     int(fv["visit_frequency_per_month"]),
+            "sb_disease_severity_score":        float(fv["disease_severity_score"]),
+            "sb_number_of_comorbidities":       int(fv["number_of_comorbidities"]),
+            "sb_concomitant_medications":       int(fv["concomitant_medications"]),
+            "sb_side_effect_severity_at_week2": float(fv["side_effect_severity_at_week2"]),
+            "sb_trial_phase":                   int(fv["trial_phase"]),
+            "sb_consent_complexity_score":      float(fv["consent_complexity_score"]),
+        }
+        st.session_state["doc_source"]          = f"Document Upload ({uploaded.name})"
         st.session_state["doc_extraction_method"] = extraction_method
-        st.session_state["intake_confirmed"]       = True
-        st.session_state["intake_edited_fields"]   = edited
+        st.session_state["intake_confirmed"]    = True
+        st.session_state["intake_edited_fields"] = edited
         st.rerun()
 
     # ── Audit log ─────────────────────────────────────────────────────────────
@@ -1678,6 +1681,14 @@ def render_landing():
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
+    # Apply intake-confirmed values BEFORE the sidebar renders its widgets.
+    # This is required by Streamlit: widget-bound keys can only be set before
+    # the widget appears in the current run.
+    if "_intake_pending" in st.session_state:
+        for k, v in st.session_state["_intake_pending"].items():
+            st.session_state[k] = v
+        del st.session_state["_intake_pending"]
+
     render_landing()
     render_landing_kpis()
     st.divider()
