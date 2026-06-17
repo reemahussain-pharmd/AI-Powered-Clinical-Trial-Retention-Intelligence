@@ -141,7 +141,7 @@ class RetentionReport(FPDF):
         super().__init__()
         self.patient_id = patient_id
         self.generated_at = datetime.now().strftime('%d-%b-%Y %H:%M')
-        self.set_auto_page_break(auto=True, margin=20)
+        self.set_auto_page_break(auto=True, margin=35)
         self.set_margins(15, 15, 15)
 
     def cell(self, w=0, h=0, text="", *args, **kwargs):
