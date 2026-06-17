@@ -271,7 +271,7 @@ class RetentionReport(FPDF):
             self.set_text_color(20, 20, 20)
 
 
-def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
+def generate_report(analysis: Dict, patient_id: str = "DEMO", doc_source: str = "Manual Entry") -> Path:
     """
     Generate a 2-page PDF retention intelligence report.
 
@@ -374,6 +374,9 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
     pdf.kv_row("Estimated Dropout Window", analysis.get("dropout_window", "—"))
     pdf.kv_row("Risk Category",           f"{risk_cat_label} ({risk_pct}%)", bold_value=True)
     pdf.kv_row("Prediction Confidence",   f"{conf_label} ({confidence}%)", bold_value=True)
+    pdf.kv_row("Data Source",             doc_source)
+    if doc_source != "Manual Entry":
+        pdf.kv_row("Extraction Method",   "Rule-Based Clinical Parser")
     pdf.ln(4)
 
     # -- SHAP Risk Factors --

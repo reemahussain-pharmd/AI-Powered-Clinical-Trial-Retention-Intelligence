@@ -12,3 +12,5 @@ fpdf2
 pyyaml
 pillow
 qrcode
+pdfplumber
+pymupdf

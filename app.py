@@ -524,6 +524,329 @@ def render_sidebar() -> pd.DataFrame:
     }])
 
 
+# ── TAB 0: Clinical Document Intake ──────────────────────────────────────────
+def render_tab_intake():
+    from document_intake import (
+        extract_text_from_pdf, ClinicalDocumentParser,
+        FIELD_DEFAULTS, FIELD_LABELS, EXTRACTION_ORDER,
+        build_audit_log, generate_sample_crf,
+    )
+
+    section_header("Clinical Document Intake & Auto-Population")
+    st.markdown(
+        "Upload a clinical trial screening form, CRF, or participant summary PDF. "
+        "The system extracts participant data automatically for your review before analysis."
+    )
+    st.warning(
+        "⚕️ **Human-in-the-loop required.** Extracted values must be reviewed and confirmed "
+        "by a qualified user before retention analysis is run. "
+        "This module is for educational and portfolio demonstration purposes only."
+    )
+
+    # Sample CRF download
+    sample_bytes = generate_sample_crf()
+    if sample_bytes:
+        st.download_button(
+            "📥 Download Sample CRF (use this to test the module)",
+            data=sample_bytes,
+            file_name="sample_clinical_crf.pdf",
+            mime="application/pdf",
+        )
+
+    st.divider()
+
+    # ── Upload ────────────────────────────────────────────────────────────────
+    uploaded = st.file_uploader(
+        "Upload Participant Clinical Document",
+        type=["pdf"],
+        help="Supported: text-based PDF — clinical screening forms, CRFs, participant summaries.",
+        key="intake_uploader",
+    )
+
+    if uploaded is None:
+        st.info(
+            "**How to use:** Download the sample CRF above, then upload it here "
+            "to see automatic field extraction with confidence scores."
+        )
+        return
+
+    # ── Text extraction ───────────────────────────────────────────────────────
+    file_bytes = uploaded.read()
+    with st.spinner("Extracting document text…"):
+        doc_text, extraction_method = extract_text_from_pdf(file_bytes)
+
+    if not doc_text.strip():
+        st.error(
+            "No text could be extracted. The PDF may be image-only (scanned). "
+            "Please upload a text-based PDF."
+        )
+        return
+
+    with st.expander("📄 Document Preview", expanded=False):
+        preview = doc_text[:3000] + ("…" if len(doc_text) > 3000 else "")
+        st.text_area("Extracted text", preview, height=240, disabled=True, label_visibility="collapsed")
+        st.caption(f"Extraction engine: **{extraction_method}** · {len(doc_text):,} characters extracted")
+
+    # ── Field parsing ─────────────────────────────────────────────────────────
+    parser = ClinicalDocumentParser()
+    with st.spinner("Parsing clinical fields…"):
+        results = parser.parse(doc_text)
+
+    # ── Extraction summary strip ──────────────────────────────────────────────
+    section_header("Extraction Summary")
+    high_n = sum(1 for r in results.values() if r.confidence == "High"   and not r.is_fallback)
+    med_n  = sum(1 for r in results.values() if r.confidence == "Medium" and not r.is_fallback)
+    low_n  = sum(1 for r in results.values() if r.is_fallback)
+    total  = len(results)
+
+    ec1, ec2, ec3, ec4 = st.columns(4)
+    ec1.markdown(
+        f'<div class="kpi-card"><div class="kpi-label">Total Fields</div>'
+        f'<div class="kpi-value" style="font-size:28px">{total}</div>'
+        f'<div class="kpi-sub">Parsed from document</div></div>',
+        unsafe_allow_html=True,
+    )
+    ec2.markdown(
+        f'<div class="kpi-card" style="border-left-color:#2E8B57">'
+        f'<div class="kpi-label">High Confidence</div>'
+        f'<div class="kpi-value" style="font-size:28px;color:#2E8B57">{high_n}</div>'
+        f'<div class="kpi-sub">Explicit pattern match</div></div>',
+        unsafe_allow_html=True,
+    )
+    ec3.markdown(
+        f'<div class="kpi-card" style="border-left-color:#F4B942">'
+        f'<div class="kpi-label">Medium Confidence</div>'
+        f'<div class="kpi-value" style="font-size:28px;color:#F4B942">{med_n}</div>'
+        f'<div class="kpi-sub">Inferred from context</div></div>',
+        unsafe_allow_html=True,
+    )
+    ec4.markdown(
+        f'<div class="kpi-card" style="border-left-color:#D9534F">'
+        f'<div class="kpi-label">Missing / Fallback</div>'
+        f'<div class="kpi-value" style="font-size:28px;color:#D9534F">{low_n}</div>'
+        f'<div class="kpi-sub">Default applied — review required</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("<div style='margin-bottom:8px'></div>", unsafe_allow_html=True)
+
+    missing_labels = [FIELD_LABELS[k] for k, r in results.items() if r.is_fallback]
+    if missing_labels:
+        st.warning(
+            f"⚠️ **{len(missing_labels)} field(s) not found** — default values applied. "
+            f"Please complete: {', '.join(missing_labels)}."
+        )
+
+    # ── Participant snapshot ───────────────────────────────────────────────────
+    section_header("Participant Snapshot")
+    s1, s2, s3, s4 = st.columns(4)
+    s1.markdown(
+        f'<div class="metric-card">'
+        f'<div style="font-size:11px;color:#6B7280;text-transform:uppercase;font-weight:600">Age / Gender</div>'
+        f'<div style="font-size:22px;font-weight:800;color:#0D1B2A">'
+        f'{results["age"].value} / {results["gender"].value}</div>'
+        f'<div style="font-size:11px;color:#9CA3AF">Demographics</div></div>',
+        unsafe_allow_html=True,
+    )
+    s2.markdown(
+        f'<div class="metric-card">'
+        f'<div style="font-size:11px;color:#6B7280;text-transform:uppercase;font-weight:600">Comorbidities / Meds</div>'
+        f'<div style="font-size:22px;font-weight:800;color:#0D1B2A">'
+        f'{results["number_of_comorbidities"].value} / {results["concomitant_medications"].value}</div>'
+        f'<div style="font-size:11px;color:#9CA3AF">Clinical complexity</div></div>',
+        unsafe_allow_html=True,
+    )
+    s3.markdown(
+        f'<div class="metric-card">'
+        f'<div style="font-size:11px;color:#6B7280;text-transform:uppercase;font-weight:600">Distance / Transport</div>'
+        f'<div style="font-size:22px;font-weight:800;color:#0D1B2A">'
+        f'{results["distance_from_site_km"].value} km / {results["transportation_access"].value.upper()}</div>'
+        f'<div style="font-size:11px;color:#9CA3AF">Logistical profile</div></div>',
+        unsafe_allow_html=True,
+    )
+    s4.markdown(
+        f'<div class="metric-card">'
+        f'<div style="font-size:11px;color:#6B7280;text-transform:uppercase;font-weight:600">Phase / Week 2 AE</div>'
+        f'<div style="font-size:22px;font-weight:800;color:#0D1B2A">'
+        f'Ph.{results["trial_phase"].value} / {results["side_effect_severity_at_week2"].value}</div>'
+        f'<div style="font-size:11px;color:#9CA3AF">Trial characteristics</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("<div style='margin-bottom:8px'></div>", unsafe_allow_html=True)
+
+    # ── Validation form ───────────────────────────────────────────────────────
+    section_header("Review & Edit Extracted Values")
+    st.markdown(
+        "Each field shows the extracted value and its confidence level. "
+        "Edit any incorrect values, then click **Confirm** below."
+    )
+
+    def conf_badge(r) -> str:
+        if r.is_fallback:
+            return "🔴 Missing — default applied"
+        if r.confidence == "High":
+            return "🟢 High"
+        if r.confidence == "Medium":
+            return "🟡 Medium"
+        return "🔴 Low"
+
+    fv = {}   # final (possibly edited) form values
+    col_l, col_r = st.columns(2)
+
+    with col_l:
+        st.markdown("##### Demographics & Logistics")
+
+        r = results["age"]
+        fv["age"] = st.number_input(
+            f"Participant Age  [{conf_badge(r)}]",
+            18, 100, int(r.value), 1, key="iv_age",
+        )
+        r = results["gender"]
+        opts_g = ["M", "F", "Other"]
+        fv["gender"] = st.selectbox(
+            f"Gender  [{conf_badge(r)}]", opts_g,
+            index=opts_g.index(r.value) if r.value in opts_g else 0, key="iv_gender",
+        )
+        r = results["bmi"]
+        fv["bmi"] = st.number_input(
+            f"BMI (kg/m²)  [{conf_badge(r)}]",
+            10.0, 60.0, float(r.value), 0.1, key="iv_bmi",
+        )
+        r = results["distance_from_site_km"]
+        fv["distance_from_site_km"] = st.number_input(
+            f"Distance from Trial Site (km)  [{conf_badge(r)}]",
+            0, 500, int(r.value), 1, key="iv_dist",
+        )
+        r = results["transportation_access"]
+        fv["transportation_access"] = st.selectbox(
+            f"Transportation Access  [{conf_badge(r)}]",
+            ["yes", "no"], index=0 if r.value == "yes" else 1, key="iv_transport",
+        )
+        r = results["insurance_status"]
+        opts_ins = ["insured", "uninsured", "partial"]
+        fv["insurance_status"] = st.selectbox(
+            f"Insurance Status  [{conf_badge(r)}]",
+            opts_ins,
+            index=opts_ins.index(r.value) if r.value in opts_ins else 0,
+            key="iv_insurance",
+        )
+        r = results["prior_trial_participation"]
+        fv["prior_trial_participation"] = st.number_input(
+            f"Prior Trial Participation  [{conf_badge(r)}]",
+            0, 10, int(r.value), 1, key="iv_prior",
+        )
+        r = results["visit_frequency_per_month"]
+        fv["visit_frequency_per_month"] = st.number_input(
+            f"Visit Frequency per Month  [{conf_badge(r)}]",
+            1, 20, int(r.value), 1, key="iv_visits",
+        )
+
+    with col_r:
+        st.markdown("##### Clinical & Trial Characteristics")
+
+        r = results["disease_severity_score"]
+        fv["disease_severity_score"] = st.number_input(
+            f"Disease Severity Score (0–10)  [{conf_badge(r)}]",
+            0.0, 10.0, float(r.value), 0.1, key="iv_severity",
+        )
+        r = results["number_of_comorbidities"]
+        fv["number_of_comorbidities"] = st.number_input(
+            f"Number of Comorbidities  [{conf_badge(r)}]",
+            0, 15, int(r.value), 1, key="iv_comorbid",
+        )
+        r = results["concomitant_medications"]
+        fv["concomitant_medications"] = st.number_input(
+            f"Concomitant Medications  [{conf_badge(r)}]",
+            0, 25, int(r.value), 1, key="iv_meds",
+        )
+        r = results["side_effect_severity_at_week2"]
+        fv["side_effect_severity_at_week2"] = st.number_input(
+            f"Side Effect Severity at Week 2 (0–5)  [{conf_badge(r)}]",
+            0.0, 5.0, float(r.value), 0.1, key="iv_ae",
+        )
+        r = results["trial_phase"]
+        opts_ph = [1, 2, 3, 4]
+        fv["trial_phase"] = st.selectbox(
+            f"Trial Phase  [{conf_badge(r)}]",
+            opts_ph,
+            index=opts_ph.index(int(r.value)) if int(r.value) in opts_ph else 1,
+            key="iv_phase",
+        )
+        r = results["consent_complexity_score"]
+        fv["consent_complexity_score"] = st.number_input(
+            f"Consent Complexity Score (1–10)  [{conf_badge(r)}]",
+            1.0, 10.0, float(r.value), 0.5, key="iv_consent",
+        )
+        r = results["visit_burden_index"]
+        fv["visit_burden_index"] = st.number_input(
+            f"Visit Burden Index  [{conf_badge(r)}]",
+            0.0, 20.0, float(r.value), 0.5, key="iv_vbi",
+        )
+        r = results["logistic_friction_score"]
+        fv["logistic_friction_score"] = st.number_input(
+            f"Logistic Friction Score  [{conf_badge(r)}]",
+            0.0, 10.0, float(r.value), 0.5, key="iv_lfs",
+        )
+
+    # ── Confirmation ──────────────────────────────────────────────────────────
+    st.divider()
+    c_btn, c_status = st.columns([1, 2])
+    with c_btn:
+        confirmed = st.button(
+            "✅ Confirm Extracted Data & Populate Sidebar",
+            type="primary",
+            use_container_width=True,
+            key="intake_confirm",
+        )
+    with c_status:
+        if st.session_state.get("intake_confirmed"):
+            st.success(
+                "✅ Sidebar populated from document. "
+                "Switch to **Participant Retention Assessment** and click Run Retention Analysis."
+            )
+
+    if confirmed:
+        # Determine which fields were edited vs extraction
+        edited = [
+            FIELD_LABELS[k] for k in EXTRACTION_ORDER
+            if k in fv and str(fv[k]) != str(results[k].value)
+        ]
+        # Push confirmed values into sidebar session state
+        st.session_state["sb_age"]                        = int(fv["age"])
+        st.session_state["sb_gender"]                     = fv["gender"]
+        st.session_state["sb_bmi"]                        = float(fv["bmi"])
+        st.session_state["sb_distance_from_site_km"]      = int(fv["distance_from_site_km"])
+        st.session_state["sb_transportation_access"]      = fv["transportation_access"]
+        st.session_state["sb_insurance_status"]           = fv["insurance_status"]
+        st.session_state["sb_prior_trial_participation"]  = int(fv["prior_trial_participation"])
+        st.session_state["sb_visit_frequency_per_month"]  = int(fv["visit_frequency_per_month"])
+        st.session_state["sb_disease_severity_score"]     = float(fv["disease_severity_score"])
+        st.session_state["sb_number_of_comorbidities"]    = int(fv["number_of_comorbidities"])
+        st.session_state["sb_concomitant_medications"]    = int(fv["concomitant_medications"])
+        st.session_state["sb_side_effect_severity_at_week2"] = float(fv["side_effect_severity_at_week2"])
+        st.session_state["sb_trial_phase"]                = int(fv["trial_phase"])
+        st.session_state["sb_consent_complexity_score"]   = float(fv["consent_complexity_score"])
+        # Save document metadata for PDF report
+        st.session_state["doc_source"]            = f"Document Upload ({uploaded.name})"
+        st.session_state["doc_extraction_method"] = extraction_method
+        st.session_state["intake_confirmed"]       = True
+        st.session_state["intake_edited_fields"]   = edited
+        st.rerun()
+
+    # ── Audit log ─────────────────────────────────────────────────────────────
+    with st.expander("📋 Extraction Audit Log"):
+        log_rows = build_audit_log(
+            filename=uploaded.name,
+            extraction_method=extraction_method,
+            results=results,
+            edited_fields=st.session_state.get("intake_edited_fields", []),
+        )
+        st.dataframe(pd.DataFrame(log_rows), use_container_width=True, hide_index=True)
+        chart_caption(
+            "Audit log records document source, extraction engine, confidence breakdown, "
+            "and any fields manually edited by the user prior to confirmation."
+        )
+
+
 # ── TAB 1: Participant Retention Assessment ───────────────────────────────────
 def render_tab1(patient_df: pd.DataFrame, config: dict):
     run = st.button("🔍 Run Retention Analysis", type="primary", use_container_width=True)
@@ -802,6 +1125,19 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
 
     # ── Generate Report ───────────────────────────────────────────────────────
     section_header("Participant Report")
+    # Re-generate report with document source metadata if available
+    doc_source = st.session_state.get("doc_source", "Manual Entry")
+    try:
+        from report_generator import generate_report
+        report_path = generate_report(
+            analysis,
+            patient_id=patient_df["patient_id"].iloc[0],
+            doc_source=doc_source,
+        )
+        analysis["report_path"] = str(report_path)
+    except Exception:
+        pass
+
     report_path = analysis.get("report_path")
     if report_path and Path(report_path).exists():
         with open(report_path, "rb") as f:
@@ -1349,13 +1685,16 @@ def main():
     config     = load_config()
     patient_df = render_sidebar()
 
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab0, tab1, tab2, tab3, tab4 = st.tabs([
+        "📋 Clinical Document Intake",
         "🧬 Participant Retention Assessment",
         "📊 Trial Operations Dashboard",
         "🤖 AI Intelligence Engine",
         "ℹ️ About the Platform",
     ])
 
+    with tab0:
+        render_tab_intake()
     with tab1:
         render_tab1(patient_df, config)
     with tab2:
