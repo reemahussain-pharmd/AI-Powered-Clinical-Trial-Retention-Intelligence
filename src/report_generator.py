@@ -72,7 +72,7 @@ class RetentionReport(FPDF):
         return super().cell(w, h, _safe(str(text)), *args, **kwargs)
 
     def safe_multi_cell(self, w, h, text="", **kwargs):
-        # Use page width minus margins when w=0 to avoid fpdf2 auto-width issues
+        self.set_x(self.l_margin)  # always start from left margin
         if w == 0:
             w = self.epw
         return super().multi_cell(w, h, _safe(str(text)), **kwargs)
@@ -157,7 +157,7 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
     # Sub-header
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(*TEAL)
-    pdf.cell(0, 8, "Dr. Reema Mohamed Sulthan, PharmD | AI Expert (IABAC 2025)", ln=True)
+    pdf.cell(0, 8, "Dr. Reema Mohamed Sulthan, PharmD | Clinical Data Scientist | Certified AI Expert", ln=True)
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(100, 100, 100)
     pdf.cell(0, 5, "Clinical Data Scientist | AI-Powered Clinical Trial Retention Intelligence System", ln=True)
@@ -235,7 +235,7 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
     pdf.set_fill_color(*NAVY)
     pdf.set_text_color(*WHITE)
     pdf.set_font("Helvetica", "B", 8)
-    col_w = [55, 38, 48, 22]
+    col_w = [72, 35, 48, 25]
     headers = ["Intervention", "Owner", "Est. Potential Risk Reduction", "Cost"]
     for h, w in zip(headers, col_w):
         pdf.cell(w, 7, h, border=1, fill=True, ln=False, align="C")
@@ -250,7 +250,7 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
             "Estimated Potential Risk Reduction: ", ""
         )
         row_vals = [
-            iv["name"][:35],
+            iv["name"][:45],
             iv["owner"][:22],
             reduction_short,
             f"${iv['cost']:,.0f}",
