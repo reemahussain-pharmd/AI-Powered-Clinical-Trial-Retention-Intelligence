@@ -91,7 +91,7 @@ def batch_screen(df: pd.DataFrame, model: Any, preprocessor: Any) -> Dict[str, A
             prob  = float(model.predict_proba(X)[0, 1])
             pct   = round(prob * 100)
             rows.append({
-                "Patient ID":     str(row.get("patient_id", "—")),
+                "Participant ID":  str(row.get("patient_id", "—")),
                 "Site":           str(row.get("site_id", "SITE_01")),
                 "Risk Score (%)": pct,
                 "Risk Category":  _risk_cat(pct),
@@ -127,7 +127,7 @@ def batch_screen(df: pd.DataFrame, model: Any, preprocessor: Any) -> Dict[str, A
     site_df = (
         results_df.groupby("Site")
         .agg(
-            Participants   = ("Patient ID",      "count"),
+            Participants   = ("Participant ID",   "count"),
             Mean_Risk      = ("Risk Score (%)",  "mean"),
             High_Critical  = ("Risk Score (%)",  lambda x: (x >= 61).sum()),
         )

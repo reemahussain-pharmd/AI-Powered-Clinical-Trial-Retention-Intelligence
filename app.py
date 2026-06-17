@@ -269,7 +269,7 @@ _FACTOR_ICONS = {
     "Visit Frequency per Month": "📅",
     "Visit Burden Index": "⏱️",
     "Polypharmacy Risk Score": "💊",
-    "Patient Burden Score": "⚖️",
+    "Participant Burden Score": "⚖️",
     "Logistic Friction Score": "🗺️",
     "Disease Severity Score": "🏥",
     "Prior Adverse Event History": "🔔",
@@ -478,7 +478,7 @@ def render_sidebar() -> pd.DataFrame:
                                 help="Number of concurrent medications being taken.")
         side_effects = st.slider("Side Effects at Week 2 (0–5)", 0.0, 5.0, step=0.1,
                                  key="sb_side_effect_severity_at_week2",
-                                 help="The single strongest predictor of dropout in this model.")
+                                 help="Highest-ranked predictor in this model.")
 
     # Trial Characteristics
     with st.sidebar.expander("⚗️ Trial Characteristics", expanded=False):
@@ -619,7 +619,7 @@ def render_coordinator_copilot(analysis: dict, risk_cat: str):
     st.markdown(
         f'<div style="background:#F8FAFC;border-left:4px solid {rc};padding:14px 18px;'
         f'border-radius:6px;margin-bottom:12px">'
-        f'<div style="font-size:13px;font-weight:600;color:{rc};margin-bottom:6px">AI Coordinator Assessment</div>'
+        f'<div style="font-size:13px;font-weight:600;color:{rc};margin-bottom:6px">AI-Assisted Coordinator Summary</div>'
         f'<div style="font-size:13px;color:#374151;line-height:1.6">{summary.risk_narrative}</div>'
         f'</div>',
         unsafe_allow_html=True,
@@ -805,7 +805,7 @@ def render_tab_batch():
     section_header("Participant Risk Ranking")
     fc1, fc2, fc3 = st.columns(3)
     with fc1:
-        search_pt = st.text_input("Search Patient ID", "", placeholder="e.g. PT-0001")
+        search_pt = st.text_input("Search Participant ID", "", placeholder="e.g. PT-0001")
     with fc2:
         sites_opts = ["All Sites"] + sorted(results_df["Site"].unique().tolist())
         filter_site = st.selectbox("Filter by Site", sites_opts)
@@ -818,7 +818,7 @@ def render_tab_batch():
     filtered_df = results_df.copy()
     if search_pt:
         filtered_df = filtered_df[
-            filtered_df["Patient ID"].str.contains(search_pt, case=False, na=False)
+            filtered_df["Participant ID"].str.contains(search_pt, case=False, na=False)
         ]
     if filter_site != "All Sites":
         filtered_df = filtered_df[filtered_df["Site"] == filter_site]
@@ -881,7 +881,7 @@ def render_tab_batch():
     top10 = results_df.head(10).copy()
     pq_df = pd.DataFrame({
         "Rank":               range(1, len(top10) + 1),
-        "Patient ID":         top10["Patient ID"].values,
+        "Participant ID":         top10["Participant ID"].values,
         "Site":               top10["Site"].values,
         "Risk Score (%)":     top10["Risk Score (%)"].values,
         "Risk Category":      top10["Risk Category"].values,
@@ -961,7 +961,7 @@ def render_tab_batch():
 <div style="background:{bg};border-left:4px solid {border};
             border-radius:6px;padding:10px 14px;margin-bottom:8px;">
   <div style="font-weight:700;font-size:15px;margin-bottom:4px;">
-    {badge} {row['Patient ID']}
+    {badge} {row['Participant ID']}
     <span style="font-weight:400;font-size:13px;color:#555;margin-left:8px;">
       {cat} Risk ({row['Risk Score (%)']}%) — {row['Site']}
     </span>
@@ -1502,10 +1502,17 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
         for i, iv in enumerate(interventions):
             priority = iv.get("priority", priority_labels[min(i, len(priority_labels) - 1)])
             badge_cls = priority_css.get(priority.upper(), "badge-low")
-            cost_val  = iv.get("cost_usd", 0) or iv.get("cost", 0)
-            benefit   = iv.get("potential_risk_reduction_pct", 0) or iv.get("risk_reduction", 0)
-            owner     = iv.get("owner", iv.get("responsible_team", "Clinical Operations"))
-            rationale = iv.get("pharmd_rationale", iv.get("rationale", ""))
+            cost_val    = iv.get("cost_usd", 0) or iv.get("cost", 0)
+            _raw_tier   = iv.get("estimated_potential_risk_reduction", "").replace(
+                "Estimated Potential Risk Reduction: ", ""
+            ).strip()
+            _IMPACT_RANGES = {
+                "High": "5–8%", "Moderate-High": "4–7%", "Moderate": "3–5%",
+                "Low-Moderate": "2–4%", "Low": "1–3%",
+            }
+            impact_range = _IMPACT_RANGES.get(_raw_tier, "2–5%")
+            owner        = iv.get("owner", iv.get("responsible_team", "Clinical Operations"))
+            rationale    = iv.get("pharmd_rationale", iv.get("rationale", ""))
 
             st.markdown(
                 f'<div class="iv-card">'
@@ -1516,7 +1523,7 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
                 f'<div class="iv-rationale">{rationale}</div>'
                 f'<div class="iv-row">'
                 f'<div class="iv-stat">Responsible Team<br><strong>{owner}</strong></div>'
-                f'<div class="iv-stat">Est. Risk Reduction<br><strong>~{benefit:.0f}%</strong></div>'
+                f'<div class="iv-stat">Estimated Impact Range<br><strong>{impact_range}</strong></div>'
                 f'<div class="iv-stat">Est. Cost<br><strong>${cost_val:,}</strong></div>'
                 f'</div></div>',
                 unsafe_allow_html=True,
@@ -1978,8 +1985,8 @@ def render_tab4():
     )
     b3.markdown(
         '<div class="about-card"><div style="font-size:20px">🧠</div>'
-        '<div style="font-weight:700;margin:6px 0 4px;font-size:13px">Psychosocial Factors</div>'
-        '<div style="font-size:12px;color:#6B7280">Consent complexity, participant-investigator relationship, anxiety</div></div>',
+        '<div style="font-weight:700;margin:6px 0 4px;font-size:13px">Participant Engagement Factors</div>'
+        '<div style="font-size:12px;color:#6B7280">Consent complexity, participant-investigator relationship, engagement signals</div></div>',
         unsafe_allow_html=True,
     )
     b4.markdown(
@@ -1989,12 +1996,27 @@ def render_tab4():
         unsafe_allow_html=True,
     )
 
+    # Data Quality Controls — second row
+    dq_col, _, _ = st.columns([2, 1, 1])
+    dq_col.markdown(
+        '<div class="about-card" style="border-left:3px solid #1D9E75">'
+        '<div style="font-size:20px">✅</div>'
+        '<div style="font-weight:700;margin:6px 0 4px;font-size:13px">Data Quality Controls</div>'
+        '<div style="font-size:12px;color:#6B7280">'
+        '• Field-level validation rules &nbsp;• Missing value handling with clinical defaults<br>'
+        '• Extraction confidence scoring (High / Medium / Fallback)<br>'
+        '• Human-in-the-loop review workflow before analysis'
+        '</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("<div style='margin-bottom:4px'></div>", unsafe_allow_html=True)
+
     with st.expander("View engineered composite features"):
         st.markdown(
             "| Feature | Clinical Purpose |\n|---------|------------------|\n"
             "| Visit Burden Index | Visit frequency × trial duration — captures participant fatigue |\n"
             "| Polypharmacy Risk Score | Multi-drug complexity and management burden |\n"
-            "| Patient Burden Score | Aggregated physical, logistical, and clinical load |\n"
+            "| Participant Burden Score | Aggregated physical, logistical, and clinical load |\n"
             "| Logistic Friction Score | Distance adjusted for transportation access |\n"
             "| Phase-Complexity Interaction | Risk amplification in early-phase, high-complexity trials |"
         )
@@ -2006,7 +2028,7 @@ def render_tab4():
         '<div class="about-card" style="border-left-color:#D9534F">'
         '<div style="font-size:18px">⚠️</div>'
         '<div style="font-weight:700;font-size:13px;margin:6px 0 4px">Week 2 Side Effects</div>'
-        '<div style="font-size:12px;color:#6B7280">The strongest single predictor. SHAP contribution is ~3× larger than the next factor. '
+        '<div style="font-size:12px;color:#6B7280">Top-ranked predictor in this model. SHAP contribution is ~3x larger than the next factor. '
         'Proactive pharmacovigilance contact at Week 2 is low-cost and high-impact.</div>'
         '<div style="font-size:11px;color:#9CA3AF;margin-top:6px">ICH E6(R2), 2016</div></div>',
         unsafe_allow_html=True,
@@ -2040,7 +2062,7 @@ def render_tab4():
         {"Component": "Class Imbalance",   "Detail": "SMOTE on training set only — no data leakage"},
         {"Component": "Models Evaluated",  "Detail": "Logistic Regression, Random Forest, XGBoost, LightGBM, CatBoost"},
         {"Component": "Tuning",            "Detail": "Optuna (50 trials) applied to XGBoost"},
-        {"Component": "Tracking",          "Detail": "MLflow with SQLite backend — all runs logged"},
+        {"Component": "Tracking",          "Detail": "Experiment Tracking: MLflow (all runs logged)"},
         {"Component": "Selection",         "Detail": "Recall prioritised — false negative = higher cost than false alarm"},
     ])
     st.dataframe(dev_tbl, use_container_width=True, hide_index=True)
@@ -2095,7 +2117,7 @@ def render_tab4():
             '<div class="arch-arrow">→</div>'
             '<div class="arch-box">⚗️<br>Feature<br>Engineering</div>'
             '<div class="arch-arrow">→</div>'
-            '<div class="arch-box arch-box-teal">🤖<br>Model<br>Training</div>'
+            '<div class="arch-box arch-box-teal">🤖<br>Multi-Model<br>Prediction Layer</div>'
             '<div class="arch-arrow">→</div>'
             '<div class="arch-box arch-box-teal">🔍<br>SHAP<br>Explainability</div>'
             '<div class="arch-arrow">→</div>'
@@ -2109,8 +2131,8 @@ def render_tab4():
         )
     chart_caption(
         "End-to-end pipeline: data generation → PharmD feature engineering → "
-        "multi-model training (MLflow) → SHAP explainability → evidence retrieval → "
-        "intervention engine → business impact → 9-step agent → PDF report."
+        "multi-model prediction layer (LR + XGBoost + LightGBM + CatBoost, tracked via MLflow) → "
+        "SHAP explainability → evidence retrieval → intervention engine → business impact → 9-step agent → PDF report."
     )
 
     # Limitations
@@ -2205,8 +2227,16 @@ def render_landing():
         "<div style='padding:4px 0 2px'>"
         "<div style='font-size:26px;font-weight:800;color:#0D1B2A;line-height:1.2'>"
         "🧬 AI-Powered Clinical Trial Retention Intelligence</div>"
-        "<div style='font-size:14px;color:#1D9E75;font-weight:600;margin:6px 0 4px'>"
+        "<div style='font-size:14px;color:#1D9E75;font-weight:600;margin:6px 0 3px'>"
         "Predict &nbsp;·&nbsp; Explain &nbsp;·&nbsp; Intervene &nbsp;·&nbsp; Simulate &nbsp;·&nbsp; Report"
+        "</div>"
+        "<div style='margin-top:4px'>"
+        "<span style='display:inline-block;background:#EFF6FF;color:#1D4ED8;font-size:11px;"
+        "font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:0.5px;"
+        "border:1px solid #BFDBFE;margin-right:6px'>Portfolio Demonstration</span>"
+        "<span style='display:inline-block;background:#F0FDF4;color:#166534;font-size:11px;"
+        "font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:0.5px;"
+        "border:1px solid #BBF7D0'>Version 3.0</span>"
         "</div>"
         "</div>",
         unsafe_allow_html=True,
@@ -2256,12 +2286,12 @@ def main():
     patient_df = render_sidebar()
 
     tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📋 Clinical Document Intake",
-        "🧬 Participant Retention Assessment",
-        "📊 Trial Operations Dashboard",
-        "🤖 AI Intelligence Engine",
-        "📁 Multi-Participant Screening",
-        "ℹ️ About the Platform",
+        "📋 Document Intake",
+        "🧬 Risk Assessment",
+        "📊 Trial Dashboard",
+        "🤖 AI Intelligence",
+        "📁 Batch Screening",
+        "ℹ️ About",
     ])
 
     with tab0:
