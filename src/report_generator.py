@@ -104,7 +104,7 @@ def _risk_category_label(pct: int) -> str:
 def _risk_colour(category: str):
     return {
         "critical": RED_RISK,
-        "high":     AMBER_RISK,
+        "high":     ORANGE_RISK,
         "moderate": AMBER_RISK,
         "low":      GREEN_RISK,
     }.get(category.lower(), AMBER_RISK)
@@ -356,10 +356,15 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
     pdf.colored_risk_badge(risk_cat_label, risk_pct)
     pdf.draw_risk_gauge(risk_pct)
 
+    risk_score  = analysis.get("risk_score", risk_pct / 100)
+    confidence  = int(round(max(risk_score, 1 - risk_score) * 100))
+    conf_label  = "High" if confidence >= 80 else ("Moderate" if confidence >= 65 else "Low")
+
     pdf.kv_row("Participant ID",          patient_id)
     pdf.kv_row("Participant Persona",     analysis.get("persona", "—"))
     pdf.kv_row("Estimated Dropout Window", analysis.get("dropout_window", "—"))
     pdf.kv_row("Risk Category",           f"{risk_cat_label} ({risk_pct}%)", bold_value=True)
+    pdf.kv_row("Prediction Confidence",   f"{conf_label} ({confidence}%)", bold_value=True)
     pdf.ln(4)
 
     # -- SHAP Risk Factors --
@@ -479,8 +484,21 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
             pdf.ln(2)
 
     # -- Business Impact --
-    if impact:
-        pdf.section_heading("Business Impact (Modelled Estimates)")
+    pdf.section_heading("Economic Impact Analysis")
+    if risk_cat_label == "Low":
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_text_color(*TEAL)
+        pdf.cell(0, 6, "Intervention not recommended at current risk level.", ln=True)
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(60, 60, 60)
+        pdf.safe_multi_cell(
+            0, 5,
+            f"Participant {patient_id} is within the acceptable retention threshold (risk < 30%). "
+            "Economic impact modelling is not triggered. Continue routine monitoring and standard "
+            "site engagement protocols."
+        )
+        pdf.ln(3)
+    elif impact:
         col_a, col_b = 100, 0
 
         def impact_row(label, value, teal=False):
