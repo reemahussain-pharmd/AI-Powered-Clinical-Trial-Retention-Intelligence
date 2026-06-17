@@ -1,7 +1,7 @@
 """
-PDF Clinical Report Generator.
+PDF Clinical Report Generator — v3.0 Enterprise Layout.
 
-Produces a professional 2-page PDF report for trial sponsors and clinical
+Produces a professional 4-page PDF report for trial sponsors and clinical
 operations teams. Uses fpdf2 for layout. All output is clearly labelled
 as educational and portfolio demonstration material.
 """
@@ -21,11 +21,9 @@ GITHUB_URL = (
 )
 
 DISCLAIMER = (
-    "This report is for educational and portfolio demonstration purposes only. "
-    "It does not constitute clinical advice and should not be used for patient care decisions."
+    "For educational and portfolio demonstration purposes only. "
+    "Not for clinical use or patient care decisions."
 )
-FOOTER_LINE2 = "AI-Powered Clinical Trial Retention Intelligence Platform  v3.0"
-FOOTER_LINE3 = "Dr. Reema Mohamed Sulthan, PharmD  |  github.com/reemahussain-pharmd"
 
 try:
     import qrcode as _qrcode
@@ -52,34 +50,21 @@ def _safe(text: str) -> str:
     """Replace Unicode characters unsupported by Helvetica with ASCII equivalents."""
     return (
         str(text)
-        .replace("–", "-")
-        .replace("—", "--")
-        .replace("→", "->")
-        .replace("←", "<-")
-        .replace("°", " deg")
-        .replace("×", "x")
-        .replace("’", "'")
-        .replace("‘", "'")
-        .replace("“", '"')
-        .replace("”", '"')
-        .replace("é", "e")
-        .replace("à", "a")
+        .replace("–", "-").replace("—", "--")
+        .replace("→", "->").replace("←", "<-")
+        .replace("°", " deg").replace("×", "x")
+        .replace("‘", "'").replace("’", "'")
+        .replace("“", '"').replace("”", '"')
+        .replace("é", "e").replace("à", "a")
         .replace("∞", "inf")
-        .replace("≥", ">=")
-        .replace("≤", "<=")
-        .replace("–", "-")
-        .replace("—", "--")
-        .replace("’", "'")
-        .replace("‘", "'")
-        .replace("–",  "-")
-        .replace("—",  "--")
-        .replace("→",  "->")
-        .replace("°",  " deg")
-        .replace("×",  "x")
-        .replace("’", "'")
-        .replace("‘", "'")
+        .replace("≥", ">=").replace("≤", "<=")
+        .replace("–", "-").replace("—", "--")
+        .replace("→", "->").replace("°", " deg")
+        .replace("×", "x").replace("'", "'").replace("'", "'")
     )
 
+
+# ── Colour palette ────────────────────────────────────────────────────────────
 
 TEAL        = (29, 158, 117)
 NAVY        = (13, 27, 42)
@@ -91,15 +76,16 @@ AMBER_RISK  = (220, 150, 30)
 ORANGE_RISK = (220, 100, 30)
 GREEN_RISK  = (29, 158, 117)
 
+FOOTER_H    = 22          # footer zone height in mm
+BREAK_GUARD = FOOTER_H + 6  # auto-page-break trigger margin
+
+
+# ── Pure functions ────────────────────────────────────────────────────────────
 
 def _risk_category_label(pct: int) -> str:
-    """Map a dropout percentage to a 4-tier risk category label."""
-    if pct >= 81:
-        return "Critical"
-    if pct >= 61:
-        return "High"
-    if pct >= 31:
-        return "Moderate"
+    if pct >= 81: return "Critical"
+    if pct >= 61: return "High"
+    if pct >= 31: return "Moderate"
     return "Low"
 
 
@@ -113,36 +99,60 @@ def _risk_colour(category: str):
 
 
 def _shap_verbal(val: float) -> str:
-    """Convert a SHAP value to a human-readable impact label."""
     a = abs(val)
-    if a >= 0.4:
-        return "Very High"
-    if a >= 0.2:
-        return "High"
-    if a >= 0.1:
-        return "Moderate"
+    if a >= 0.4: return "Very High"
+    if a >= 0.2: return "High"
+    if a >= 0.1: return "Moderate"
     return "Low"
 
 
 def _intervention_priority(iv: dict) -> str:
-    """Derive a priority label from the intervention's estimated risk reduction."""
     reduction = iv.get("estimated_potential_risk_reduction", "").lower()
-    if "high" in reduction:
-        return "Critical"
-    if "moderate" in reduction:
-        return "High"
+    if "high" in reduction: return "Critical"
+    if "moderate" in reduction: return "High"
     return "Medium"
 
 
+def _impact_label(reduction_text: str) -> str:
+    t = reduction_text.lower()
+    if "high" in t and "moderate" not in t and "low" not in t:
+        return "Very High"
+    if "moderate-high" in t or "high-moderate" in t:
+        return "High"
+    if "moderate" in t and "low" not in t:
+        return "Moderate"
+    if "low-moderate" in t or "moderate-low" in t:
+        return "Low-Moderate"
+    return "Low"
+
+
+def _cost_tier(cost: float) -> str:
+    if cost == 0:   return "Zero"
+    if cost <= 200: return "Very Low"
+    if cost <= 500: return "Low"
+    if cost <= 900: return "Medium"
+    return "High"
+
+
+def _light(color):
+    """Return a lightened version of a colour for value-card backgrounds."""
+    return tuple(min(c + 50, 255) for c in color)
+
+
+# ── PDF class ────────────────────────────────────────────────────────────────
+
 class RetentionReport(FPDF):
-    """Custom FPDF subclass with branded header, footer, and helper layout methods."""
+    """Custom FPDF subclass — branded header, 3-column footer, layout helpers."""
 
     def __init__(self, patient_id: str):
         super().__init__()
-        self.patient_id = patient_id
+        self.patient_id   = patient_id
         self.generated_at = datetime.now().strftime('%d-%b-%Y %H:%M')
-        self.set_auto_page_break(auto=True, margin=35)
+        self.alias_nb_pages()
+        self.set_auto_page_break(auto=True, margin=BREAK_GUARD)
         self.set_margins(15, 15, 15)
+
+    # ── Core overrides ────────────────────────────────────────────────────────
 
     def cell(self, w=0, h=0, text="", *args, **kwargs):
         return super().cell(w, h, _safe(str(text)), *args, **kwargs)
@@ -153,126 +163,153 @@ class RetentionReport(FPDF):
             w = self.epw
         return super().multi_cell(w, h, _safe(str(text)), **kwargs)
 
+    # ── Pagination helper ─────────────────────────────────────────────────────
+
+    def check_page_space(self, needed: float):
+        """Trigger a page break if fewer than `needed` mm remain above the footer."""
+        remaining = self.h - self.get_y() - BREAK_GUARD
+        if remaining < needed:
+            self.add_page()
+
+    # ── Header ────────────────────────────────────────────────────────────────
+
     def header(self):
         self.set_fill_color(*NAVY)
-        self.rect(0, 0, 210, 18, "F")
+        self.rect(0, 0, 210, 17, "F")
         self.set_text_color(*WHITE)
-        self.set_font("Helvetica", "B", 12)
-        self.set_xy(10, 4)
-        self.cell(0, 10, "Clinical Trial Retention Intelligence Report", ln=False)
-        self.set_font("Helvetica", "", 9)
+        self.set_font("Helvetica", "B", 11)
+        self.set_xy(10, 3.5)
+        self.cell(140, 7, "Clinical Trial Retention Intelligence Report", ln=False)
+        self.set_font("Helvetica", "", 7.5)
         self.set_xy(10, 10)
         self.cell(
-            0, 6,
-            f"Participant: {self.patient_id}  |  Date: {date.today().strftime('%d %B %Y')}  |  CONFIDENTIAL",
+            0, 5,
+            f"Participant: {self.patient_id}  |  {date.today().strftime('%d %B %Y')}  |  CONFIDENTIAL",
         )
-        self.ln(10)
+        self.ln(8)
+
+    # ── Footer ────────────────────────────────────────────────────────────────
 
     def footer(self):
-        self.set_y(-30)
+        self.set_y(-FOOTER_H)
         self.set_draw_color(*TEAL)
         self.set_line_width(0.4)
         self.line(15, self.get_y(), 195, self.get_y())
-        self.ln(2)
-        self.set_font("Helvetica", "I", 7)
+        self.ln(1.5)
+        self.set_font("Helvetica", "I", 6.5)
         self.set_text_color(*MID_GRAY)
-        self.multi_cell(0, 4, DISCLAIMER, align="C")
+        self.multi_cell(0, 3.5, DISCLAIMER, align="C")
+        self.ln(1)
+        col = self.epw / 3
         self.set_font("Helvetica", "", 7)
-        self.cell(0, 4, FOOTER_LINE2, ln=True, align="C")
-        self.cell(0, 4, f"{FOOTER_LINE3}  |  Generated: {self.generated_at}  |  Model v3.0", align="C")
+        self.set_x(self.l_margin)
+        self.cell(col, 4, "AI-Powered Clinical Trial Retention Intelligence", ln=False, align="L")
+        self.cell(col, 4, f"Generated: {self.generated_at}", ln=False, align="C")
+        self.cell(col, 4, f"Page {self.page_no()}/{{nb}}  |  Model v3.0", ln=False, align="R")
+
+    # ── Section heading ───────────────────────────────────────────────────────
 
     def section_heading(self, text: str):
         self.set_fill_color(*TEAL)
         self.set_text_color(*WHITE)
-        self.set_font("Helvetica", "B", 10)
-        self.cell(0, 7, f"  {text}", ln=True, fill=True)
-        self.ln(2)
+        self.set_font("Helvetica", "B", 9.5)
+        self.cell(0, 6, f"  {text}", ln=True, fill=True)
+        self.ln(1.5)
         self.set_text_color(30, 30, 30)
 
-    def kv_row(self, label: str, value: str, bold_value: bool = False):
-        self.set_font("Helvetica", "", 9)
-        self.set_text_color(80, 80, 80)
-        self.cell(65, 6, _safe(label) + ":", ln=False)
-        if bold_value:
-            self.set_font("Helvetica", "B", 9)
-        self.set_text_color(20, 20, 20)
-        self.cell(0, 6, _safe(value), ln=True)
+    # ── Key-value row ─────────────────────────────────────────────────────────
 
-    def colored_risk_badge(self, category: str, pct: int):
-        r, g, b = _risk_colour(category)
-        self.set_fill_color(r, g, b)
-        self.set_text_color(*WHITE)
-        self.set_font("Helvetica", "B", 14)
-        self.cell(
-            70, 14,
-            f"{pct}%  {category.upper()}",
-            border=1, ln=False, align="C", fill=True,
-        )
-        self.ln(16)
+    def kv_row(self, label: str, value: str, bold_value: bool = False):
+        self.set_font("Helvetica", "", 8)
+        self.set_text_color(80, 80, 80)
+        self.cell(65, 5, _safe(label) + ":", ln=False)
+        if bold_value:
+            self.set_font("Helvetica", "B", 8)
         self.set_text_color(20, 20, 20)
+        self.cell(0, 5, _safe(value), ln=True)
+
+    # ── 4-card metric dashboard row ───────────────────────────────────────────
+
+    def metric_cards(self, labels, values, colors):
+        """Render a row of N equally-spaced metric cards."""
+        n   = len(labels)
+        cw  = self.epw / n
+        cy  = self.get_y()
+        # Header row
+        for i, (lbl, col) in enumerate(zip(labels, colors)):
+            self.set_fill_color(*col)
+            self.set_text_color(*WHITE)
+            self.set_font("Helvetica", "B", 6.5)
+            self.set_xy(self.l_margin + i * cw, cy)
+            self.cell(cw - 0.5, 5, lbl, fill=True, border=0, ln=False, align="C")
+        self.ln(5)
+        # Value row
+        for i, (val, col) in enumerate(zip(values, colors)):
+            self.set_fill_color(*_light(col))
+            self.set_text_color(20, 20, 20)
+            self.set_font("Helvetica", "B", 9)
+            self.set_xy(self.l_margin + i * cw, self.get_y())
+            self.cell(cw - 0.5, 9, _safe(val), border=1, fill=True, ln=False, align="C")
+        self.ln(11)
+
+    # ── Risk gauge ────────────────────────────────────────────────────────────
 
     def draw_risk_gauge(self, risk_pct: int):
-        """Draw a 4-segment risk scale bar highlighting the current level."""
         current = _risk_category_label(risk_pct).upper()
-        self.set_font("Helvetica", "B", 8)
+        self.set_font("Helvetica", "B", 7.5)
         self.set_text_color(80, 80, 80)
-        self.cell(28, 6, "Risk Scale:", ln=False)
-        segments = [
-            ("LOW",      GREEN_RISK),
-            ("MODERATE", AMBER_RISK),
-            ("HIGH",     ORANGE_RISK),
-            ("CRITICAL", RED_RISK),
-        ]
-        for label, color in segments:
-            is_current = label == current
-            if is_current:
-                self.set_fill_color(*color)
-                self.set_text_color(*WHITE)
-                self.set_font("Helvetica", "B", 7)
-                self.cell(37, 6, f"{label} ({risk_pct}%)", border=1, fill=True, ln=False, align="C")
-            else:
-                self.set_fill_color(240, 240, 240)
-                self.set_text_color(160, 160, 160)
-                self.set_font("Helvetica", "", 7)
-                self.cell(37, 6, label, border=1, fill=True, ln=False, align="C")
-        self.ln(9)
+        label_w = 22
+        self.cell(label_w, 5.5, "Risk Scale:", ln=False)
+        seg_w = (self.epw - label_w) / 4
+        for label, color in [
+            ("LOW", GREEN_RISK), ("MODERATE", AMBER_RISK),
+            ("HIGH", ORANGE_RISK), ("CRITICAL", RED_RISK),
+        ]:
+            is_cur = label == current
+            self.set_fill_color(*(color if is_cur else (240, 240, 240)))
+            self.set_text_color(*(WHITE if is_cur else (160, 160, 160)))
+            self.set_font("Helvetica", "B" if is_cur else "", 6.5)
+            txt = f"{label} ({risk_pct}%)" if is_cur else label
+            self.cell(seg_w, 5.5, txt, border=1, fill=True, ln=False, align="C")
+        self.ln(7)
         self.set_text_color(20, 20, 20)
 
+    # ── SHAP table ────────────────────────────────────────────────────────────
+
     def shap_table(self, factors, protective: bool = False):
-        """Render a SHAP factor table with verbal impact labels."""
-        col_w   = [8, 100, 38, 34]
+        col_w   = [8, 100, 36, 36]
         headers = ["#", "Driver", "Impact Level", "SHAP Value"]
         self.set_fill_color(*NAVY)
         self.set_text_color(*WHITE)
-        self.set_font("Helvetica", "B", 8)
+        self.set_font("Helvetica", "B", 7.5)
         for h, w in zip(headers, col_w):
-            self.cell(w, 6, h, border=1, fill=True, ln=False, align="C")
+            self.cell(w, 5.5, h, border=1, fill=True, ln=False, align="C")
         self.ln()
-
         self.set_text_color(20, 20, 20)
         for i, (feat, shap_val, label) in enumerate(factors, 1):
             fill = i % 2 == 0
             self.set_fill_color(*(LIGHT_GRAY if fill else WHITE))
-            self.set_font("Helvetica", "", 8)
-            self.cell(col_w[0], 6, str(i), border=1, fill=fill, ln=False, align="C")
-            self.cell(col_w[1], 6, label, border=1, fill=fill, ln=False)
-            verbal       = _shap_verbal(shap_val)
+            self.set_font("Helvetica", "", 7.5)
+            self.cell(col_w[0], 5.5, str(i), border=1, fill=fill, ln=False, align="C")
+            self.cell(col_w[1], 5.5, label, border=1, fill=fill, ln=False)
+            verbal = _shap_verbal(shap_val)
             impact_color = (
                 RED_RISK   if verbal == "Very High" else
                 AMBER_RISK if verbal == "High"      else
-                TEAL       if protective            else
-                ORANGE_RISK
+                TEAL       if protective            else ORANGE_RISK
             )
             self.set_text_color(*impact_color)
-            self.set_font("Helvetica", "B", 8)
-            self.cell(col_w[2], 6, verbal, border=1, fill=fill, ln=False, align="C")
+            self.set_font("Helvetica", "B", 7.5)
+            self.cell(col_w[2], 5.5, verbal, border=1, fill=fill, ln=False, align="C")
             self.set_text_color(*TEAL if protective else RED_RISK)
-            self.set_font("Helvetica", "", 8)
+            self.set_font("Helvetica", "", 7.5)
             prefix = "" if protective else "+"
-            self.cell(col_w[3], 6, f"{prefix}{shap_val:.3f}", border=1, fill=fill, ln=False, align="C")
+            self.cell(col_w[3], 5.5, f"{prefix}{shap_val:.3f}", border=1, fill=fill, ln=False, align="C")
             self.ln()
             self.set_text_color(20, 20, 20)
 
+
+# ── Main report generator ─────────────────────────────────────────────────────
 
 def generate_report(
     analysis: Dict,
@@ -289,6 +326,7 @@ def generate_report(
         patient_id: Participant identifier for the report header.
         doc_source: Data source label (Manual Entry or Document Upload).
         copilot_summary: Optional CoordinatorSummary from CoordinatorCopilot.
+        extraction_stats: Optional dict with fields_parsed / total_fields / confidence_pct.
 
     Returns:
         Path to the saved PDF file.
@@ -304,43 +342,13 @@ def generate_report(
     evidence_list  = analysis.get("evidence", [])
     top_scenarios  = analysis.get("top_scenarios", [])
 
-    pdf = RetentionReport(patient_id=patient_id)
-    pdf.add_page()
+    risk_score     = analysis.get("risk_score", risk_pct / 100)
+    confidence     = int(round(max(risk_score, 1 - risk_score) * 100))
+    conf_label     = "High" if confidence >= 80 else ("Moderate" if confidence >= 65 else "Low")
+    dropout_window = str(analysis.get("dropout_window", "—"))
+    roi            = impact.get("roi_ratio", 0)
+    roi_str        = f"{roi:.1f}x" if roi not in (0, float("inf")) else "N/A"
 
-    # ── PAGE 1 ───────────────────────────────────────────────────────────────
-
-    # -- Author header --
-    pdf.set_font("Helvetica", "B", 13)
-    pdf.set_text_color(*TEAL)
-    pdf.cell(0, 8, "Dr. Reema Mohamed Sulthan", ln=True)
-    pdf.set_font("Helvetica", "", 9)
-    pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 5, "PharmD | Clinical Data Scientist | Certified AI Expert", ln=True)
-    pdf.ln(3)
-
-    # -- Metadata strip --
-    strip_y = pdf.get_y()
-    pdf.set_fill_color(*LIGHT_GRAY)
-    pdf.set_draw_color(*MID_GRAY)
-    pdf.set_line_width(0.3)
-    pdf.rect(pdf.l_margin, strip_y, pdf.epw, 8, "FD")
-    col_meta = pdf.epw / 4
-    meta_items = [
-        f"Report ID: CTRI-{date.today().strftime('%Y%m%d')}-{patient_id.replace('_','').replace('-','')[:8].upper()}",
-        "Platform Version: 3.0",
-        f"Generated: {date.today().strftime('%d-%b-%Y')}",
-        "Type: Participant Assessment",
-    ]
-    pdf.set_font("Helvetica", "", 7.5)
-    pdf.set_text_color(80, 80, 80)
-    pdf.set_xy(pdf.l_margin, strip_y + 1.5)
-    for m in meta_items:
-        pdf.cell(col_meta, 5, m, ln=False, align="C")
-    pdf.ln(11)
-    pdf.set_text_color(20, 20, 20)
-
-    # -- Executive Summary --
-    pdf.section_heading("Executive Summary")
     rf_names = [label for _, _, label in risk_factors[:2]] if risk_factors else []
     rf_text  = " and ".join(rf_names) if rf_names else "key clinical and logistical factors"
     if len(interventions) >= 2:
@@ -349,15 +357,58 @@ def generate_report(
         iv_text = interventions[0]["name"]
     else:
         iv_text = "targeted retention interventions"
-    roi     = impact.get("roi_ratio", 0)
-    roi_str = f"{roi:.1f}x" if roi not in (0, float("inf")) else "N/A"
+
+    pdf = RetentionReport(patient_id=patient_id)
+    pdf.add_page()
+
+    # ── Author + metadata strip ───────────────────────────────────────────────
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.set_text_color(*TEAL)
+    pdf.cell(0, 7, "Dr. Reema Mohamed Sulthan", ln=True)
+    pdf.set_font("Helvetica", "", 8.5)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 4, "PharmD | Clinical Data Scientist | Certified AI Expert", ln=True)
+    pdf.ln(1.5)
+
+    strip_y = pdf.get_y()
+    pdf.set_fill_color(*LIGHT_GRAY)
+    pdf.set_draw_color(*MID_GRAY)
+    pdf.set_line_width(0.3)
+    pdf.rect(pdf.l_margin, strip_y, pdf.epw, 6.5, "FD")
+    meta_items = [
+        f"Report ID: CTRI-{date.today().strftime('%Y%m%d')}-{patient_id.replace('_','').replace('-','')[:8].upper()}",
+        "Platform Version: 3.0",
+        f"Generated: {date.today().strftime('%d-%b-%Y')}",
+        "Type: Participant Assessment",
+    ]
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(80, 80, 80)
+    pdf.set_xy(pdf.l_margin, strip_y + 1)
+    col_meta = pdf.epw / 4
+    for m in meta_items:
+        pdf.cell(col_meta, 5, m, ln=False, align="C")
+    pdf.ln(9)
+    pdf.set_text_color(20, 20, 20)
+
+    # ── Executive Summary ─────────────────────────────────────────────────────
+    pdf.check_page_space(42)
+    pdf.section_heading("Executive Summary")
+
+    # Dashboard: 4 metric cards
+    risk_col = _risk_colour(risk_cat_label)
+    conf_col = GREEN_RISK if confidence >= 80 else (AMBER_RISK if confidence >= 65 else RED_RISK)
+    pdf.metric_cards(
+        labels=["Risk Score", "Risk Category", "Prediction Confidence", "Dropout Window"],
+        values=[f"{risk_pct}%", risk_cat_label.upper(), f"{conf_label} ({confidence}%)", dropout_window],
+        colors=[risk_col, risk_col, conf_col, NAVY],
+    )
+
+    # Narrative
     if risk_cat_label == "Low":
         exec_text = (
-            f"Although {rf_text} contribute modestly to attrition risk, "
-            f"multiple protective factors outweigh these, resulting in an overall low "
-            f"retention risk profile for {patient_id} ({risk_pct}%). "
-            f"No targeted interventions are recommended at this time. "
-            f"Routine monitoring and standard site engagement are advised."
+            f"Although {rf_text} contribute modestly to attrition risk, multiple protective "
+            f"factors outweigh these, resulting in a low retention risk profile for {patient_id} "
+            f"({risk_pct}%). No targeted interventions recommended. Routine monitoring advised."
         )
     else:
         exec_text = (
@@ -366,417 +417,481 @@ def generate_report(
             f"{iv_text} are recommended as priority interventions to reduce attrition risk. "
             f"Estimated intervention return on investment is {roi_str}."
         )
-    pdf.set_font("Helvetica", "", 9)
+    pdf.set_font("Helvetica", "", 8.5)
     pdf.set_text_color(30, 30, 30)
-    pdf.safe_multi_cell(0, 5, exec_text)
-    pdf.ln(4)
+    pdf.safe_multi_cell(0, 4.5, exec_text)
+    pdf.ln(2)
 
-    # -- Risk Assessment --
+    # ── Participant Risk Assessment ───────────────────────────────────────────
+    pdf.check_page_space(52)
     pdf.section_heading("Participant Risk Assessment")
-    pdf.colored_risk_badge(risk_cat_label, risk_pct)
+
+    # Risk badge (left column) + KV metadata (right column)
+    badge_y = pdf.get_y()
+    r, g, b = _risk_colour(risk_cat_label)
+    pdf.set_fill_color(r, g, b)
+    pdf.set_text_color(*WHITE)
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.set_xy(pdf.l_margin, badge_y)
+    pdf.cell(62, 14, f"{risk_pct}%  {risk_cat_label.upper()}", border=1, fill=True, align="C", ln=False)
+
+    kv_x = pdf.l_margin + 66
+    kv_y = badge_y
+    kv_items = [
+        ("Participant ID",  patient_id,          False),
+        ("Data Source",     doc_source,           False),
+        ("Model Used",      "Logistic Regression (Primary Retention Model)", False),
+        ("Explainability",  "SHAP Analysis",      False),
+    ]
+    if doc_source != "Manual Entry":
+        kv_items.append(("Extraction Method", "Clinical Document Intelligence Engine", False))
+        if extraction_stats:
+            conf_pct = extraction_stats.get("confidence_pct", 0)
+            n_parsed = extraction_stats.get("fields_parsed", 0)
+            n_total  = extraction_stats.get("total_fields", 0)
+            kv_items.append(("Extraction Confidence", f"{conf_pct}%", True))
+            kv_items.append(("Fields Parsed",         f"{n_parsed}/{n_total}", False))
+
+    for lbl, val, bold in kv_items:
+        pdf.set_xy(kv_x, kv_y)
+        pdf.set_font("Helvetica", "", 7.5)
+        pdf.set_text_color(80, 80, 80)
+        pdf.cell(52, 4.5, _safe(lbl) + ":", ln=False)
+        pdf.set_font("Helvetica", "B" if bold else "", 7.5)
+        pdf.set_text_color(20, 20, 20)
+        pdf.cell(pdf.epw - 52 - 66, 4.5, _safe(val), ln=False)
+        kv_y += 4.5
+
+    pdf.set_xy(pdf.l_margin, badge_y + 15)
+    pdf.ln(1.5)
+
+    # Risk gauge
     pdf.draw_risk_gauge(risk_pct)
 
-    risk_score  = analysis.get("risk_score", risk_pct / 100)
-    confidence  = int(round(max(risk_score, 1 - risk_score) * 100))
-    conf_label  = "High" if confidence >= 80 else ("Moderate" if confidence >= 65 else "Low")
-
-    pdf.kv_row("Participant ID",           patient_id)
-    pdf.kv_row("Risk Category",            f"{risk_cat_label} ({risk_pct}%)", bold_value=True)
-    pdf.kv_row("Prediction Confidence",    f"{conf_label} ({confidence}%)", bold_value=True)
-    # Confidence explanation
-    conf_explain = (
-        "Prediction confidence reflects model certainty based on agreement across multiple "
-        "clinical risk signals and calibration performance during validation."
-    )
-    pdf.set_font("Helvetica", "I", 7.5)
+    # Confidence note
+    pdf.set_font("Helvetica", "I", 7)
     pdf.set_text_color(100, 100, 100)
-    pdf.safe_multi_cell(0, 4.5, conf_explain)
+    pdf.safe_multi_cell(0, 3.5,
+        "Prediction confidence reflects model certainty based on agreement across multiple "
+        "clinical risk signals and calibration performance during validation.")
     pdf.set_text_color(20, 20, 20)
-    pdf.ln(2)
-    pdf.kv_row("Estimated Dropout Window", analysis.get("dropout_window", "—"))
-    pdf.kv_row("Data Source",              doc_source)
-    pdf.kv_row("Model Used",               "Logistic Regression (Primary Retention Model)")
-    pdf.kv_row("Explainability",           "SHAP Analysis")
-    if doc_source != "Manual Entry":
-        pdf.kv_row("Extraction Method",    "Clinical Document Intelligence Engine")
-        if extraction_stats:
-            conf_pct    = extraction_stats.get("confidence_pct", 0)
-            n_parsed    = extraction_stats.get("fields_parsed", 0)
-            n_total     = extraction_stats.get("total_fields", 0)
-            pdf.kv_row("Document Extraction Confidence", f"{conf_pct}%", bold_value=True)
-            pdf.kv_row("Fields Successfully Parsed",     f"{n_parsed}/{n_total}")
+    pdf.ln(1.5)
 
-    # Persona + characteristics
+    # Persona
     persona_name = analysis.get("persona", "—")
-    pdf.kv_row("Participant Persona",      persona_name)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(80, 80, 80)
+    pdf.cell(65, 4.5, "Participant Persona:", ln=False)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(20, 20, 20)
+    pdf.cell(0, 4.5, _safe(persona_name), ln=True)
     try:
         from personas import PERSONA_DESCRIPTIONS
         persona_desc = PERSONA_DESCRIPTIONS.get(persona_name, "")
     except Exception:
         persona_desc = analysis.get("persona_description", "")
     if persona_desc:
-        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_font("Helvetica", "I", 7)
         pdf.set_text_color(80, 80, 80)
-        # Split on ". " to show as bullets
         for sentence in [s.strip() for s in persona_desc.split(". ") if s.strip()]:
             pdf.set_x(pdf.l_margin + 4)
-            pdf.safe_multi_cell(pdf.epw - 4, 4.5, f"- {sentence.rstrip('.')}.")
+            pdf.safe_multi_cell(pdf.epw - 4, 4, f"- {sentence.rstrip('.')}.")
         pdf.set_text_color(20, 20, 20)
-    pdf.ln(3)
+    pdf.ln(1.5)
 
-    # -- Risk Summary Box --
+    # ── Risk Domain Summary (4-card row) ──────────────────────────────────────
     def _risk_domain_label(pct: int) -> str:
         if pct >= 61: return "High"
         if pct >= 31: return "Moderate"
         return "Low"
 
-    ae_pct    = risk_pct if any("side effect" in str(f).lower() or "adverse" in str(f).lower()
-                                for f in risk_factors) else max(risk_pct - 15, 0)
-    ops_pct   = risk_pct if any("visit" in str(f).lower() or "logistic" in str(f).lower()
-                                or "protocol" in str(f).lower()
-                                for f in risk_factors) else max(risk_pct - 20, 0)
-    logi_pct  = risk_pct if any("transport" in str(f).lower() or "distance" in str(f).lower()
-                                for f in risk_factors) else max(risk_pct - 20, 0)
-    risk_box_rows = [
-        ("Clinical Risk",     ae_pct),
-        ("Operational Risk",  ops_pct),
-        ("Logistical Risk",   logi_pct),
-        ("Overall Retention Risk", risk_pct),
-    ]
-    pdf.set_draw_color(*MID_GRAY)
-    pdf.set_line_width(0.3)
-    box_x = pdf.l_margin
-    box_w = pdf.epw
-    box_row_h = 5.5
-    pdf.set_font("Helvetica", "B", 7.5)
-    pdf.set_fill_color(*NAVY)
-    pdf.set_text_color(*WHITE)
-    pdf.cell(box_w, 6, "Risk Domain Summary", border=0, fill=True, ln=True, align="C")
-    for label, pct in risk_box_rows:
-        domain_cat  = _risk_domain_label(pct)
-        row_color   = _risk_colour(domain_cat)
-        is_overall  = label.startswith("Overall")
-        pdf.set_fill_color(*LIGHT_GRAY)
-        pdf.set_text_color(20, 20, 20)
-        pdf.set_font("Helvetica", "B" if is_overall else "", 7.5)
-        pdf.cell(box_w * 0.55, box_row_h, f"  {label}", border=1, fill=True, ln=False)
-        pdf.set_fill_color(*row_color)
-        pdf.set_text_color(*WHITE)
-        pdf.set_font("Helvetica", "B", 7.5)
-        pdf.cell(box_w * 0.45, box_row_h,
-                 f"{domain_cat} ({pct}%)",
-                 border=1, fill=True, ln=True, align="C")
-    pdf.ln(4)
+    ae_pct   = risk_pct if any("side effect" in str(f).lower() or "adverse" in str(f).lower()
+                               for f in risk_factors) else max(risk_pct - 15, 0)
+    ops_pct  = risk_pct if any("visit" in str(f).lower() or "logistic" in str(f).lower()
+                               or "protocol" in str(f).lower()
+                               for f in risk_factors) else max(risk_pct - 20, 0)
+    logi_pct = risk_pct if any("transport" in str(f).lower() or "distance" in str(f).lower()
+                               for f in risk_factors) else max(risk_pct - 20, 0)
+    dom_labels = ["Clinical Risk", "Operational Risk", "Logistical Risk", "Overall Risk"]
+    dom_pcts   = [ae_pct, ops_pct, logi_pct, risk_pct]
+    dom_cats   = [_risk_domain_label(p) for p in dom_pcts]
+    dom_colors = [_risk_colour(c) for c in dom_cats]
+    pdf.metric_cards(
+        labels=dom_labels,
+        values=[f"{cat} ({pct}%)" for cat, pct in zip(dom_cats, dom_pcts)],
+        colors=dom_colors,
+    )
 
-    # Clinical timeline
-    dropout_window = str(analysis.get("dropout_window", ""))
+    # ── Clinical Risk Timeline ────────────────────────────────────────────────
+    pdf.check_page_space(36)
     pdf.section_heading("Estimated Clinical Risk Timeline")
     timeline_steps = [
-        ("Week 0",  "Enrolment & Screening",                 TEAL),
-        ("Week 2",  "AE Signal Window — pharmacovigilance contact recommended", AMBER_RISK),
-        ("Week 4",  "Risk Escalation — logistical barriers compound",           ORANGE_RISK),
-        (dropout_window or "Week 6", "Critical Retention Window — highest dropout probability", RED_RISK),
-        ("Post-window", "Stabilisation if interventions deployed",              TEAL),
+        ("Week 0",               "Enrolment & Screening",                                   TEAL),
+        ("Week 2",               "AE Signal Window -- pharmacovigilance contact recommended",AMBER_RISK),
+        ("Week 4",               "Risk Escalation -- logistical barriers compound",          ORANGE_RISK),
+        (dropout_window or "Week 6", "Critical Retention Window -- highest dropout probability", RED_RISK),
+        ("Post-window",          "Stabilisation if interventions deployed",                  TEAL),
     ]
     for wk, desc, color in timeline_steps:
-        r, g, b = color
-        pdf.set_fill_color(r, g, b)
+        pdf.set_fill_color(*color)
         pdf.set_text_color(*WHITE)
-        pdf.set_font("Helvetica", "B", 7.5)
-        pdf.cell(28, 5.5, _safe(wk), fill=True, ln=False, align="C")
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.cell(34, 5, _safe(wk), fill=True, ln=False, align="C")
         pdf.set_fill_color(*LIGHT_GRAY)
         pdf.set_text_color(30, 30, 30)
-        pdf.set_font("Helvetica", "", 8)
-        pdf.cell(0, 5.5, f"  {_safe(desc)}", fill=True, ln=True)
-    pdf.ln(3)
+        pdf.set_font("Helvetica", "", 7.5)
+        pdf.cell(0, 5, f"  {_safe(desc)}", fill=True, ln=True)
+    pdf.ln(2)
 
-    # -- SHAP Risk Factors --
-    shap_heading = "Residual Risk Factors (SHAP Analysis)" if risk_cat_label == "Low" else "Top Dropout Risk Factors (SHAP Analysis)"
+    # ── SHAP Risk Factors ─────────────────────────────────────────────────────
+    pdf.check_page_space(36)
+    shap_heading = (
+        "Residual Risk Factors (SHAP Analysis)"
+        if risk_cat_label == "Low"
+        else "Top Dropout Risk Factors (SHAP Analysis)"
+    )
     pdf.section_heading(shap_heading)
     if risk_factors:
         pdf.shap_table(risk_factors, protective=False)
-    pdf.ln(3)
+    pdf.ln(2)
 
-    # -- Protective Factors --
+    # ── Protective Factors ────────────────────────────────────────────────────
+    pdf.check_page_space(28)
     pdf.section_heading("Top Protective Factors")
     if protective:
         pdf.shap_table(protective, protective=True)
-    pdf.ln(3)
+    pdf.ln(2)
 
-    # -- Supporting Evidence --
+    # ── Supporting Clinical Evidence (compact 3-column table) ─────────────────
+    pdf.check_page_space(28)
     pdf.section_heading("Supporting Clinical Evidence")
-    printed = 0
-    for item in evidence_list:
-        ev = item.get("evidence")
-        if ev and printed < 2:
-            pdf.set_font("Helvetica", "B", 8)
-            pdf.cell(0, 5, f"Re: {item['intervention']}", ln=True)
-            pdf.set_font("Helvetica", "I", 8)
-            pdf.set_text_color(80, 80, 80)
-            pdf.safe_multi_cell(0, 5, f"Source: {ev['source']}")
-            pdf.set_font("Helvetica", "", 8)
-            pdf.set_text_color(20, 20, 20)
-            pdf.safe_multi_cell(0, 5, ev["recommendation"])
-            pdf.ln(2)
-            printed += 1
-
-    # ── PAGE 2 ───────────────────────────────────────────────────────────────
-    pdf.add_page()
-
-    # -- Interventions scorecard --
-    pdf.section_heading("Intervention Scorecard")
-
-    def _impact_score(reduction_text: str) -> str:
-        t = reduction_text.lower()
-        if "high" in t and "moderate" not in t and "low" not in t:
-            return "Very High"
-        if "moderate-high" in t or "high-moderate" in t:
-            return "High"
-        if "moderate" in t and "low" not in t:
-            return "Moderate"
-        if "low-moderate" in t or "moderate-low" in t:
-            return "Low-Moderate"
-        return "Low"
-
-    def _cost_tier(cost: float) -> str:
-        if cost == 0:       return "Zero"
-        if cost <= 200:     return "Very Low"
-        if cost <= 500:     return "Low"
-        if cost <= 900:     return "Medium"
-        return "High"
-
-    col_w   = [44, 26, 26, 22, 28, 34]   # total = 180
-    headers = ["Intervention", "Owner", "Impact", "Cost Tier", "Cost (USD)", "Priority"]
-
+    ev_w = [55, 68, 57]   # Domain | Source | Application  (total = 180)
     pdf.set_fill_color(*NAVY)
     pdf.set_text_color(*WHITE)
     pdf.set_font("Helvetica", "B", 7.5)
-    for h, w in zip(headers, col_w):
-        pdf.cell(w, 7, h, border=1, fill=True, ln=False, align="C")
+    for hdr, w in zip(["Domain / Intervention", "Source", "Application"], ev_w):
+        pdf.cell(w, 5.5, hdr, border=1, fill=True, ln=False, align="C")
     pdf.ln()
 
+    printed = 0
+    for item in evidence_list:
+        ev = item.get("evidence")
+        if not ev or printed >= 3:
+            continue
+        fill   = printed % 2 == 0
+        bg     = LIGHT_GRAY if fill else WHITE
+        row_y  = pdf.get_y()
+
+        # Domain
+        pdf.set_xy(pdf.l_margin, row_y)
+        pdf.set_fill_color(*bg)
+        pdf.set_text_color(20, 20, 20)
+        pdf.set_font("Helvetica", "B", 6.5)
+        super(RetentionReport, pdf).multi_cell(
+            ev_w[0], 4, _safe(item["intervention"][:50]), border=1, fill=fill)
+        end_y = pdf.get_y()
+
+        # Source
+        pdf.set_xy(pdf.l_margin + ev_w[0], row_y)
+        pdf.set_font("Helvetica", "I", 6.5)
+        super(RetentionReport, pdf).multi_cell(
+            ev_w[1], 4, _safe(ev.get("source", "")[:80]), border=1, fill=fill)
+        end_y = max(end_y, pdf.get_y())
+
+        # Application
+        pdf.set_xy(pdf.l_margin + ev_w[0] + ev_w[1], row_y)
+        pdf.set_font("Helvetica", "", 6.5)
+        super(RetentionReport, pdf).multi_cell(
+            ev_w[2], 4, _safe(ev.get("recommendation", "")[:110]), border=1, fill=fill)
+        end_y = max(end_y, pdf.get_y())
+
+        pdf.set_y(end_y)
+        pdf.set_text_color(20, 20, 20)
+        printed += 1
+    pdf.ln(2)
+
+    # ── Intervention Scorecard ────────────────────────────────────────────────
+    pdf.check_page_space(28)
+    pdf.section_heading("Intervention Scorecard")
+
+    sc_col_w = [50, 28, 26, 22, 26, 28]   # total = 180
+    sc_hdrs  = ["Intervention", "Owner", "Impact", "Cost Tier", "Cost (USD)", "Priority"]
     priority_color = {"Critical": RED_RISK, "High": AMBER_RISK, "Medium": TEAL}
     impact_color   = {
-        "Very High":    GREEN_RISK,
-        "High":         TEAL,
-        "Moderate":     AMBER_RISK,
-        "Low-Moderate": ORANGE_RISK,
-        "Low":          MID_GRAY,
+        "Very High": GREEN_RISK, "High": TEAL, "Moderate": AMBER_RISK,
+        "Low-Moderate": ORANGE_RISK, "Low": MID_GRAY,
     }
-    pdf.set_text_color(20, 20, 20)
+
+    pdf.set_fill_color(*NAVY)
+    pdf.set_text_color(*WHITE)
+    pdf.set_font("Helvetica", "B", 7)
+    for hdr, w in zip(sc_hdrs, sc_col_w):
+        pdf.cell(w, 6, hdr, border=1, fill=True, ln=False, align="C")
+    pdf.ln()
+
     for i, iv in enumerate(interventions):
-        fill      = i % 2 == 0
-        bg        = LIGHT_GRAY if fill else WHITE
-        pdf.set_fill_color(*bg)
-        reduction  = iv["estimated_potential_risk_reduction"].replace(
+        fill     = i % 2 == 0
+        bg       = LIGHT_GRAY if fill else WHITE
+        reduction = iv["estimated_potential_risk_reduction"].replace(
             "Estimated Potential Risk Reduction: ", ""
         )
-        iv_impact = _impact_score(reduction)
-        cost_tier = _cost_tier(float(iv.get("cost", 0)))
+        iv_impact = _impact_label(reduction)
+        cost_val  = float(iv.get("cost", 0))
         priority  = _intervention_priority(iv)
 
-        pdf.set_font("Helvetica", "", 7)
+        pdf.set_fill_color(*bg)
         pdf.set_text_color(20, 20, 20)
-        pdf.cell(col_w[0], 6, _safe(iv["name"][:36]), border=1, fill=fill, ln=False)
-        pdf.cell(col_w[1], 6, _safe(iv["owner"][:20]), border=1, fill=fill, ln=False)
+        pdf.set_font("Helvetica", "", 6.5)
+        pdf.cell(sc_col_w[0], 5.5, _safe(iv["name"][:42]), border=1, fill=fill, ln=False)
+        pdf.cell(sc_col_w[1], 5.5, _safe(iv["owner"][:22]), border=1, fill=fill, ln=False)
 
-        # Impact cell — coloured
         ir, ig, ib = impact_color.get(iv_impact, MID_GRAY)
         pdf.set_fill_color(ir, ig, ib)
         pdf.set_text_color(*WHITE)
-        pdf.set_font("Helvetica", "B", 7)
-        pdf.cell(col_w[2], 6, iv_impact, border=1, fill=True, ln=False, align="C")
+        pdf.set_font("Helvetica", "B", 6.5)
+        pdf.cell(sc_col_w[2], 5.5, iv_impact, border=1, fill=True, ln=False, align="C")
+
         pdf.set_fill_color(*bg)
         pdf.set_text_color(20, 20, 20)
-        pdf.set_font("Helvetica", "", 7)
-        pdf.cell(col_w[3], 6, cost_tier, border=1, fill=fill, ln=False, align="C")
-        pdf.cell(col_w[4], 6, f"${float(iv.get('cost',0)):,.0f}", border=1, fill=fill, ln=False, align="C")
+        pdf.set_font("Helvetica", "", 6.5)
+        pdf.cell(sc_col_w[3], 5.5, _cost_tier(cost_val), border=1, fill=fill, ln=False, align="C")
+        pdf.cell(sc_col_w[4], 5.5, f"${cost_val:,.0f}", border=1, fill=fill, ln=False, align="C")
 
         pr, pg, pb = priority_color.get(priority, MID_GRAY)
         pdf.set_fill_color(pr, pg, pb)
         pdf.set_text_color(*WHITE)
-        pdf.set_font("Helvetica", "B", 7)
-        pdf.cell(col_w[5], 6, priority, border=1, fill=True, ln=False, align="C")
+        pdf.set_font("Helvetica", "B", 6.5)
+        pdf.cell(sc_col_w[5], 5.5, priority, border=1, fill=True, ln=False, align="C")
         pdf.ln()
         pdf.set_text_color(20, 20, 20)
-    pdf.ln(4)
+    pdf.ln(2)
 
-    # -- PharmD Rationale --
+    # ── PharmD Rationale ─────────────────────────────────────────────────────
     if interventions:
+        pdf.check_page_space(20)
         pdf.section_heading("PharmD Rationale - Priority Intervention")
         top_iv = interventions[0]
-        pdf.set_font("Helvetica", "B", 9)
-        pdf.cell(0, 6, top_iv["name"], ln=True)
+        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.cell(0, 5, top_iv["name"], ln=True)
         pdf.set_font("Helvetica", "", 8)
         pdf.set_text_color(60, 60, 60)
-        pdf.safe_multi_cell(0, 5, top_iv["pharmd_rationale"])
+        pdf.safe_multi_cell(0, 4.5, top_iv["pharmd_rationale"])
         pdf.set_text_color(20, 20, 20)
-        pdf.ln(3)
+        pdf.ln(2)
 
-    # -- Coordinator Copilot Summary (v3.0) --
+    # ── AI-Assisted Coordinator Summary ──────────────────────────────────────
     if copilot_summary is not None:
+        pdf.check_page_space(30)
         pdf.section_heading("AI-Assisted Coordinator Summary")
-        pdf.set_font("Helvetica", "I", 8.5)
+        pdf.set_font("Helvetica", "I", 8)
         pdf.set_text_color(40, 40, 40)
-        pdf.safe_multi_cell(0, 5, copilot_summary.risk_narrative)
-        pdf.ln(3)
+        pdf.safe_multi_cell(0, 4.5, copilot_summary.risk_narrative)
+        pdf.ln(1.5)
         if copilot_summary.action_items:
-            priority_color = {
-                "Critical": RED_RISK, "High": AMBER_RISK,
-                "Medium": TEAL, "Low": MID_GRAY,
-            }
-            pdf.set_font("Helvetica", "B", 8)
+            _pc = {"Critical": RED_RISK, "High": AMBER_RISK, "Medium": TEAL, "Low": MID_GRAY}
+            pdf.set_font("Helvetica", "B", 7.5)
             pdf.set_text_color(*NAVY)
-            pdf.cell(0, 5, "Prioritised Action Plan:", ln=True)
-            pdf.ln(1)
+            pdf.cell(0, 4.5, "Prioritised Action Plan:", ln=True)
+            pdf.ln(0.5)
             for i, act in enumerate(copilot_summary.action_items, 1):
-                pr, pg, pb = priority_color.get(act.priority, MID_GRAY)
+                pr, pg, pb = _pc.get(act.priority, MID_GRAY)
                 pdf.set_fill_color(pr, pg, pb)
                 pdf.set_text_color(*WHITE)
-                pdf.set_font("Helvetica", "B", 7.5)
-                pdf.cell(22, 5.5, act.priority, border=0, fill=True, ln=False, align="C")
+                pdf.set_font("Helvetica", "B", 7)
+                pdf.cell(20, 5, act.priority, border=0, fill=True, ln=False, align="C")
                 pdf.set_fill_color(*LIGHT_GRAY)
                 pdf.set_text_color(*NAVY)
-                pdf.set_font("Helvetica", "B", 8)
-                pdf.cell(0, 5.5, f"  {i}. {act.title}", border=0, fill=True, ln=True)
-                pdf.set_font("Helvetica", "", 7.5)
-                pdf.set_text_color(60, 60, 60)
-                pdf.set_x(pdf.l_margin + 24)
-                pdf.multi_cell(pdf.epw - 24, 4.5, _safe(f"Timeline: {act.timeline}"), align="L")
+                pdf.set_font("Helvetica", "B", 7.5)
+                pdf.cell(0, 5,
+                         f"  {i}. {act.title}  -  Timeline: {act.timeline}",
+                         border=0, fill=True, ln=True)
                 pdf.set_text_color(20, 20, 20)
-                pdf.ln(1)
+                pdf.ln(0.5)
         if copilot_summary.expected_improvement_high > 0:
             pdf.set_font("Helvetica", "B", 8)
             pdf.set_text_color(*TEAL)
             pdf.cell(
-                0, 6,
-                f"Expected retention improvement with full action plan: "
-                f"{copilot_summary.expected_improvement_low}-{copilot_summary.expected_improvement_high} percentage points",
+                0, 5,
+                f"Expected retention improvement: "
+                f"{copilot_summary.expected_improvement_low}"
+                f"-{copilot_summary.expected_improvement_high} percentage points",
                 ln=True,
             )
         pdf.set_text_color(20, 20, 20)
-        pdf.ln(3)
+        pdf.ln(2)
 
-    # -- What-If Scenarios (visual) --
+    # ── What-If Scenario Analysis ─────────────────────────────────────────────
     if top_scenarios:
+        pdf.check_page_space(32)
         pdf.section_heading("What-If Scenario Analysis")
-        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_font("Helvetica", "I", 7)
         pdf.set_text_color(100, 100, 100)
-        pdf.safe_multi_cell(0, 4.5,
+        pdf.safe_multi_cell(0, 4,
             "Note: Individual intervention effects are modelled estimates and are not additive.")
         pdf.set_text_color(20, 20, 20)
-        pdf.ln(2)
-        for sc in top_scenarios:
-            orig_pct  = int(round(sc.get("original_risk", 0) * 100))
-            new_pct   = int(round(sc.get("new_risk", 0) * 100))
-            reduction = sc.get("risk_reduction_pct", orig_pct - new_pct)
+        pdf.ln(1.5)
 
-            pdf.set_font("Helvetica", "B", 8)
-            pdf.set_text_color(*NAVY)
-            pdf.cell(0, 5, sc["label"], ln=True)
+        if len(top_scenarios) == 2:
+            # Side-by-side cards
+            sc_w = (pdf.epw - 4) / 2
+            sc_y = pdf.get_y()
+            for si, sc in enumerate(top_scenarios):
+                orig_pct  = int(round(sc.get("original_risk", 0) * 100))
+                new_pct   = int(round(sc.get("new_risk", 0) * 100))
+                reduction = sc.get("risk_reduction_pct", orig_pct - new_pct)
+                sx = pdf.l_margin + si * (sc_w + 4)
 
-            pdf.set_font("Helvetica", "B", 9)
-            pdf.set_text_color(*RED_RISK)
-            pdf.cell(38, 6, f"Current: {orig_pct}%", ln=False, align="C")
-            pdf.set_text_color(80, 80, 80)
-            pdf.set_font("Helvetica", "", 9)
-            pdf.cell(14, 6, "  ->  ", ln=False, align="C")
-            pdf.set_text_color(*GREEN_RISK)
-            pdf.set_font("Helvetica", "B", 9)
-            pdf.cell(32, 6, f"New: {new_pct}%", ln=False, align="C")
-            pdf.set_text_color(*TEAL)
-            pdf.set_font("Helvetica", "", 8)
-            pdf.cell(0, 6, f"  Reduction: {reduction:.1f} percentage points", ln=True)
+                pdf.set_xy(sx, sc_y)
+                pdf.set_fill_color(*NAVY)
+                pdf.set_text_color(*WHITE)
+                pdf.set_font("Helvetica", "B", 7)
+                pdf.cell(sc_w, 5, _safe(sc["label"]), fill=True, border=0, ln=False, align="C")
 
-            pdf.set_font("Helvetica", "I", 8)
-            pdf.set_text_color(60, 60, 60)
-            pdf.safe_multi_cell(0, 5, sc["interpretation"])
-            pdf.set_text_color(20, 20, 20)
-            pdf.ln(2)
+                pdf.set_xy(sx, sc_y + 5)
+                vw = sc_w / 3
+                pdf.set_fill_color(*LIGHT_GRAY)
+                pdf.set_text_color(*RED_RISK)
+                pdf.set_font("Helvetica", "B", 8.5)
+                pdf.cell(vw, 7, f"{orig_pct}%", border=1, fill=True, ln=False, align="C")
+                pdf.set_text_color(80, 80, 80)
+                pdf.set_font("Helvetica", "", 7)
+                pdf.cell(vw * 0.6, 7, "->", border=0, fill=True, ln=False, align="C")
+                pdf.set_text_color(*GREEN_RISK)
+                pdf.set_font("Helvetica", "B", 8.5)
+                pdf.cell(vw, 7, f"{new_pct}%", border=1, fill=True, ln=False, align="C")
+                pdf.set_text_color(*TEAL)
+                pdf.set_font("Helvetica", "B", 7)
+                pdf.cell(sc_w - vw * 2 - vw * 0.6, 7,
+                         f"-{reduction:.1f}pp", border=1, fill=True, ln=False, align="C")
 
-    # -- Business Impact --
+                pdf.set_xy(sx, sc_y + 13)
+                pdf.set_text_color(60, 60, 60)
+                pdf.set_font("Helvetica", "I", 6.5)
+                super(RetentionReport, pdf).multi_cell(
+                    sc_w, 3.8, _safe(sc["interpretation"][:130]))
+
+            pdf.set_y(sc_y + 30)
+        else:
+            for sc in top_scenarios:
+                orig_pct  = int(round(sc.get("original_risk", 0) * 100))
+                new_pct   = int(round(sc.get("new_risk", 0) * 100))
+                reduction = sc.get("risk_reduction_pct", orig_pct - new_pct)
+                pdf.set_font("Helvetica", "B", 8)
+                pdf.set_text_color(*NAVY)
+                pdf.cell(0, 5, sc["label"], ln=True)
+                pdf.set_font("Helvetica", "B", 8.5)
+                pdf.set_text_color(*RED_RISK)
+                pdf.cell(36, 5.5, f"Current: {orig_pct}%", ln=False, align="C")
+                pdf.set_text_color(80, 80, 80)
+                pdf.set_font("Helvetica", "", 8)
+                pdf.cell(12, 5.5, "->", ln=False, align="C")
+                pdf.set_text_color(*GREEN_RISK)
+                pdf.set_font("Helvetica", "B", 8.5)
+                pdf.cell(28, 5.5, f"New: {new_pct}%", ln=False, align="C")
+                pdf.set_text_color(*TEAL)
+                pdf.set_font("Helvetica", "", 7.5)
+                pdf.cell(0, 5.5, f"  Reduction: {reduction:.1f} pp", ln=True)
+                pdf.set_font("Helvetica", "I", 7.5)
+                pdf.set_text_color(60, 60, 60)
+                pdf.safe_multi_cell(0, 4.5, sc["interpretation"])
+                pdf.set_text_color(20, 20, 20)
+                pdf.ln(1.5)
+        pdf.ln(1)
+
+    # ── Economic Impact Analysis ──────────────────────────────────────────────
+    pdf.check_page_space(38)
     pdf.section_heading("Economic Impact Analysis")
     if risk_cat_label == "Low":
-        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_font("Helvetica", "B", 8.5)
         pdf.set_text_color(*TEAL)
-        pdf.cell(0, 6, "Intervention not recommended at current risk level.", ln=True)
-        pdf.set_font("Helvetica", "", 9)
+        pdf.cell(0, 5.5, "Intervention not recommended at current risk level.", ln=True)
+        pdf.set_font("Helvetica", "", 8)
         pdf.set_text_color(60, 60, 60)
         pdf.safe_multi_cell(
-            0, 5,
+            0, 4.5,
             f"Participant {patient_id} is within the acceptable retention threshold (risk < 30%). "
-            "Economic impact modelling is not triggered. Continue routine monitoring and standard "
-            "site engagement protocols."
+            "Continue routine monitoring and standard site engagement protocols."
         )
-        pdf.ln(3)
+        pdf.ln(2)
     elif impact:
-        col_a, col_b = 100, 0
-
-        def impact_row(label, value, teal=False):
-            if teal:
-                pdf.set_text_color(*TEAL)
-                pdf.set_font("Helvetica", "B", 9)
-            else:
-                pdf.set_font("Helvetica", "", 9)
-                pdf.set_text_color(20, 20, 20)
-            pdf.cell(col_a, 6, label, ln=False)
-            pdf.cell(col_b, 6, value, ln=True)
-            pdf.set_text_color(20, 20, 20)
-
-        impact_row("Participant Replacement Cost (if dropped out):",
-                   f"${impact.get('replacement_cost_avoided', 0):,.0f}")
-        impact_row("Total Intervention Cost:",
-                   f"${impact.get('intervention_total_cost', 0):,.0f}")
-        impact_row("Estimated Net Savings (modelled):",
-                   f"${impact.get('net_savings', 0):,.0f}", teal=True)
-        roi     = impact.get("roi_ratio", 0)
-        roi_str = f"{roi:.1f}x" if roi != float("inf") else "inf"
-        impact_row("Return on Investment (modelled):", roi_str, teal=True)
-        pdf.ln(3)
-
-        # Assumptions
-        pdf.set_font("Helvetica", "B", 8)
+        pdf.metric_cards(
+            labels=["Replacement Cost", "Intervention Cost", "Net Savings (Modelled)", "ROI (Modelled)"],
+            values=[
+                f"${impact.get('replacement_cost_avoided', 0):,.0f}",
+                f"${impact.get('intervention_total_cost', 0):,.0f}",
+                f"${impact.get('net_savings', 0):,.0f}",
+                roi_str,
+            ],
+            colors=[RED_RISK, AMBER_RISK, GREEN_RISK, TEAL],
+        )
+        # Assumptions (compact)
+        pdf.set_font("Helvetica", "B", 7.5)
         pdf.set_text_color(80, 80, 80)
-        pdf.cell(0, 5, "Modelling Assumptions:", ln=True)
-        pdf.set_font("Helvetica", "", 8)
+        pdf.cell(0, 4.5, "Modelling Assumptions:", ln=True)
+        pdf.set_font("Helvetica", "", 7.5)
         for a in [
-            "Participant replacement cost estimated at $14,000-$22,000 per dropout (industry benchmark)",
-            "Single-participant scenario; actual impact scales with cohort size",
-            "Intervention effectiveness modelled based on published retention benchmarks",
+            "Replacement cost: $14,000-$22,000 per dropout (industry benchmark)",
+            "Single-participant scenario; scales with cohort size",
+            "Intervention effectiveness modelled from published retention benchmarks",
             "All figures are educational estimates for portfolio demonstration only",
         ]:
-            pdf.safe_multi_cell(0, 5, f"  - {a}")
-        pdf.set_font("Helvetica", "I", 7.5)
+            pdf.safe_multi_cell(0, 4, f"  - {a}")
+        pdf.set_font("Helvetica", "I", 7)
         pdf.set_text_color(80, 80, 80)
-        pdf.safe_multi_cell(0, 4.5, "Source: Getz KA et al., Ther Innov Regul Sci (2016).")
+        pdf.safe_multi_cell(0, 4, "Source: Getz KA et al., Ther Innov Regul Sci (2016).")
         pdf.set_text_color(20, 20, 20)
-        pdf.ln(4)
+        pdf.ln(2)
 
-    # -- Technology Stack --
+    # ── Technology Stack (2-column layout) ────────────────────────────────────
+    pdf.check_page_space(34)
     pdf.section_heading("Technology Stack")
-    tech_items = [
-        ("Prediction Engine",    "XGBoost Gradient Boosting Classifier + Logistic Regression Ensemble"),
-        ("Explainability",       "SHAP (SHapley Additive exPlanations) — feature-level attribution"),
-        ("Clinical Information Extraction", "Rule-Based Entity Extraction Pipeline"),
-        ("Document Intelligence","pdfplumber + PyMuPDF — multi-engine clinical CRF parser"),
-        ("Data Processing",      "Scikit-learn pipeline — preprocessing, feature engineering, scaling"),
-        ("Visualisation",        "Plotly, Matplotlib — interactive and static charts"),
-        ("Report Generation",    "fpdf2 — programmatic PDF generation with branded clinical layout"),
-        ("Application Layer",    "Streamlit Community Cloud — deployed web application"),
-        ("Language",             "Python 3.11"),
-    ]
-    pdf.set_font("Helvetica", "", 8)
-    pdf.set_text_color(30, 30, 30)
-    for tech_label, tech_desc in tech_items:
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.cell(52, 5.5, f"  {tech_label}:", border=0, ln=False)
-        pdf.set_font("Helvetica", "", 8)
-        pdf.set_text_color(60, 60, 60)
-        pdf.cell(0, 5.5, tech_desc, border=0, ln=True)
-        pdf.set_text_color(30, 30, 30)
-    pdf.ln(3)
 
-    # -- References --
+    left_tech = [
+        ("Prediction Engine",         "XGBoost + Logistic Regression Ensemble"),
+        ("Explainability",            "SHAP -- feature-level attribution"),
+        ("Clinical Info. Extraction", "Rule-Based Entity Extraction Pipeline"),
+        ("Report Generation",         "fpdf2 -- branded clinical PDF layout"),
+    ]
+    right_tech = [
+        ("Document Intelligence",     "pdfplumber + PyMuPDF -- CRF parser"),
+        ("Data Processing",           "Scikit-learn -- preprocessing & scaling"),
+        ("Visualisation",             "Plotly, Matplotlib -- interactive charts"),
+        ("Application Layer",         "Streamlit Community Cloud"),
+        ("Language",                  "Python 3.11"),
+    ]
+    col_half = pdf.epw / 2 - 2
+    lbl_w    = 44
+    val_w    = col_half - lbl_w
+    row_h    = 4.5
+    ts_y     = pdf.get_y()
+
+    for row_i in range(max(len(left_tech), len(right_tech))):
+        ry = ts_y + row_i * row_h
+        if row_i < len(left_tech):
+            lbl, val = left_tech[row_i]
+            pdf.set_xy(pdf.l_margin, ry)
+            pdf.set_font("Helvetica", "B", 7)
+            pdf.set_text_color(40, 40, 40)
+            pdf.cell(lbl_w, row_h, f"  {lbl}:", ln=False)
+            pdf.set_font("Helvetica", "", 7)
+            pdf.set_text_color(60, 60, 60)
+            pdf.cell(val_w, row_h, _safe(val), ln=False)
+        if row_i < len(right_tech):
+            lbl, val = right_tech[row_i]
+            pdf.set_xy(pdf.l_margin + col_half + 4, ry)
+            pdf.set_font("Helvetica", "B", 7)
+            pdf.set_text_color(40, 40, 40)
+            pdf.cell(lbl_w, row_h, f"  {lbl}:", ln=False)
+            pdf.set_font("Helvetica", "", 7)
+            pdf.set_text_color(60, 60, 60)
+            pdf.cell(val_w, row_h, _safe(val), ln=False)
+
+    pdf.set_y(ts_y + max(len(left_tech), len(right_tech)) * row_h)
+    pdf.set_text_color(20, 20, 20)
+    pdf.ln(2)
+
+    # ── References ────────────────────────────────────────────────────────────
+    pdf.check_page_space(20)
     pdf.section_heading("References")
     refs = [
         (
@@ -795,33 +910,51 @@ def generate_report(
     pdf.set_text_color(40, 40, 40)
     for i, ref in enumerate(refs, 1):
         pdf.set_x(pdf.l_margin)
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.cell(8, 5, f"{i}.", ln=False)
-        pdf.set_font("Helvetica", "", 8)
-        pdf.set_x(pdf.l_margin + 8)
-        super(RetentionReport, pdf).multi_cell(pdf.epw - 8, 5, _safe(ref))
-        pdf.ln(1)
+        pdf.set_font("Helvetica", "B", 7.5)
+        pdf.cell(7, 4.5, f"{i}.", ln=False)
+        pdf.set_font("Helvetica", "", 7.5)
+        pdf.set_x(pdf.l_margin + 7)
+        super(RetentionReport, pdf).multi_cell(pdf.epw - 7, 4.5, _safe(ref))
+        pdf.ln(0.5)
+    pdf.ln(1)
 
-    # -- QR Code (GitHub) — bottom-right corner of page 2 --
-    qr_bytes = _make_qr_bytes(GITHUB_URL)
-    if qr_bytes:
-        qr_size = 22
-        qr_x    = 210 - pdf.r_margin - qr_size
-        qr_y    = 297 - 38 - qr_size        # just above footer
-        pdf.image(qr_bytes, x=qr_x, y=qr_y, w=qr_size, h=qr_size)
-        pdf.set_xy(pdf.l_margin, qr_y + qr_size + 1)
-        pdf.set_font("Helvetica", "B", 7)
+    # ── QR Code + Repository link ─────────────────────────────────────────────
+    qr_bytes  = _make_qr_bytes(GITHUB_URL)
+    remaining = pdf.h - pdf.get_y() - BREAK_GUARD
+    qr_size   = 20
+    if qr_bytes and remaining >= qr_size + 6:
+        cur_y = pdf.get_y() + 1
+        pdf.image(qr_bytes, x=pdf.l_margin, y=cur_y, w=qr_size, h=qr_size)
+        pdf.set_xy(pdf.l_margin + qr_size + 4, cur_y + 3)
+        pdf.set_font("Helvetica", "B", 7.5)
         pdf.set_text_color(*TEAL)
-        pdf.cell(0, 4, "Project Repository:", ln=True)
+        pdf.cell(0, 4.5, "Project Repository:", ln=True)
+        pdf.set_xy(pdf.l_margin + qr_size + 4, pdf.get_y())
         pdf.set_font("Helvetica", "", 7)
         pdf.set_text_color(60, 60, 60)
         pdf.cell(
-            0, 4,
+            0, 4.5,
+            "github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence",
+            link=GITHUB_URL,
+        )
+    elif qr_bytes:
+        pdf.add_page()
+        cur_y = pdf.get_y()
+        pdf.image(qr_bytes, x=pdf.l_margin, y=cur_y, w=qr_size, h=qr_size)
+        pdf.set_xy(pdf.l_margin + qr_size + 4, cur_y + 3)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*TEAL)
+        pdf.cell(0, 5, "Project Repository:", ln=True)
+        pdf.set_xy(pdf.l_margin + qr_size + 4, pdf.get_y())
+        pdf.set_font("Helvetica", "", 7.5)
+        pdf.set_text_color(60, 60, 60)
+        pdf.cell(
+            0, 5,
             "github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence",
             link=GITHUB_URL,
         )
 
-    # Save
+    # ── Save ──────────────────────────────────────────────────────────────────
     out_path = REPORTS_DIR / f"retention_assessment_{patient_id}.pdf"
     pdf.output(str(out_path))
     return out_path
