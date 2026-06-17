@@ -1,26 +1,31 @@
 # AI-Powered Clinical Trial Retention Intelligence System
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.37-red?logo=streamlit)
+![Streamlit](https://img.shields.io/badge/Streamlit-Deployed-red?logo=streamlit)
 ![XGBoost](https://img.shields.io/badge/XGBoost-2.1-orange)
 ![SHAP](https://img.shields.io/badge/SHAP-Explainability-green)
-![MLflow](https://img.shields.io/badge/MLflow-Tracking-blue)
 ![License](https://img.shields.io/badge/License-Educational-lightgrey)
 
 ---
 
-> ⚠️ **Disclaimer:** This project is intended for educational and portfolio demonstration purposes only.
-> It does not constitute clinical advice and should not be used for patient care decisions.
+> ⚠️ **Disclaimer:** This project is for educational and portfolio demonstration purposes only.
+> It does not constitute clinical advice and should not be used for participant care decisions.
+
+---
+
+## Live Demo
+
+**[Launch App →](https://ai-powered-clinical-trial-retention-intelligence-eucpnx2cs9doz.streamlit.app)**
+
+Try the four built-in demo profiles (High-Risk, Rural, Polypharmacy, Low-Risk) to see full end-to-end analysis and downloadable PDF reports without entering any data.
 
 ---
 
 ## The Clinical Problem
 
-Clinical trial attrition remains a major industry challenge, with studies reporting dropout rates of **20–30%**, leading to significant delays, cost overruns, and compromised trial integrity *(FDA, 2012; Getz KA et al., Ther Innov Regul Sci, 2016)*.
+Clinical trial attrition remains a major industry challenge, with dropout rates of **20–30%** causing delays, cost overruns, and compromised trial integrity *(FDA, 2012; Getz KA et al., Ther Innov Regul Sci, 2016)*.
 
-Patient replacement costs an estimated **$15,000–$25,000 per participant**, including rescreening, re-enrolment, additional monitoring, and regulatory burden. Across the industry, this represents billions of dollars in annual avoidable costs.
-
-Existing retention strategies are largely reactive — triggered after dropout occurs. AI-driven early prediction allows sponsors to deploy targeted, evidence-based interventions *before* a participant disengages.
+Participant replacement costs an estimated **$15,000–$25,000 per person**, including rescreening, re-enrolment, additional monitoring, and regulatory burden. Existing retention strategies are largely reactive — triggered after dropout occurs. AI-driven early prediction enables sponsors to deploy targeted, evidence-based interventions *before* a participant disengages.
 
 ---
 
@@ -34,13 +39,29 @@ Existing retention strategies are largely reactive — triggered after dropout o
 
 | Capability | Description |
 |-----------|-------------|
-| **PREDICT** | XGBoost + LightGBM + CatBoost ensemble identifies dropout risk per patient |
-| **EXPLAIN** | SHAP TreeExplainer surfaces why each patient is at risk, in plain English |
-| **INTERVENE** | 7 evidence-based intervention strategies, matched to patient risk profile |
+| **PREDICT** | XGBoost classifier identifies per-participant dropout risk with calibrated probability |
+| **EXPLAIN** | SHAP TreeExplainer surfaces why each participant is at risk, in plain English |
+| **INTERVENE** | 7 evidence-based intervention strategies matched to participant risk profile |
 | **JUSTIFY** | Clinical Evidence Retrieval Engine cites FDA, ICH E6(R2), and peer-reviewed literature |
-| **SIMULATE** | What-If Scenario Simulator models the impact of protocol changes on risk |
+| **SIMULATE** | What-If Scenario Simulator models the impact of protocol changes on dropout risk |
 | **CALCULATE** | Business Impact Calculator quantifies ROI of each intervention |
-| **REPORT** | Downloadable 2-page PDF report for trial sponsors |
+| **REPORT** | Downloadable 2-page PDF report for trial sponsors — executive-ready |
+
+---
+
+## Screenshots
+
+### Participant Risk Assessment
+*(Add screenshot of the main dashboard analysis tab here)*
+
+### Trial Operations Dashboard
+*(Add screenshot of the Trial Operations tab here)*
+
+### PDF Report — Page 1
+*(Add screenshot of the PDF report Page 1 here)*
+
+### PDF Report — Page 2
+*(Add screenshot of the PDF report Page 2 here)*
 
 ---
 
@@ -52,7 +73,7 @@ Three of the most actionable insights from this system:
 
 1. **Week-2 side effect severity** is the dominant dropout predictor. Proactive pharmacovigilance contact at this window is both low-cost and high-impact *(ICH E6(R2), 2016)*.
 2. **Distance without transportation** creates a hard logistical barrier independent of clinical profile. Transportation reimbursement is estimated to provide moderate risk reduction at low cost *(FDA, 2012)*.
-3. **Protocol complexity** amplifies visit burden. ICH E6(R2)'s principle of proportionate monitoring supports eliminating non-critical assessments to reduce patient fatigue *(Getz KA et al., 2016)*.
+3. **Protocol complexity** amplifies visit burden. ICH E6(R2)'s principle of proportionate monitoring supports eliminating non-critical assessments to reduce participant fatigue *(Getz KA et al., 2016)*.
 
 **Key References:**
 - FDA (2012). *Guidance for Industry: Patient Retention in Clinical Trials.* U.S. Department of Health and Human Services.
@@ -71,7 +92,7 @@ Three of the most actionable insights from this system:
 | LightGBM | 0.660 | 0.387 | 0.316 | 0.219 |
 | CatBoost | 0.663 | 0.443 | 0.432 | 0.205 |
 
-*Logistic Regression achieved highest recall (0.78) on this synthetic dataset — prioritised for clinical retention use. SHAP explanations use the XGBoost model (saved as model_v1.pkl) for tree-based attribution.*
+*Logistic Regression achieved highest recall (0.78) on this synthetic dataset. SHAP explanations use XGBoost (saved as model_v1.pkl) for tree-based attribution.*
 
 *Recall is prioritised: in clinical retention, missing a future dropout (false negative) is more costly than an unnecessary intervention (false positive).*
 
@@ -85,18 +106,16 @@ Week-2 side effect severity is the single strongest predictor of clinical trial 
 
 ## Business Impact (Modelled Estimates)
 
-> All figures below are modelled estimates using synthetic data. They are not guaranteed outcomes.
+> All figures are modelled estimates using synthetic data. Not guaranteed outcomes.
 
 | Scenario | Estimated Value |
 |----------|----------------|
-| Patient replacement cost | ~$18,000 per participant |
-| High-risk patients identified (600 pts, 35% high-risk) | ~210 patients |
-| Estimated dropouts preventable (model recall × 60% success rate) | ~95 patients |
+| Participant replacement cost | ~$18,000 per participant |
+| High-risk participants identified (600 pts, 35% high-risk) | ~210 participants |
+| Estimated dropouts preventable (model recall × 60% success rate) | ~95 participants |
 | Potential total savings | ~$1.7M |
 | Total intervention cost | ~$137K |
 | Estimated net benefit | ~$1.6M |
-
-*"1,000-patient trial × 30% dropout × $18,000 replacement = $5.4M at risk. A model with strong recall may identify the majority of at-risk patients. Intervention costs per at-risk patient: approximately $500. Modelled net benefit: significant potential savings in a single trial."*
 
 ---
 
@@ -104,36 +123,37 @@ Week-2 side effect severity is the single strongest predictor of clinical trial 
 
 | Module | File | Purpose |
 |--------|------|---------|
-| Data Generator | `src/data_generator.py` | Generates 2,000 synthetic patient records |
+| Data Generator | `src/data_generator.py` | Generates 2,000 synthetic participant records |
 | Feature Engineering | `src/feature_engineering.py` | PharmD-informed composite features |
 | Validator | `src/validator.py` | Pre-model data quality checks |
-| Model Pipeline | `src/model.py` | 5 classifiers, Optuna, MLflow, survival analysis |
-| SHAP Explainer | `src/explainer.py` | Global & per-patient SHAP explanations |
+| Model Pipeline | `src/model.py` | 5 classifiers, Optuna tuning, survival analysis |
+| SHAP Explainer | `src/explainer.py` | Global and per-participant SHAP explanations |
 | Intervention Engine | `src/intervention_engine.py` | Evidence-based intervention recommendations |
-| Business Impact | `src/business_impact.py` | ROI and savings calculations |
-| Clinical Evidence Retrieval Engine | `src/evidence_retrieval.py` | Lightweight RAG citation retrieval |
-| Persona Classifier | `src/personas.py` | 4 clinical patient archetypes |
+| Business Impact | `src/business_impact.py` | ROI and net savings calculations |
+| Clinical Evidence Retrieval | `src/evidence_retrieval.py` | Lightweight RAG citation engine |
+| Persona Classifier | `src/personas.py` | 4 clinical participant archetypes |
 | Scenario Simulator | `src/scenario_simulator.py` | What-if protocol change modelling |
 | Retention Intelligence Agent | `src/agent.py` | 9-step orchestration pipeline |
-| Report Generator | `src/report_generator.py` | 2-page professional PDF output |
+| Report Generator | `src/report_generator.py` | 2-page executive PDF report |
 
 ---
 
-## How to Run
+## How to Run Locally
 
-### 1. Install dependencies
+### 1. Clone and install
 ```bash
+git clone https://github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence.git
+cd AI-Powered-Clinical-Trial-Retention-Intelligence
 pip install -r requirements.txt
 ```
 
 ### 2. Generate data and train models
 ```bash
-cd project1-retention-intelligence
 python src/data_generator.py
 python src/model.py
-python src/explainer.py        # generates SHAP plots
-python src/generate_architecture.py  # generates architecture diagram
-python src/report_generator.py # generates sample PDF
+python src/explainer.py
+python src/generate_architecture.py
+python src/report_generator.py
 ```
 
 ### 3. Launch the Streamlit app
@@ -141,53 +161,20 @@ python src/report_generator.py # generates sample PDF
 streamlit run app.py
 ```
 
-### 4. Run the Jupyter notebook
-```bash
-jupyter notebook notebooks/01_retention_intelligence_analysis.ipynb
-```
-
-### 5. Run unit tests
-```bash
-pytest tests/ -v
-```
-
----
-
-## Screenshots
-
-*(Add after running the app)*
-
----
-
-## IQVIA Alignment
-
-| This System Component | IQVIA Equivalent |
-|----------------------|-----------------|
-| XGBoost + LightGBM + CatBoost | Predictive Analytics Engine |
-| SHAP Explainability | Explainable AI Module |
-| Retention Intelligence Agent | IQVIA.ai Intelligent Agent |
-| Intervention Engine | Retention Optimization |
-| Clinical Evidence Retrieval Engine | IQVIA.ai Knowledge Retrieval (RAG) |
-| What-If Scenario Simulator | Trial Design Optimization |
-| MLflow Tracking | MLOps |
-| PDF Clinical Reports | Sponsor Intelligence Output |
-
 ---
 
 ## Limitations
 
-- Synthetic data for demonstration — not derived from real sponsor datasets
+- Synthetic data — not derived from real sponsor datasets
 - Intervention estimates are modelled, not clinically validated
-- Not tested on real trial datasets
-- Proof of concept only — intended to demonstrate analytical and PharmD-informed AI capability
+- Proof of concept only — demonstrates analytical and PharmD-informed AI capability
 
 ---
 
 ## Author
 
 **Dr. Reema Mohamed Sulthan, PharmD**
-Clinical Data Scientist | AI Expert (IABAC 2025)
-DataMites Batch 21-OCT-24-CDS | June 2026
+Clinical Data Scientist | Certified AI Expert
 
 📧 reemahussain2097@gmail.com
-🔗 github.com/reemahussain-pharmd
+🔗 [github.com/reemahussain-pharmd](https://github.com/reemahussain-pharmd)
