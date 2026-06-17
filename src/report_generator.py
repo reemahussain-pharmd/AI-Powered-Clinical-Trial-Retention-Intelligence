@@ -398,8 +398,11 @@ def generate_report(
     # Persona + characteristics
     persona_name = analysis.get("persona", "—")
     pdf.kv_row("Participant Persona",      persona_name)
-    from personas import PERSONA_DESCRIPTIONS
-    persona_desc = PERSONA_DESCRIPTIONS.get(persona_name, "")
+    try:
+        from personas import PERSONA_DESCRIPTIONS
+        persona_desc = PERSONA_DESCRIPTIONS.get(persona_name, "")
+    except Exception:
+        persona_desc = analysis.get("persona_description", "")
     if persona_desc:
         pdf.set_font("Helvetica", "I", 7.5)
         pdf.set_text_color(80, 80, 80)

@@ -1476,8 +1476,8 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
             copilot_summary=copilot_summary,
         )
         analysis["report_path"] = str(report_path)
-    except Exception:
-        pass
+    except Exception as _pdf_err:
+        st.session_state["_pdf_error"] = str(_pdf_err)
 
     report_path = analysis.get("report_path")
     if report_path and Path(report_path).exists():
@@ -1495,7 +1495,11 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
             "financial impact estimate, and supporting evidence citations._"
         )
     else:
-        st.info("PDF generation requires fpdf2. Install via `pip install fpdf2`.")
+        pdf_err = st.session_state.pop("_pdf_error", None)
+        if pdf_err:
+            st.warning(f"PDF generation failed: {pdf_err}")
+        else:
+            st.info("PDF generation requires fpdf2. Install via `pip install fpdf2`.")
 
 
 # ── TAB 2: Trial Operations Dashboard ────────────────────────────────────────
