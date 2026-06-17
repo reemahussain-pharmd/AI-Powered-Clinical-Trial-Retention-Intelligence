@@ -24,7 +24,7 @@ DISCLAIMER = (
     "This report is for educational and portfolio demonstration purposes only. "
     "It does not constitute clinical advice and should not be used for patient care decisions."
 )
-FOOTER_LINE2 = "AI-Powered Clinical Trial Retention Intelligence System  v1.0"
+FOOTER_LINE2 = "AI-Powered Clinical Trial Retention Intelligence Platform  v3.0"
 FOOTER_LINE3 = "Dr. Reema Mohamed Sulthan, PharmD  |  github.com/reemahussain-pharmd"
 
 try:
@@ -271,13 +271,20 @@ class RetentionReport(FPDF):
             self.set_text_color(20, 20, 20)
 
 
-def generate_report(analysis: Dict, patient_id: str = "DEMO", doc_source: str = "Manual Entry") -> Path:
+def generate_report(
+    analysis: Dict,
+    patient_id: str = "DEMO",
+    doc_source: str = "Manual Entry",
+    copilot_summary=None,
+) -> Path:
     """
-    Generate a 2-page PDF retention intelligence report.
+    Generate an executive PDF retention intelligence report.
 
     Args:
         analysis: Full analysis dict returned by RetentionAgent.run().
         patient_id: Participant identifier for the report header.
+        doc_source: Data source label (Manual Entry or Document Upload).
+        copilot_summary: Optional CoordinatorSummary from CoordinatorCopilot.
 
     Returns:
         Path to the saved PDF file.
@@ -462,6 +469,50 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO", doc_source: str = 
         pdf.set_font("Helvetica", "", 8)
         pdf.set_text_color(60, 60, 60)
         pdf.safe_multi_cell(0, 5, top_iv["pharmd_rationale"])
+        pdf.set_text_color(20, 20, 20)
+        pdf.ln(3)
+
+    # -- Coordinator Copilot Summary (v3.0) --
+    if copilot_summary is not None:
+        pdf.section_heading("Retention Coordinator Recommendations (v3.0 Copilot)")
+        pdf.set_font("Helvetica", "I", 8.5)
+        pdf.set_text_color(40, 40, 40)
+        pdf.safe_multi_cell(0, 5, copilot_summary.risk_narrative)
+        pdf.ln(3)
+        if copilot_summary.action_items:
+            priority_color = {
+                "Critical": RED_RISK, "High": AMBER_RISK,
+                "Medium": TEAL, "Low": MID_GRAY,
+            }
+            pdf.set_font("Helvetica", "B", 8)
+            pdf.set_text_color(*NAVY)
+            pdf.cell(0, 5, "Prioritised Action Plan:", ln=True)
+            pdf.ln(1)
+            for i, act in enumerate(copilot_summary.action_items, 1):
+                pr, pg, pb = priority_color.get(act.priority, MID_GRAY)
+                pdf.set_fill_color(pr, pg, pb)
+                pdf.set_text_color(*WHITE)
+                pdf.set_font("Helvetica", "B", 7.5)
+                pdf.cell(22, 5.5, act.priority, border=0, fill=True, ln=False, align="C")
+                pdf.set_fill_color(*LIGHT_GRAY)
+                pdf.set_text_color(*NAVY)
+                pdf.set_font("Helvetica", "B", 8)
+                pdf.cell(0, 5.5, f"  {i}. {act.title}", border=0, fill=True, ln=True)
+                pdf.set_font("Helvetica", "", 7.5)
+                pdf.set_text_color(60, 60, 60)
+                pdf.set_x(pdf.l_margin + 24)
+                pdf.multi_cell(pdf.epw - 24, 4.5, _safe(f"Timeline: {act.timeline}"), align="L")
+                pdf.set_text_color(20, 20, 20)
+                pdf.ln(1)
+        if copilot_summary.expected_improvement_high > 0:
+            pdf.set_font("Helvetica", "B", 8)
+            pdf.set_text_color(*TEAL)
+            pdf.cell(
+                0, 6,
+                f"Expected retention improvement with full action plan: "
+                f"{copilot_summary.expected_improvement_low}-{copilot_summary.expected_improvement_high} percentage points",
+                ln=True,
+            )
         pdf.set_text_color(20, 20, 20)
         pdf.ln(3)
 

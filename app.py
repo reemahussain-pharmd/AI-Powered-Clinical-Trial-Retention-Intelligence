@@ -524,6 +524,308 @@ def render_sidebar() -> pd.DataFrame:
     }])
 
 
+# ── V3 helpers ────────────────────────────────────────────────────────────────
+
+def render_ner_section(ner_result):
+    """Display clinical entities extracted from document (Module 2)."""
+    if ner_result.total_entities == 0:
+        return
+
+    section_header("Clinical Entity Recognition")
+    st.markdown(
+        "Entities automatically identified from the uploaded document. "
+        "These inform extraction confidence and provide an audit trail of clinical content."
+    )
+
+    def chips(items, color):
+        html = "".join(
+            f'<span style="display:inline-block;background:{color};color:#fff;'
+            f'border-radius:14px;padding:3px 10px;margin:3px 4px 3px 0;font-size:11.5px;'
+            f'font-weight:600">{label}</span>'
+            for _, label in items
+        )
+        return html
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if ner_result.diseases:
+            st.markdown("**Conditions / Diagnoses**")
+            st.markdown(chips(ner_result.diseases, "#1D9E75"), unsafe_allow_html=True)
+        if ner_result.adverse_events:
+            st.markdown("**Adverse Events / Safety Signals**")
+            st.markdown(chips(ner_result.adverse_events, "#D9534F"), unsafe_allow_html=True)
+        if ner_result.symptoms:
+            st.markdown("**Symptoms Reported**")
+            st.markdown(chips(ner_result.symptoms, "#F4B942"), unsafe_allow_html=True)
+    with col_b:
+        if ner_result.burden_flags:
+            st.markdown("**Trial Burden Indicators**")
+            st.markdown(chips(ner_result.burden_flags, "#E05C25"), unsafe_allow_html=True)
+        if ner_result.engagement_flags:
+            st.markdown("**Engagement / Protective Signals**")
+            st.markdown(chips(ner_result.engagement_flags, "#3B82F6"), unsafe_allow_html=True)
+        if ner_result.medications:
+            st.markdown("**Medications Identified**")
+            med_html = "".join(
+                f'<span style="display:inline-block;background:#6B7280;color:#fff;'
+                f'border-radius:14px;padding:3px 10px;margin:3px 4px 3px 0;font-size:11px">'
+                f'{m.capitalize()}</span>'
+                for m in ner_result.medications
+            )
+            st.markdown(med_html, unsafe_allow_html=True)
+
+    n_disease = len(ner_result.diseases)
+    if n_disease > 0:
+        chart_caption(
+            f"NER identified {n_disease} distinct condition(s) — inferred comorbidity count: {n_disease}. "
+            "Dictionary-based matching only. Clinical review required."
+        )
+    st.markdown("<div style='margin-bottom:4px'></div>", unsafe_allow_html=True)
+
+
+def render_coordinator_copilot(analysis: dict, risk_cat: str):
+    """Retention Coordinator Copilot — Module 5 + 6 + 7 + 8."""
+    from coordinator_copilot import CoordinatorCopilot
+
+    risk_pct    = analysis.get("risk_pct", 0)
+    top3_risk   = analysis.get("top3_risk_factors", [])
+    top3_prot   = analysis.get("top3_protective_factors", [])
+    interventions = analysis.get("interventions", [])
+
+    copilot  = CoordinatorCopilot()
+    summary  = copilot.generate(
+        risk_pct=risk_pct,
+        risk_cat=risk_cat,
+        top3_risk_factors=top3_risk,
+        top3_protective=top3_prot,
+        interventions=interventions,
+        participant_data={},
+    )
+
+    # Store for PDF
+    st.session_state["_copilot_summary"] = summary
+
+    section_header("Retention Coordinator Copilot")
+    st.markdown(
+        '_Powered by V3.0 Clinical Reasoning Engine — template-based, deterministic. '
+        'Clinical review required before action._'
+    )
+
+    # Risk narrative
+    risk_color = {"Critical": "#D9534F", "High": "#E05C25", "Moderate": "#F4B942", "Low": "#1D9E75"}
+    rc = risk_color.get(risk_cat, "#F4B942")
+    st.markdown(
+        f'<div style="background:#F8FAFC;border-left:4px solid {rc};padding:14px 18px;'
+        f'border-radius:6px;margin-bottom:12px">'
+        f'<div style="font-size:13px;font-weight:600;color:{rc};margin-bottom:6px">AI Coordinator Assessment</div>'
+        f'<div style="font-size:13px;color:#374151;line-height:1.6">{summary.risk_narrative}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    # Clinical reasoning expander
+    with st.expander("📖 Clinical Reasoning — Why is this participant at risk?"):
+        st.markdown(summary.reasoning_text)
+
+    if summary.expected_improvement_high > 0:
+        st.success(
+            f"✅ Expected retention improvement with full action plan: "
+            f"**{summary.expected_improvement_low}–{summary.expected_improvement_high} percentage points**"
+        )
+
+    # Action plan with timeline
+    if summary.action_items:
+        section_header("Prioritised Coordinator Action Plan")
+        priority_colors = {
+            "Critical": ("#D9534F", "#fff"),
+            "High":     ("#F4B942", "#000"),
+            "Medium":   ("#1D9E75", "#fff"),
+            "Low":      ("#9CA3AF", "#fff"),
+        }
+        timeline_icons = {
+            "Within 24 hours":       "🚨",
+            "Within 72 hours":       "⚡",
+            "Before Next Visit":     "📅",
+            "Protocol Review Cycle": "📋",
+        }
+        for i, act in enumerate(summary.action_items, 1):
+            bg, fg = priority_colors.get(act.priority, ("#9CA3AF", "#fff"))
+            icon   = timeline_icons.get(act.timeline, "•")
+            st.markdown(
+                f'<div style="border:1px solid #E5E7EB;border-radius:8px;padding:12px 16px;margin-bottom:8px">'
+                f'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+                f'<span style="background:{bg};color:{fg};border-radius:12px;padding:2px 10px;'
+                f'font-size:11px;font-weight:700">{act.priority}</span>'
+                f'<span style="font-weight:700;font-size:13px;color:#0D1B2A">{i}. {act.title}</span>'
+                f'<span style="margin-left:auto;font-size:12px;color:#6B7280">'
+                f'{icon} {act.timeline}</span>'
+                f'</div>'
+                f'<div style="font-size:12px;color:#374151;line-height:1.6">{act.description}</div>'
+                f'<div style="font-size:11px;color:#1D9E75;margin-top:6px;font-weight:600">'
+                f'Est. reduction: ~{act.expected_reduction:.0f} percentage points</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    # Scenario optimisation
+    if summary.combo_scenarios:
+        section_header("Scenario Optimisation — Intervention Combinations")
+        st.markdown("Ranked intervention strategies by estimated risk reduction and ROI.")
+        for sc in summary.combo_scenarios:
+            badge_html = ""
+            if sc.get("badge"):
+                badge_col = "#1D9E75" if "ROI" in sc["badge"] else "#3B82F6"
+                badge_html = (
+                    f'<span style="background:{badge_col};color:#fff;border-radius:10px;'
+                    f'padding:2px 8px;font-size:10px;font-weight:700;margin-left:8px">'
+                    f'{sc["badge"]}</span>'
+                )
+            delta_pp = sc["risk_reduction_pp"]
+            old_r    = sc["current_risk_pct"]
+            new_r    = sc["projected_risk_pct"]
+            st.markdown(
+                f'<div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:8px;'
+                f'padding:10px 14px;margin-bottom:6px">'
+                f'<div style="font-weight:600;font-size:12px;color:#0D1B2A">'
+                f'{sc["label"]}{badge_html}</div>'
+                f'<div style="display:flex;gap:20px;margin-top:6px;font-size:12px">'
+                f'<span style="color:#D9534F">Current: <b>{old_r}%</b></span>'
+                f'<span>→</span>'
+                f'<span style="color:#1D9E75">Projected: <b>{new_r}%</b></span>'
+                f'<span style="color:#374151">Reduction: <b>{delta_pp:.1f}pp</b></span>'
+                f'<span style="color:#6B7280">Est. cost: <b>${sc["est_cost"]:,}</b></span>'
+                f'</div></div>',
+                unsafe_allow_html=True,
+            )
+        chart_caption(
+            "Diminishing returns model applied — each additional intervention is ~80% as effective as its "
+            "isolated estimate. Costs are modelled approximations. Clinical review required."
+        )
+
+
+def render_tab_batch():
+    """Multi-Participant Batch Screening — Module 9."""
+    section_header("Multi-Participant Screening")
+    st.markdown(
+        "Upload a CSV file containing participant data for batch risk scoring. "
+        "The system scores all participants and returns a ranked attrition risk table."
+    )
+
+    # Template download
+    import io as _io
+    template_cols = (
+        "patient_id,site_id,age,gender,bmi,disease_severity_score,"
+        "number_of_comorbidities,concomitant_medications,distance_from_site_km,"
+        "visit_frequency_per_month,side_effect_severity_at_week2,"
+        "insurance_status,transportation_access,prior_trial_participation,"
+        "trial_phase,consent_complexity_score,visit_burden_index,logistic_friction_score\n"
+        "PT-0001,SITE_01,58,M,26.5,7.0,3,8,75,5,3.5,insured,no,1,2,6,6,5\n"
+        "PT-0002,SITE_01,42,F,22.1,4.0,1,2,12,3,0.5,insured,yes,0,3,4,2,1\n"
+        "PT-0003,SITE_02,67,F,30.2,8.5,5,11,90,6,4.5,uninsured,no,0,2,8,8,7\n"
+    )
+    st.download_button(
+        "📥 Download Sample CSV Template",
+        data=template_cols,
+        file_name="batch_screening_template.csv",
+        mime="text/csv",
+    )
+
+    uploaded_csv = st.file_uploader(
+        "Upload Participant CSV",
+        type=["csv"],
+        key="batch_uploader",
+        help="Required columns: age, gender, bmi, disease_severity_score, number_of_comorbidities, "
+             "concomitant_medications, distance_from_site_km, visit_frequency_per_month, "
+             "side_effect_severity_at_week2, insurance_status, transportation_access, "
+             "prior_trial_participation, trial_phase, consent_complexity_score, "
+             "visit_burden_index, logistic_friction_score",
+    )
+
+    if uploaded_csv is None:
+        st.info("Upload a CSV file to begin batch screening. Use the template above as a guide.")
+        return
+
+    try:
+        raw_df = pd.read_csv(uploaded_csv)
+    except Exception as e:
+        st.error(f"Could not read CSV: {e}")
+        return
+
+    from batch_screener import prepare_dataframe, batch_screen
+    df, prep_warnings = prepare_dataframe(raw_df)
+    for w in prep_warnings:
+        st.warning(f"⚠️ {w}")
+
+    try:
+        model, preprocessor = load_model_artefacts()
+    except Exception:
+        st.error("Model artefacts not found. Run `python src/model.py` first.")
+        return
+
+    with st.spinner(f"Scoring {len(df)} participants…"):
+        result = batch_screen(df, model, preprocessor)
+
+    if "error" in result:
+        st.error(result["error"])
+        return
+
+    # KPI row
+    k1, k2, k3, k4, k5 = st.columns(5)
+    k1.metric("Total Participants", result["total"])
+    k2.metric("Critical Risk",  result["critical_n"],  delta=None)
+    k3.metric("High Risk",      result["high_n"])
+    k4.metric("Moderate Risk",  result["moderate_n"])
+    k5.metric("Low Risk",       result["low_n"])
+    st.markdown("<div style='margin-bottom:8px'></div>", unsafe_allow_html=True)
+
+    # Budget summary
+    at_risk = result["at_risk_n"]
+    if at_risk > 0:
+        section_header("Intervention Budget Estimate")
+        b1, b2, b3, b4 = st.columns(4)
+        b1.metric("High/Critical Participants", at_risk,
+                  help="Participants recommended for active retention intervention.")
+        b2.metric("Est. Intervention Budget", f"${result['est_budget']:,}",
+                  help="Estimated total intervention cost at $1,800 per at-risk participant.")
+        b3.metric("Est. Dropouts Preventable", result["est_prevented"],
+                  help="Based on model recall × estimated 45% intervention success rate.")
+        b4.metric("Est. Net Benefit", f"${result['net_benefit']:,}",
+                  help="Estimated savings minus intervention cost. Modelled estimate only.")
+        st.caption("_Modelled estimates. $18,000 average replacement cost (Getz KA et al., 2016)._")
+
+    # Ranked risk table
+    section_header("Participant Risk Ranking")
+    results_df = result["results_df"].copy()
+
+    def risk_color_row(val):
+        colors = {"Critical": "background-color:#FEE2E2", "High": "background-color:#FEF3C7",
+                  "Moderate": "background-color:#FFF7ED", "Low": "background-color:#D1FAE5"}
+        return [colors.get(v, "") for v in val]
+
+    styled = results_df.style.apply(
+        lambda row: risk_color_row(row[["Risk Category"]].values.flatten()),
+        subset=["Risk Category"], axis=1
+    )
+    st.dataframe(styled, use_container_width=True, hide_index=True)
+
+    # CSV download
+    st.download_button(
+        "📥 Download Risk Rankings CSV",
+        data=results_df.to_csv(index=False),
+        file_name="batch_risk_ranking.csv",
+        mime="text/csv",
+    )
+
+    # Site summary
+    if not result["site_summary"].empty:
+        section_header("Site-Level Retention Summary")
+        st.dataframe(result["site_summary"], use_container_width=True, hide_index=True)
+        chart_caption(
+            "Mean risk and high/critical count per site. Sites with elevated mean risk "
+            "may require site-level retention intervention or investigator support."
+        )
+
+
 # ── TAB 0: Clinical Document Intake ──────────────────────────────────────────
 def render_tab_intake():
     from document_intake import (
@@ -673,6 +975,27 @@ def render_tab_intake():
     )
     st.markdown("<div style='margin-bottom:8px'></div>", unsafe_allow_html=True)
 
+    # ── Clinical Entity Recognition (V3) ──────────────────────────────────────
+    try:
+        from clinical_ner import ClinicalNERExtractor
+        ner_extractor = ClinicalNERExtractor()
+        ner_result    = ner_extractor.extract(doc_text)
+        render_ner_section(ner_result)
+        # Use NER-inferred comorbidity count to improve extraction if fallback
+        if (ner_result.inferred_comorbidity_count > 0
+                and results.get("number_of_comorbidities", None) is not None
+                and results["number_of_comorbidities"].is_fallback):
+            from document_intake import FieldResult
+            results["number_of_comorbidities"] = FieldResult(
+                value=ner_result.inferred_comorbidity_count,
+                confidence="Medium",
+                raw_match=f"{ner_result.inferred_comorbidity_count} conditions identified by NER",
+                method="ner_inferred",
+                is_fallback=False,
+            )
+    except Exception:
+        pass
+
     # ── Validation form ───────────────────────────────────────────────────────
     section_header("Review & Edit Extracted Values")
     st.markdown(
@@ -681,13 +1004,14 @@ def render_tab_intake():
     )
 
     def conf_badge(r) -> str:
+        pct = r.confidence_pct
         if r.is_fallback:
-            return "🔴 Missing — default applied"
+            return "🔴 Missing (0%)"
         if r.confidence == "High":
-            return "🟢 High"
+            return f"🟢 High ({pct}%)"
         if r.confidence == "Medium":
-            return "🟡 Medium"
-        return "🔴 Low"
+            return f"🟡 Medium ({pct}%)"
+        return f"🔴 Low ({pct}%)"
 
     fv = {}   # final (possibly edited) form values
     col_l, col_r = st.columns(2)
@@ -1036,6 +1360,12 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
             "Continue standard monitoring and engagement protocols."
         )
 
+    # ── Coordinator Copilot (V3) ──────────────────────────────────────────────
+    try:
+        render_coordinator_copilot(analysis, risk_cat)
+    except Exception:
+        pass
+
     # ── Protocol Change Simulator ─────────────────────────────────────────────
     section_header("Protocol Change Simulator")
     from scenario_simulator import PRESET_SCENARIOS, simulate_scenario
@@ -1129,13 +1459,15 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
     # ── Generate Report ───────────────────────────────────────────────────────
     section_header("Participant Report")
     # Re-generate report with document source metadata if available
-    doc_source = st.session_state.get("doc_source", "Manual Entry")
+    doc_source      = st.session_state.get("doc_source", "Manual Entry")
+    copilot_summary = st.session_state.get("_copilot_summary", None)
     try:
         from report_generator import generate_report
         report_path = generate_report(
             analysis,
             patient_id=patient_df["patient_id"].iloc[0],
             doc_source=doc_source,
+            copilot_summary=copilot_summary,
         )
         analysis["report_path"] = str(report_path)
     except Exception:
@@ -1746,11 +2078,12 @@ def main():
     config     = load_config()
     patient_df = render_sidebar()
 
-    tab0, tab1, tab2, tab3, tab4 = st.tabs([
+    tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📋 Clinical Document Intake",
         "🧬 Participant Retention Assessment",
         "📊 Trial Operations Dashboard",
         "🤖 AI Intelligence Engine",
+        "📁 Multi-Participant Screening",
         "ℹ️ About the Platform",
     ])
 
@@ -1763,6 +2096,8 @@ def main():
     with tab3:
         render_tab3()
     with tab4:
+        render_tab_batch()
+    with tab5:
         render_tab4()
 
 

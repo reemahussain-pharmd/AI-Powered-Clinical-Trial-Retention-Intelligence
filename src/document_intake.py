@@ -25,6 +25,17 @@ class FieldResult:
     method: str = ""
     is_fallback: bool = False
 
+    @property
+    def confidence_pct(self) -> int:
+        """Numeric confidence score for display (0-99)."""
+        if self.is_fallback:
+            return 0
+        if self.confidence == "High":
+            return 95
+        if self.confidence == "Medium":
+            return 72
+        return 45
+
 
 # ── Defaults and labels ───────────────────────────────────────────────────────
 
