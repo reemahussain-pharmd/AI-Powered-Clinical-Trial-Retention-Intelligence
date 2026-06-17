@@ -51,17 +51,20 @@ Participant replacement costs an estimated **$15,000–$25,000 per person**, inc
 
 ## Screenshots
 
-### Participant Risk Assessment
-*(Add screenshot of the main dashboard analysis tab here)*
+### Landing Page — System Overview
+![Landing Page](Screenshot%202026-06-17%20160011.png)
 
-### Trial Operations Dashboard
-*(Add screenshot of the Trial Operations tab here)*
+### Participant Risk Assessment — 93% Critical Risk (Polypharmacy Demo)
+![Risk Assessment](Screenshot%202026-06-17%20160025.png)
 
-### PDF Report — Page 1
-*(Add screenshot of the PDF report Page 1 here)*
+### SHAP Explainability — Risk Drivers & Protective Factors
+![SHAP Analysis](Screenshot%202026-06-17%20160045.png)
 
-### PDF Report — Page 2
-*(Add screenshot of the PDF report Page 2 here)*
+### PDF Report — Page 1 (Executive Summary + Critical Risk Badge)
+![PDF Page 1](Screenshot%202026-06-17%20160108.png)
+
+### PDF Report — Page 2 (SHAP Table + Supporting Clinical Evidence)
+![PDF Page 2](Screenshot%202026-06-17%20160119.png)
 
 ---
 
