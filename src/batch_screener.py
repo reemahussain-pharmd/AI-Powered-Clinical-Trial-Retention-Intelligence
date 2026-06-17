@@ -5,9 +5,15 @@ CSV upload -> batch risk scoring -> ranked output with site-level summary.
 No LLMs. Uses the existing trained model pipeline.
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+
 import pandas as pd
 import numpy as np
 from typing import Any, Dict, List, Tuple
+
+from feature_engineering import add_composite_features
 
 REQUIRED_COLS = [
     "age", "gender", "bmi", "disease_severity_score", "number_of_comorbidities",
@@ -76,13 +82,11 @@ def batch_screen(df: pd.DataFrame, model: Any, preprocessor: Any) -> Dict[str, A
     """
     Score every row in df and return structured results dict.
     """
-    from feature_engineering import engineer_features
-
     rows = []
     for _, row in df.iterrows():
         try:
             pdata = pd.DataFrame([row.to_dict()])
-            pdata = engineer_features(pdata)
+            pdata = add_composite_features(pdata)
             X     = preprocessor.transform(pdata)
             prob  = float(model.predict_proba(X)[0, 1])
             pct   = round(prob * 100)
