@@ -1615,6 +1615,56 @@ def render_tab4():
             "- **Timing approximations.** Dropout windows derived from simulated distributions, not clinical predictions."
         )
 
+    # Release History
+    section_header("Release History")
+    st.markdown("""
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+
+<div style="flex:1;min-width:220px;background:#F0FDF4;border:1.5px solid #1D9E75;border-radius:10px;padding:16px">
+<div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Version 1.0 — Deployed</div>
+<div style="font-weight:700;font-size:14px;color:#0D1B2A;margin-bottom:8px">Manual Participant Entry</div>
+<ul style="font-size:12px;color:#374151;margin:0;padding-left:18px;line-height:1.8">
+<li>Manual participant data entry</li>
+<li>XGBoost dropout risk prediction</li>
+<li>SHAP per-participant explainability</li>
+<li>7 evidence-based interventions</li>
+<li>Business impact &amp; ROI calculator</li>
+<li>What-if scenario simulator</li>
+<li>Downloadable 2-page PDF report</li>
+</ul>
+</div>
+
+<div style="flex:1;min-width:220px;background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:10px;padding:16px">
+<div style="font-size:11px;font-weight:700;color:#3B82F6;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Version 2.0 — Current</div>
+<div style="font-weight:700;font-size:14px;color:#0D1B2A;margin-bottom:8px">Clinical Document Intake & Auto-Population</div>
+<ul style="font-size:12px;color:#374151;margin:0;padding-left:18px;line-height:1.8">
+<li>Clinical PDF upload (CRF, screening forms)</li>
+<li>Rule-based extraction of 16 clinical fields</li>
+<li>Confidence scoring (High / Medium / Low)</li>
+<li>Human-in-the-loop validation &amp; editing</li>
+<li>Sidebar auto-population on confirmation</li>
+<li>Extraction audit trail with timestamps</li>
+<li>PDF report metadata: source &amp; method</li>
+</ul>
+</div>
+
+<div style="flex:1;min-width:220px;background:#FFF7ED;border:1.5px dashed #F59E0B;border-radius:10px;padding:16px;opacity:0.85">
+<div style="font-size:11px;font-weight:700;color:#D97706;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Version 3.0 — Planned</div>
+<div style="font-weight:700;font-size:14px;color:#0D1B2A;margin-bottom:8px">AI Clinical Intake Agent</div>
+<ul style="font-size:12px;color:#374151;margin:0;padding-left:18px;line-height:1.8">
+<li>Clinical entity recognition (NER)</li>
+<li>Medical NLP for unstructured notes</li>
+<li>Confidence scoring engine (model-driven)</li>
+<li>Intelligent missing data detection</li>
+<li>Agentic clinical intake workflow</li>
+<li>Multi-document source reconciliation</li>
+</ul>
+<div style="font-size:11px;color:#D97706;font-weight:600;margin-top:8px">⚠️ Roadmap only — not implemented</div>
+</div>
+
+</div>
+""", unsafe_allow_html=True)
+
     # Disclaimer
     section_header("Disclaimer")
     st.warning(

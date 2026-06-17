@@ -190,6 +190,47 @@ streamlit run app.py
 
 ---
 
+## Release History
+
+### Version 1.0 — Manual Participant Entry
+- Manual participant data entry via sidebar
+- XGBoost dropout risk prediction (AUC 0.694)
+- SHAP per-participant explainability (risk drivers & protective factors)
+- 7 evidence-based intervention strategies
+- Business impact & ROI calculator (~$1.6M modelled savings)
+- What-if scenario simulator
+- Downloadable 2-page PDF report for trial sponsors
+- Live deployment on Streamlit Cloud
+
+### Version 2.0 — Clinical Document Intake & Auto-Population *(Current)*
+- Clinical PDF upload (CRF, screening forms, clinical summaries)
+- Rule-based extraction of 16 clinical fields — no LLMs, deterministic
+- Confidence scoring per field (High / Medium / Low)
+- Human-in-the-loop validation form — all fields editable before confirmation
+- Sidebar auto-population on confirmation — feeds directly into retention engine
+- Missing field detection with required-completion gating
+- Extraction audit trail with timestamps
+- PDF report metadata: data source & extraction method appended
+- Downloadable sample CRF for testing
+
+---
+
+## Future Roadmap
+
+### Version 3.0 — AI Clinical Intake Agent *(Planned)*
+> Not implemented — roadmap only
+
+| Planned Feature | Description |
+|----------------|-------------|
+| Clinical Entity Recognition (NER) | Named entity recognition for clinical notes |
+| Medical NLP | Unstructured free-text parsing |
+| Confidence Scoring Engine | Model-driven extraction certainty |
+| Intelligent Missing Data Detection | Context-aware imputation suggestions |
+| Agentic Clinical Intake Workflow | Multi-step orchestration with self-correction |
+| Multi-Document Reconciliation | Merge data from multiple source documents |
+
+---
+
 ## Author
 
 **Dr. Reema Mohamed Sulthan, PharmD**
