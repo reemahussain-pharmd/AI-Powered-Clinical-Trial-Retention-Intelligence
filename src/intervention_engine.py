@@ -1,7 +1,7 @@
 """
 Clinical Intervention Recommendation Engine.
 
-Maps patient-specific risk factors to evidence-based retention interventions.
+Maps participant-specific risk factors to evidence-based retention interventions.
 Each intervention is grounded in FDA guidance, ICH E6(R2), or peer-reviewed
 clinical operations literature — matching the PharmD expectation of
 evidence-justified clinical decision support.
@@ -16,14 +16,14 @@ def get_interventions(
     top_risk_factors: list,
 ) -> List[Dict]:
     """
-    Generate a personalised list of retention interventions for a patient.
+    Generate a personalised list of retention interventions for a participant.
 
-    Intervention selection is rule-based, driven by the patient's raw feature
+    Intervention selection is rule-based, driven by the participant's raw feature
     values. Rules reflect established causes of clinical trial dropout and the
     modifiable interventions that address them.
 
     Args:
-        patient_features: Series of raw patient feature values (single row).
+        patient_features: Series of raw participant feature values (single row).
         top_risk_factors: List of (feature, shap_value, label) tuples from explainer.
 
     Returns:
@@ -32,22 +32,22 @@ def get_interventions(
     """
     interventions = []
 
-    distance = float(patient_features.get("distance_from_site_km", 0))
-    transport = str(patient_features.get("transportation_access", "yes")).lower()
-    side_effects = float(patient_features.get("side_effect_severity_at_week2", 0))
+    distance          = float(patient_features.get("distance_from_site_km", 0))
+    transport         = str(patient_features.get("transportation_access", "yes")).lower()
+    side_effects      = float(patient_features.get("side_effect_severity_at_week2", 0))
     protocol_complexity = float(patient_features.get("protocol_complexity_score", 0))
-    prior_ae = str(patient_features.get("prior_adverse_event_history", "no")).lower()
-    visit_freq = float(patient_features.get("visit_frequency_per_month", 0))
-    concomitant_meds = float(patient_features.get("concomitant_medications", 0))
-    investigator_exp = float(patient_features.get("investigator_experience_years", 10))
+    prior_ae          = str(patient_features.get("prior_adverse_event_history", "no")).lower()
+    visit_freq        = float(patient_features.get("visit_frequency_per_month", 0))
+    concomitant_meds  = float(patient_features.get("concomitant_medications", 0))
+    investigator_exp  = float(patient_features.get("investigator_experience_years", 10))
 
     # Geographic barrier — modifiable without protocol changes
     if distance > 50 and transport == "no":
         interventions.append({
-            "name": "Transportation Reimbursement Program",
+            "name":  "Transportation Reimbursement Program",
             "owner": "Site Coordinator",
             "estimated_potential_risk_reduction": "Estimated Potential Risk Reduction: Moderate",
-            "cost": 300.0,
+            "cost":  300.0,
             "pharmd_rationale": (
                 "Geographic barrier is a primary non-clinical dropout cause. "
                 "Reimbursing transport removes practical friction without protocol changes. "
@@ -58,13 +58,13 @@ def get_interventions(
     # Early AE severity — week-2 pharmacovigilance intervention
     if side_effects >= 3:
         interventions.append({
-            "name": "Dedicated Safety Monitoring Call (weekly)",
-            "owner": "Principal Investigator + Study Nurse",
+            "name":  "Dedicated Safety Monitoring Call (weekly)",
+            "owner": "PI + Study Nurse",
             "estimated_potential_risk_reduction": "Estimated Potential Risk Reduction: High",
-            "cost": 150.0,
+            "cost":  150.0,
             "pharmd_rationale": (
                 "Early AE severity at week 2 is associated with discontinuation. "
-                "Proactive pharmacovigilance contact increases patient confidence and allows "
+                "Proactive pharmacovigilance contact increases participant confidence and allows "
                 "early management of adverse events before they become dropout triggers."
             ),
         })
@@ -72,26 +72,26 @@ def get_interventions(
     # High protocol complexity — ICH E6(R2) proportionality principle
     if protocol_complexity >= 7:
         interventions.append({
-            "name": "Protocol Simplification Review",
+            "name":  "Protocol Simplification Review",
             "owner": "Sponsor Medical Monitor",
             "estimated_potential_risk_reduction": "Estimated Potential Risk Reduction: Moderate",
-            "cost": 1200.0,
+            "cost":  1200.0,
             "pharmd_rationale": (
                 "ICH E6(R2) guidance emphasises proportionate monitoring. "
                 "Excessive assessments cause visit fatigue. Combining or eliminating "
-                "non-critical endpoints may reduce patient burden."
+                "non-critical endpoints may reduce participant burden."
             ),
         })
 
     # Prior AE history — heightened safety anxiety, dedicated liaison
     if prior_ae == "yes":
         interventions.append({
-            "name": "Assign Dedicated Patient Liaison",
-            "owner": "Patient Advocacy Team",
+            "name":  "Assign Dedicated Participant Liaison",
+            "owner": "Participant Advocacy Team",
             "estimated_potential_risk_reduction": "Estimated Potential Risk Reduction: Moderate-High",
-            "cost": 500.0,
+            "cost":  500.0,
             "pharmd_rationale": (
-                "Patients with prior AE history have heightened safety anxiety. "
+                "Participants with prior AE history have heightened safety anxiety. "
                 "A named liaison provides consistent reassurance and early intervention "
                 "at the first sign of concern."
             ),
@@ -100,13 +100,13 @@ def get_interventions(
     # High visit frequency — scheduling fatigue, decentralised trial approach
     if visit_freq >= 8:
         interventions.append({
-            "name": "Visit Consolidation Review",
+            "name":  "Visit Consolidation Review",
             "owner": "Clinical Operations",
             "estimated_potential_risk_reduction": "Estimated Potential Risk Reduction: Moderate",
-            "cost": 0.0,
+            "cost":  0.0,
             "pharmd_rationale": (
                 "High visit frequency creates scheduling burden, particularly "
-                "for employed patients. Consolidating assessments per decentralised trial "
+                "for employed participants. Consolidating assessments per decentralised trial "
                 "guidance may reduce dropout without compromising data integrity."
             ),
         })
@@ -114,38 +114,38 @@ def get_interventions(
     # Polypharmacy — pharmacist-led reconciliation
     if concomitant_meds >= 8:
         interventions.append({
-            "name": "Pharmacist-Led Medication Reconciliation",
+            "name":  "Pharmacist-Led Medication Reconciliation",
             "owner": "Clinical Pharmacist",
             "estimated_potential_risk_reduction": "Estimated Potential Risk Reduction: Low-Moderate",
-            "cost": 200.0,
+            "cost":  200.0,
             "pharmd_rationale": (
-                "Polypharmacy patients face compounded adverse event risk. "
+                "Polypharmacy participants face compounded adverse event risk. "
                 "Pharmacist-led reconciliation identifies potential drug-drug interactions "
-                "early, supporting patient safety and trial retention."
+                "early, supporting participant safety and trial retention."
             ),
         })
 
     # Inexperienced investigator — site quality improvement
     if investigator_exp <= 3:
         interventions.append({
-            "name": "Investigator Site Support Visit",
+            "name":  "Investigator Site Support Visit",
             "owner": "CRA / Sponsor",
             "estimated_potential_risk_reduction": "Estimated Potential Risk Reduction: Moderate",
-            "cost": 800.0,
+            "cost":  800.0,
             "pharmd_rationale": (
-                "Less experienced sites may have weaker patient retention protocols. "
+                "Less experienced sites may have weaker participant retention protocols. "
                 "A sponsor support visit can improve investigator confidence and standardise "
-                "patient follow-up procedures."
+                "participant follow-up procedures."
             ),
         })
 
     # Fallback: ensure at least one recommendation is always present
     if not interventions:
         interventions.append({
-            "name": "Standard Enhanced Retention Monitoring",
+            "name":  "Standard Enhanced Retention Monitoring",
             "owner": "Site Coordinator",
             "estimated_potential_risk_reduction": "Estimated Potential Risk Reduction: Low",
-            "cost": 0.0,
+            "cost":  0.0,
             "pharmd_rationale": (
                 "Regular check-in contact with the participant to monitor for "
                 "emerging barriers to attendance. No specific high-risk flags identified; "

@@ -411,7 +411,7 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
 
     # -- Interventions table (with Priority column) --
     pdf.section_heading("Recommended Retention Interventions")
-    col_w   = [55, 27, 42, 20, 36]   # total = 180
+    col_w   = [50, 33, 41, 20, 36]   # total = 180
     headers = ["Intervention", "Owner", "Est. Risk Reduction", "Cost", "Priority"]
 
     pdf.set_fill_color(*NAVY)
@@ -432,8 +432,8 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
         )
         priority = _intervention_priority(iv)
         row_vals = [
-            iv["name"][:45],
-            iv["owner"][:20],
+            iv["name"][:42],
+            iv["owner"][:24],
             reduction_short,
             f"${iv['cost']:,.0f}",
         ]
