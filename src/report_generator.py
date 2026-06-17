@@ -510,10 +510,10 @@ def generate_report(
         fill      = i % 2 == 0
         bg        = LIGHT_GRAY if fill else WHITE
         pdf.set_fill_color(*bg)
-        reduction = iv["estimated_potential_risk_reduction"].replace(
+        reduction  = iv["estimated_potential_risk_reduction"].replace(
             "Estimated Potential Risk Reduction: ", ""
         )
-        impact    = _impact_score(reduction)
+        iv_impact = _impact_score(reduction)
         cost_tier = _cost_tier(float(iv.get("cost", 0)))
         priority  = _intervention_priority(iv)
 
@@ -523,11 +523,11 @@ def generate_report(
         pdf.cell(col_w[1], 6, _safe(iv["owner"][:20]), border=1, fill=fill, ln=False)
 
         # Impact cell — coloured
-        ir, ig, ib = impact_color.get(impact, MID_GRAY)
+        ir, ig, ib = impact_color.get(iv_impact, MID_GRAY)
         pdf.set_fill_color(ir, ig, ib)
         pdf.set_text_color(*WHITE)
         pdf.set_font("Helvetica", "B", 7)
-        pdf.cell(col_w[2], 6, impact, border=1, fill=True, ln=False, align="C")
+        pdf.cell(col_w[2], 6, iv_impact, border=1, fill=True, ln=False, align="C")
         pdf.set_fill_color(*bg)
         pdf.set_text_color(20, 20, 20)
         pdf.set_font("Helvetica", "", 7)
