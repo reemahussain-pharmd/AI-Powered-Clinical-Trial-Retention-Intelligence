@@ -803,15 +803,18 @@ def render_tab_batch():
     section_header("Participant Risk Ranking")
     results_df = result["results_df"].copy()
 
-    def risk_color_row(val):
-        colors = {"Critical": "background-color:#FEE2E2", "High": "background-color:#FEF3C7",
-                  "Moderate": "background-color:#FFF7ED", "Low": "background-color:#D1FAE5"}
-        return [colors.get(v, "") for v in val]
+    _ROW_COLORS = {
+        "Critical": "background-color:#FEE2E2",
+        "High":     "background-color:#FEF3C7",
+        "Moderate": "background-color:#FFF7ED",
+        "Low":      "background-color:#D1FAE5",
+    }
 
-    styled = results_df.style.apply(
-        lambda row: risk_color_row(row[["Risk Category"]].values.flatten()),
-        subset=["Risk Category"], axis=1
-    )
+    def risk_color_row(row):
+        color = _ROW_COLORS.get(row["Risk Category"], "")
+        return [color] * len(row)
+
+    styled = results_df.style.apply(risk_color_row, axis=1)
     st.dataframe(styled, use_container_width=True, hide_index=True)
 
     # CSV download
