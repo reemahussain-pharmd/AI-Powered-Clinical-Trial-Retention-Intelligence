@@ -1163,6 +1163,20 @@ def render_tab_intake():
         st.session_state["doc_extraction_method"] = extraction_method
         st.session_state["intake_confirmed"]    = True
         st.session_state["intake_edited_fields"] = edited
+        # Compute extraction stats for PDF report
+        n_parsed = sum(
+            1 for k in EXTRACTION_ORDER
+            if k in results and not results[k].is_fallback
+        )
+        avg_conf = round(
+            sum(results[k].confidence_pct for k in EXTRACTION_ORDER if k in results)
+            / max(len(EXTRACTION_ORDER), 1)
+        )
+        st.session_state["_extraction_stats"] = {
+            "fields_parsed":   n_parsed,
+            "total_fields":    len(EXTRACTION_ORDER),
+            "confidence_pct":  avg_conf,
+        }
         st.rerun()
 
     # ── Audit log ─────────────────────────────────────────────────────────────
@@ -1466,7 +1480,8 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
     section_header("Participant Report")
     # Re-generate report with document source metadata if available
     doc_source      = st.session_state.get("doc_source", "Manual Entry")
-    copilot_summary = st.session_state.get("_copilot_summary", None)
+    copilot_summary  = st.session_state.get("_copilot_summary", None)
+    extraction_stats = st.session_state.get("_extraction_stats", None)
     try:
         from report_generator import generate_report
         report_path = generate_report(
@@ -1474,6 +1489,7 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
             patient_id=patient_df["patient_id"].iloc[0],
             doc_source=doc_source,
             copilot_summary=copilot_summary,
+            extraction_stats=extraction_stats,
         )
         analysis["report_path"] = str(report_path)
     except Exception as _pdf_err:

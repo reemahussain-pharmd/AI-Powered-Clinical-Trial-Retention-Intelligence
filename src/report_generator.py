@@ -278,6 +278,7 @@ def generate_report(
     patient_id: str = "DEMO",
     doc_source: str = "Manual Entry",
     copilot_summary=None,
+    extraction_stats: dict = None,
 ) -> Path:
     """
     Generate an executive PDF retention intelligence report.
@@ -325,7 +326,7 @@ def generate_report(
     col_meta = pdf.epw / 4
     meta_items = [
         f"Report ID: CTRI-{patient_id}-001",
-        "Model Version: 1.0",
+        "Platform Version: 3.0",
         f"Generated: {date.today().strftime('%d-%b-%Y')}",
         "Type: Participant Assessment",
     ]
@@ -396,6 +397,12 @@ def generate_report(
     pdf.kv_row("Data Source",              doc_source)
     if doc_source != "Manual Entry":
         pdf.kv_row("Extraction Method",    "Rule-Based Clinical Parser")
+        if extraction_stats:
+            conf_pct    = extraction_stats.get("confidence_pct", 0)
+            n_parsed    = extraction_stats.get("fields_parsed", 0)
+            n_total     = extraction_stats.get("total_fields", 0)
+            pdf.kv_row("Document Extraction Confidence", f"{conf_pct}%", bold_value=True)
+            pdf.kv_row("Fields Successfully Parsed",     f"{n_parsed}/{n_total}")
 
     # Persona + characteristics
     persona_name = analysis.get("persona", "—")
@@ -411,8 +418,52 @@ def generate_report(
         # Split on ". " to show as bullets
         for sentence in [s.strip() for s in persona_desc.split(". ") if s.strip()]:
             pdf.set_x(pdf.l_margin + 4)
-            pdf.safe_multi_cell(pdf.epw - 4, 4.5, f"- {sentence}.")
+            pdf.safe_multi_cell(pdf.epw - 4, 4.5, f"- {sentence.rstrip('.')}.")
         pdf.set_text_color(20, 20, 20)
+    pdf.ln(3)
+
+    # -- Risk Summary Box --
+    def _risk_domain_label(pct: int) -> str:
+        if pct >= 61: return "High"
+        if pct >= 31: return "Moderate"
+        return "Low"
+
+    ae_pct    = risk_pct if any("side effect" in str(f).lower() or "adverse" in str(f).lower()
+                                for f in risk_factors) else max(risk_pct - 15, 0)
+    ops_pct   = risk_pct if any("visit" in str(f).lower() or "logistic" in str(f).lower()
+                                or "protocol" in str(f).lower()
+                                for f in risk_factors) else max(risk_pct - 20, 0)
+    logi_pct  = risk_pct if any("transport" in str(f).lower() or "distance" in str(f).lower()
+                                for f in risk_factors) else max(risk_pct - 20, 0)
+    risk_box_rows = [
+        ("Clinical Risk",     ae_pct),
+        ("Operational Risk",  ops_pct),
+        ("Logistical Risk",   logi_pct),
+        ("Overall Retention Risk", risk_pct),
+    ]
+    pdf.set_draw_color(*MID_GRAY)
+    pdf.set_line_width(0.3)
+    box_x = pdf.l_margin
+    box_w = pdf.epw
+    box_row_h = 5.5
+    pdf.set_font("Helvetica", "B", 7.5)
+    pdf.set_fill_color(*NAVY)
+    pdf.set_text_color(*WHITE)
+    pdf.cell(box_w, 6, "Risk Domain Summary", border=0, fill=True, ln=True, align="C")
+    for label, pct in risk_box_rows:
+        domain_cat  = _risk_domain_label(pct)
+        row_color   = _risk_colour(domain_cat)
+        is_overall  = label.startswith("Overall")
+        pdf.set_fill_color(*LIGHT_GRAY)
+        pdf.set_text_color(20, 20, 20)
+        pdf.set_font("Helvetica", "B" if is_overall else "", 7.5)
+        pdf.cell(box_w * 0.55, box_row_h, f"  {label}", border=1, fill=True, ln=False)
+        pdf.set_fill_color(*row_color)
+        pdf.set_text_color(*WHITE)
+        pdf.set_font("Helvetica", "B", 7.5)
+        pdf.cell(box_w * 0.45, box_row_h,
+                 f"{domain_cat} ({pct}%)",
+                 border=1, fill=True, ln=True, align="C")
     pdf.ln(4)
 
     # Clinical timeline
@@ -684,6 +735,30 @@ def generate_report(
             pdf.safe_multi_cell(0, 5, f"  - {a}")
         pdf.ln(4)
 
+    # -- Technology Stack --
+    pdf.section_heading("Technology Stack")
+    tech_items = [
+        ("Prediction Engine",    "XGBoost Gradient Boosting Classifier + Logistic Regression Ensemble"),
+        ("Explainability",       "SHAP (SHapley Additive exPlanations) — feature-level attribution"),
+        ("Clinical NER",         "Rule-Based Clinical Entity Recognition (Dictionary Pattern Matching)"),
+        ("Document Intelligence","pdfplumber + PyMuPDF — multi-engine clinical CRF parser"),
+        ("Data Processing",      "Scikit-learn pipeline — preprocessing, feature engineering, scaling"),
+        ("Visualisation",        "Plotly, Matplotlib, Seaborn — interactive and static charts"),
+        ("Report Generation",    "fpdf2 — programmatic PDF generation with branded clinical layout"),
+        ("Application Layer",    "Streamlit Community Cloud — deployed web application"),
+        ("Language",             "Python 3.11"),
+    ]
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(30, 30, 30)
+    for tech_label, tech_desc in tech_items:
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.cell(52, 5.5, f"  {tech_label}:", border=0, ln=False)
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(60, 60, 60)
+        pdf.cell(0, 5.5, tech_desc, border=0, ln=True)
+        pdf.set_text_color(30, 30, 30)
+    pdf.ln(3)
+
     # -- References --
     pdf.section_heading("References")
     refs = [
@@ -715,12 +790,18 @@ def generate_report(
     if qr_bytes:
         qr_size = 22
         qr_x    = 210 - pdf.r_margin - qr_size
-        qr_y    = 297 - 32 - qr_size        # just above footer
+        qr_y    = 297 - 38 - qr_size        # just above footer
         pdf.image(qr_bytes, x=qr_x, y=qr_y, w=qr_size, h=qr_size)
-        pdf.set_xy(qr_x - 2, qr_y + qr_size + 1)
-        pdf.set_font("Helvetica", "", 5.5)
-        pdf.set_text_color(130, 130, 130)
-        pdf.cell(qr_size + 4, 4, "View on GitHub", align="C")
+        pdf.set_xy(pdf.l_margin, qr_y + qr_size + 1)
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_text_color(*TEAL)
+        pdf.cell(0, 4, "Project Repository:", ln=True)
+        pdf.set_font("Helvetica", "", 7)
+        pdf.set_text_color(60, 60, 60)
+        pdf.cell(
+            0, 4,
+            "github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence",
+        )
 
     # Save
     out_path = REPORTS_DIR / f"retention_assessment_{patient_id}.pdf"
