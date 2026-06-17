@@ -270,23 +270,48 @@ class CoordinatorCopilot:
         if any(k in combined for k in ["week 2 side effect", "side effect severity", "week 2 adverse"]):
             driver_combo = "early adverse event burden combined with protocol and logistical pressures"
             timing_note  = f"The combination suggests elevated vulnerability during the {dropout_window or 'early treatment'} period."
-            focus_note   = "Priority should be placed on proactive safety engagement rather than protocol modification."
+            focus_note   = (
+                "Recommended coordinator actions: (1) schedule proactive safety call within 24 hours, "
+                "(2) review and document current AE burden per ICH E6(R2), "
+                "(3) confirm transportation availability for next visit, "
+                "(4) escalate to site investigator if symptoms meet CTCAE Grade >= 2."
+            )
         elif any(k in combined for k in ["logistic friction", "distance from trial", "no transportation"]):
             driver_combo = "logistical barriers — particularly travel distance and transportation access"
             timing_note  = f"These barriers tend to accumulate progressively, with dropout risk peaking around {dropout_window or 'Weeks 4-8'}."
-            focus_note   = "Priority should be placed on logistical support activation before the next scheduled visit."
+            focus_note   = (
+                "Recommended coordinator actions: (1) activate transportation reimbursement programme immediately, "
+                "(2) confirm logistics for next scheduled visit, "
+                "(3) identify telemedicine-eligible visit windows to reduce travel burden, "
+                "(4) document barrier in site retention risk register."
+            )
         elif any(k in combined for k in ["visit burden", "visit frequency", "protocol complexity"]):
             driver_combo = "high protocol visit burden combined with participant fatigue indicators"
             timing_note  = f"Protocol burden typically drives disengagement between {dropout_window or 'Weeks 4-12'}, as cumulative fatigue outweighs initial motivation."
-            focus_note   = "Priority should be placed on visit consolidation and protocol review rather than clinical monitoring escalation."
+            focus_note   = (
+                "Recommended coordinator actions: (1) request Medical Monitor review for visit consolidation, "
+                "(2) identify assessment windows eligible for telemedicine delivery, "
+                "(3) provide plain-language protocol summary and participant support materials, "
+                "(4) schedule a structured check-in call before the next visit."
+            )
         elif any(k in combined for k in ["polypharmacy", "concomitant medication", "comorbid"]):
             driver_combo = "polypharmacy complexity and comorbidity burden"
             timing_note  = f"Medication-related dropout typically emerges during {dropout_window or 'Weeks 2-8'} as drug-drug interactions and AE cascade risks compound."
-            focus_note   = "Priority should be placed on pharmacist-led medication reconciliation and close AE monitoring."
+            focus_note   = (
+                "Recommended coordinator actions: (1) schedule pharmacist-led medication reconciliation before next visit, "
+                "(2) review concomitant medication list for drug-drug interaction risk with investigational product, "
+                "(3) develop a personalised AE management plan with the investigator, "
+                "(4) coordinate with treating physicians to reduce overall appointment burden."
+            )
         else:
             driver_combo = " and ".join(d.lower() for d in drivers[:2]) if len(drivers) >= 2 else (drivers[0].lower() if drivers else "multiple risk factors")
             timing_note  = f"Risk is expected to escalate during {dropout_window or 'the early treatment period'}."
-            focus_note   = "A multi-pronged retention approach is indicated."
+            focus_note   = (
+                "Recommended coordinator actions: (1) review full risk profile with site investigator, "
+                "(2) activate the most relevant retention support pathway, "
+                "(3) schedule a structured participant check-in call, "
+                "(4) document retention risk status in the site risk register."
+            )
 
         return (
             f"This participant's risk profile is primarily driven by {driver_combo}, resulting in a {risk_cat.lower()} "

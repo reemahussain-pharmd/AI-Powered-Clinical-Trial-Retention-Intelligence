@@ -325,7 +325,7 @@ def generate_report(
     pdf.rect(pdf.l_margin, strip_y, pdf.epw, 8, "FD")
     col_meta = pdf.epw / 4
     meta_items = [
-        f"Report ID: CTRI-{patient_id}-001",
+        f"Report ID: CTRI-{date.today().strftime('%Y%m%d')}-{patient_id.replace('_','').replace('-','')[:8].upper()}",
         "Platform Version: 3.0",
         f"Generated: {date.today().strftime('%d-%b-%Y')}",
         "Type: Participant Assessment",
@@ -396,7 +396,7 @@ def generate_report(
     pdf.kv_row("Estimated Dropout Window", analysis.get("dropout_window", "—"))
     pdf.kv_row("Data Source",              doc_source)
     if doc_source != "Manual Entry":
-        pdf.kv_row("Extraction Method",    "Rule-Based Clinical Parser")
+        pdf.kv_row("Extraction Method",    "Clinical Document Intelligence Engine")
         if extraction_stats:
             conf_pct    = extraction_stats.get("confidence_pct", 0)
             n_parsed    = extraction_stats.get("fields_parsed", 0)
