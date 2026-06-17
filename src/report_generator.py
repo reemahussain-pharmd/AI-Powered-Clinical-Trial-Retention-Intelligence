@@ -9,7 +9,7 @@ as educational and portfolio demonstration material.
 import io
 from fpdf import FPDF
 from pathlib import Path
-from datetime import date
+from datetime import date, datetime
 from typing import Dict
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -140,6 +140,7 @@ class RetentionReport(FPDF):
     def __init__(self, patient_id: str):
         super().__init__()
         self.patient_id = patient_id
+        self.generated_at = datetime.now().strftime('%d-%b-%Y %H:%M')
         self.set_auto_page_break(auto=True, margin=20)
         self.set_margins(15, 15, 15)
 
@@ -178,7 +179,7 @@ class RetentionReport(FPDF):
         self.multi_cell(0, 4, DISCLAIMER, align="C")
         self.set_font("Helvetica", "", 7)
         self.cell(0, 4, FOOTER_LINE2, ln=True, align="C")
-        self.cell(0, 4, f"{FOOTER_LINE3}  |  {date.today().year}", align="C")
+        self.cell(0, 4, f"{FOOTER_LINE3}  |  Generated: {self.generated_at}  |  Model v3.0", align="C")
 
     def section_heading(self, text: str):
         self.set_fill_color(*TEAL)
@@ -361,7 +362,7 @@ def generate_report(
     else:
         exec_text = (
             f"{patient_id} was classified as a {risk_cat_label} Retention Risk participant "
-            f"({risk_pct}%). Primary dropout drivers are {rf_text}. "
+            f"({risk_pct}%). Highest-ranked risk drivers identified by the model were {rf_text}. "
             f"{iv_text} are recommended as priority interventions to reduce attrition risk. "
             f"Estimated intervention return on investment is {roi_str}."
         )
@@ -384,9 +385,8 @@ def generate_report(
     pdf.kv_row("Prediction Confidence",    f"{conf_label} ({confidence}%)", bold_value=True)
     # Confidence explanation
     conf_explain = (
-        f"{confidence}% confidence reflects calibrated probability output from the XGBoost classifier "
-        f"(LogReg ensemble). Values above 80% indicate strong predictor signal alignment; "
-        f"values between 60-80% indicate moderate agreement with clinically plausible uncertainty."
+        "Prediction confidence reflects model certainty based on agreement across multiple "
+        "clinical risk signals and calibration performance during validation."
     )
     pdf.set_font("Helvetica", "I", 7.5)
     pdf.set_text_color(100, 100, 100)
@@ -395,6 +395,8 @@ def generate_report(
     pdf.ln(2)
     pdf.kv_row("Estimated Dropout Window", analysis.get("dropout_window", "—"))
     pdf.kv_row("Data Source",              doc_source)
+    pdf.kv_row("Model Used",               "Logistic Regression (Primary Retention Model)")
+    pdf.kv_row("Explainability",           "SHAP Analysis")
     if doc_source != "Manual Entry":
         pdf.kv_row("Extraction Method",    "Clinical Document Intelligence Engine")
         if extraction_stats:
@@ -527,14 +529,14 @@ def generate_report(
     def _impact_score(reduction_text: str) -> str:
         t = reduction_text.lower()
         if "high" in t and "moderate" not in t and "low" not in t:
-            return "9.5/10"
+            return "Very High"
         if "moderate-high" in t or "high-moderate" in t:
-            return "7.5/10"
+            return "High"
         if "moderate" in t and "low" not in t:
-            return "6.5/10"
+            return "Moderate"
         if "low-moderate" in t or "moderate-low" in t:
-            return "5.0/10"
-        return "3.5/10"
+            return "Low-Moderate"
+        return "Low"
 
     def _cost_tier(cost: float) -> str:
         if cost == 0:       return "Zero"
@@ -554,8 +556,13 @@ def generate_report(
     pdf.ln()
 
     priority_color = {"Critical": RED_RISK, "High": AMBER_RISK, "Medium": TEAL}
-    impact_color   = {"9.5/10": GREEN_RISK, "7.5/10": TEAL, "6.5/10": AMBER_RISK,
-                      "5.0/10": ORANGE_RISK, "3.5/10": MID_GRAY}
+    impact_color   = {
+        "Very High":    GREEN_RISK,
+        "High":         TEAL,
+        "Moderate":     AMBER_RISK,
+        "Low-Moderate": ORANGE_RISK,
+        "Low":          MID_GRAY,
+    }
     pdf.set_text_color(20, 20, 20)
     for i, iv in enumerate(interventions):
         fill      = i % 2 == 0
@@ -608,7 +615,7 @@ def generate_report(
 
     # -- Coordinator Copilot Summary (v3.0) --
     if copilot_summary is not None:
-        pdf.section_heading("Retention Coordinator Recommendations (v3.0 Copilot)")
+        pdf.section_heading("AI-Assisted Coordinator Summary")
         pdf.set_font("Helvetica", "I", 8.5)
         pdf.set_text_color(40, 40, 40)
         pdf.safe_multi_cell(0, 5, copilot_summary.risk_narrative)
@@ -653,6 +660,12 @@ def generate_report(
     # -- What-If Scenarios (visual) --
     if top_scenarios:
         pdf.section_heading("What-If Scenario Analysis")
+        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_text_color(100, 100, 100)
+        pdf.safe_multi_cell(0, 4.5,
+            "Note: Individual intervention effects are modelled estimates and are not additive.")
+        pdf.set_text_color(20, 20, 20)
+        pdf.ln(2)
         for sc in top_scenarios:
             orig_pct  = int(round(sc.get("original_risk", 0) * 100))
             new_pct   = int(round(sc.get("new_risk", 0) * 100))
@@ -733,6 +746,10 @@ def generate_report(
             "All figures are educational estimates for portfolio demonstration only",
         ]:
             pdf.safe_multi_cell(0, 5, f"  - {a}")
+        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_text_color(80, 80, 80)
+        pdf.safe_multi_cell(0, 4.5, "Source: Getz KA et al., Ther Innov Regul Sci (2016).")
+        pdf.set_text_color(20, 20, 20)
         pdf.ln(4)
 
     # -- Technology Stack --
@@ -740,10 +757,10 @@ def generate_report(
     tech_items = [
         ("Prediction Engine",    "XGBoost Gradient Boosting Classifier + Logistic Regression Ensemble"),
         ("Explainability",       "SHAP (SHapley Additive exPlanations) — feature-level attribution"),
-        ("Clinical NER",         "Rule-Based Clinical Entity Recognition (Dictionary Pattern Matching)"),
+        ("Clinical Information Extraction", "Rule-Based Entity Extraction Pipeline"),
         ("Document Intelligence","pdfplumber + PyMuPDF — multi-engine clinical CRF parser"),
         ("Data Processing",      "Scikit-learn pipeline — preprocessing, feature engineering, scaling"),
-        ("Visualisation",        "Plotly, Matplotlib, Seaborn — interactive and static charts"),
+        ("Visualisation",        "Plotly, Matplotlib — interactive and static charts"),
         ("Report Generation",    "fpdf2 — programmatic PDF generation with branded clinical layout"),
         ("Application Layer",    "Streamlit Community Cloud — deployed web application"),
         ("Language",             "Python 3.11"),
@@ -801,6 +818,7 @@ def generate_report(
         pdf.cell(
             0, 4,
             "github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence",
+            link=GITHUB_URL,
         )
 
     # Save

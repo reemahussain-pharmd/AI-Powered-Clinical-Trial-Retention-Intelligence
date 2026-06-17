@@ -631,7 +631,7 @@ def generate_sample_crf() -> bytes:
     row("Investigator Experience",         "6 years")
     row("Trial Site",                      "SITE_04")
 
-    section("CLINICAL NOTES")
+    section("INVESTIGATOR NOTES")
     pdf.set_font("Helvetica", "", 9)
     notes = (
         "Participant is a 62-year-old retired female with moderate-severe disease. "
@@ -639,7 +639,7 @@ def generate_sample_crf() -> bytes:
         "Currently taking 9 concomitant medications. No reliable transportation access - "
         "lives 72 km from site. Prior participation in 1 previous clinical trial. "
         "Insurance: Insured. Consent complexity assessed as 6/10. "
-        "Week 2 adverse event severity scored at 3.5 by the investigator."
+        "Week 2 adverse event severity assessed at 3.5 by site investigator."
     )
     pdf.multi_cell(0, 5, notes)
 
