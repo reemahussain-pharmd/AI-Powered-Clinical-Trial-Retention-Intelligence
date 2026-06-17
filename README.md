@@ -1,4 +1,4 @@
-# AI-Powered Clinical Trial Retention Intelligence System
+# AI-Powered Clinical Trial Retention Intelligence Platform
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Deployed-red?logo=streamlit)
@@ -18,6 +18,22 @@
 **[Launch App →](https://ai-powered-clinical-trial-retention-intelligence-eucpnx2cs9doz.streamlit.app)**
 
 Try the four built-in demo profiles (High-Risk, Rural, Polypharmacy, Low-Risk) to see full end-to-end analysis and downloadable PDF reports without entering any data.
+
+---
+
+## Project Highlights
+
+| | |
+|---|---|
+| ✅ 2,000 synthetic participants modelled | ✅ 5 ML models evaluated (XGBoost, LightGBM, CatBoost, RF, LR) |
+| ✅ SHAP explainability per participant | ✅ 7 evidence-based intervention strategies |
+| ✅ Downloadable 2-page PDF reporting engine | ✅ Live deployment on Streamlit Cloud |
+
+---
+
+## Skills Demonstrated
+
+`Healthcare AI` &nbsp; `Clinical Trial Analytics` &nbsp; `Explainable AI (SHAP)` &nbsp; `Machine Learning` &nbsp; `Streamlit` &nbsp; `XGBoost` &nbsp; `Python` &nbsp; `PharmD Domain Expertise` &nbsp; `Business Impact Modelling` &nbsp; `Clinical Operations Analytics` &nbsp; `Pharmacovigilance` &nbsp; `PDF Report Generation`
 
 ---
 
