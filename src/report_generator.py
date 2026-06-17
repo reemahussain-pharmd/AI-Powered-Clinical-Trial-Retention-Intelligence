@@ -65,6 +65,8 @@ def _safe(text: str) -> str:
         .replace("é", "e")
         .replace("à", "a")
         .replace("∞", "inf")
+        .replace("≥", ">=")
+        .replace("≤", "<=")
         .replace("–", "-")
         .replace("—", "--")
         .replace("’", "'")
