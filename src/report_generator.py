@@ -340,12 +340,21 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
         iv_text = "targeted retention interventions"
     roi     = impact.get("roi_ratio", 0)
     roi_str = f"{roi:.1f}x" if roi not in (0, float("inf")) else "N/A"
-    exec_text = (
-        f"{patient_id} was classified as a {risk_cat_label} Retention Risk participant "
-        f"({risk_pct}%). Primary dropout drivers are {rf_text}. "
-        f"{iv_text} are recommended as priority interventions to reduce attrition risk. "
-        f"Estimated intervention return on investment is {roi_str}."
-    )
+    if risk_cat_label == "Low":
+        exec_text = (
+            f"Although {rf_text} contribute modestly to attrition risk, "
+            f"multiple protective factors outweigh these, resulting in an overall low "
+            f"retention risk profile for {patient_id} ({risk_pct}%). "
+            f"No targeted interventions are recommended at this time. "
+            f"Routine monitoring and standard site engagement are advised."
+        )
+    else:
+        exec_text = (
+            f"{patient_id} was classified as a {risk_cat_label} Retention Risk participant "
+            f"({risk_pct}%). Primary dropout drivers are {rf_text}. "
+            f"{iv_text} are recommended as priority interventions to reduce attrition risk. "
+            f"Estimated intervention return on investment is {roi_str}."
+        )
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(30, 30, 30)
     pdf.safe_multi_cell(0, 5, exec_text)
@@ -368,7 +377,8 @@ def generate_report(analysis: Dict, patient_id: str = "DEMO") -> Path:
     pdf.ln(4)
 
     # -- SHAP Risk Factors --
-    pdf.section_heading("Top Dropout Risk Factors (SHAP Analysis)")
+    shap_heading = "Residual Risk Factors (SHAP Analysis)" if risk_cat_label == "Low" else "Top Dropout Risk Factors (SHAP Analysis)"
+    pdf.section_heading(shap_heading)
     if risk_factors:
         pdf.shap_table(risk_factors, protective=False)
     pdf.ln(3)
