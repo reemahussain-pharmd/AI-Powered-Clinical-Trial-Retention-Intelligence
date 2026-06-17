@@ -24,7 +24,7 @@ CONFIG_PATH = PROJECT_ROOT / "config.yaml"
 
 # Human-readable labels for all model features
 FEATURE_LABEL_MAP = {
-    "age": "Patient Age",
+    "age": "Participant Age",
     "bmi": "Body Mass Index",
     "distance_from_site_km": "Distance from Trial Site",
     "disease_severity_score": "Disease Severity Score",
@@ -41,7 +41,7 @@ FEATURE_LABEL_MAP = {
     "trial_phase": "Trial Phase",
     "visit_burden_index": "Visit Burden Index",
     "polypharmacy_risk_score": "Polypharmacy Risk Score",
-    "patient_burden_score": "Patient Burden Score",
+    "patient_burden_score": "Participant Burden Score",
     "logistic_friction_score": "Logistic Friction Score",
     "phase_complexity_interaction": "Phase-Complexity Interaction",
     "gender_F": "Gender: Female",
@@ -66,18 +66,29 @@ FEATURE_LABEL_MAP = {
 
 def to_label(feature_name: str) -> str:
     """Convert a raw feature name to a human-readable clinical label."""
-    # Exact match first
     if feature_name in FEATURE_LABEL_MAP:
         return FEATURE_LABEL_MAP[feature_name]
-    # Site ID OHE: "site_id_SITE_01" -> "Trial Site: SITE_01"
     if feature_name.startswith("site_id_"):
         return f"Trial Site: {feature_name[len('site_id_'):]}"
-    # Other OHE suffix matching
     for key, label in FEATURE_LABEL_MAP.items():
         if feature_name.startswith(key):
             return label
-    # Fallback: title-case with underscores replaced
     return feature_name.replace("_", " ").title()
+
+
+def _contextual_label(feature_name: str, feature_val: float) -> str:
+    """
+    Return a directionally correct label for one-hot encoded _no features.
+
+    When a _no OHE column has value 0, the participant actually has the positive
+    condition (e.g., transportation_access_no=0 means they DO have transport).
+    In that case, swap to the _yes label so the displayed factor makes clinical sense.
+    """
+    if feature_name.endswith("_no") and feature_val == 0.0:
+        yes_feature = feature_name[:-3] + "_yes"
+        if yes_feature in FEATURE_LABEL_MAP:
+            return FEATURE_LABEL_MAP[yes_feature]
+    return to_label(feature_name)
 
 
 def load_model_and_preprocessor():
@@ -244,17 +255,18 @@ def explain_patient(
     cat_names = cat_encoder.get_feature_names_out(cols["categorical"]).tolist()
     feature_names = cols["numerical"] + cols["composite"] + cat_names
 
-    shap_pairs = list(zip(feature_names, shap_vals))
-    shap_pairs_sorted = sorted(shap_pairs, key=lambda x: x[1], reverse=True)
+    feature_vals = X_proc[0]
+    shap_triples = list(zip(feature_names, shap_vals, feature_vals))
+    shap_triples_sorted = sorted(shap_triples, key=lambda x: x[1], reverse=True)
 
     top3_risk = [
-        (f, sv, to_label(f))
-        for f, sv in shap_pairs_sorted[:3]
+        (f, sv, _contextual_label(f, fv))
+        for f, sv, fv in shap_triples_sorted[:3]
         if sv > 0
     ]
     top3_protective = [
-        (f, sv, to_label(f))
-        for f, sv in shap_pairs_sorted[-3:]
+        (f, sv, _contextual_label(f, fv))
+        for f, sv, fv in shap_triples_sorted[-3:]
         if sv < 0
     ]
 
