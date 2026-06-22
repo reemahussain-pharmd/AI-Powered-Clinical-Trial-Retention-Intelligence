@@ -34,7 +34,7 @@ st.set_page_config(
     page_title="TrialGuard",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded",  # forced open every load
 )
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
@@ -61,143 +61,43 @@ html,body,[class*="css"]{font-family:'Inter',system-ui,-apple-system,sans-serif!
 .main{background:linear-gradient(135deg,#F0F4F8 0%,#E8F0E9 50%,#F0F4F8 100%)!important;min-height:100vh}
 .block-container{padding-top:0.5rem!important;padding-bottom:2rem!important}
 
-/* ═══════════════════════════════════════════════
-   ENTERPRISE SIDEBAR — TrialGuard Navigation Rail
-═══════════════════════════════════════════════ */
-
 /* ── Sidebar container ── */
-[data-testid="stSidebar"]{
-    background:linear-gradient(180deg,#080f1a 0%,#0D1B2A 35%,#0a1e2e 70%,#080f1a 100%)!important;
-    border-right:1px solid rgba(29,158,117,0.2)!important
-}
-[data-testid="stSidebar"]>div:first-child{padding:0 12px 20px!important}
-[data-testid="stSidebar"] *{color:#FFFFFF!important}
-
-/* ── Sidebar section header labels ── */
-.sb-section{
-    font-size:9.5px;font-weight:700;color:#1D9E75!important;
-    letter-spacing:1.8px;text-transform:uppercase;
-    margin:10px 0 5px 4px;display:block
-}
-.sb-divider{
-    width:100%;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(29,158,117,0.3),transparent);
-    margin:10px 0
-}
-
-/* ── Active nav item (rendered as HTML div) ── */
-.sb-nav-active{
-    display:flex!important;align-items:center!important;justify-content:space-between!important;
-    background:linear-gradient(135deg,rgba(29,158,117,0.25),rgba(29,158,117,0.1))!important;
-    border-left:3px solid #1D9E75!important;border-radius:8px!important;
-    color:#FFFFFF!important;padding:9px 13px!important;
-    font-size:13px!important;font-weight:700!important;
-    letter-spacing:0.2px!important;margin-bottom:2px!important;
-    box-shadow:0 2px 8px rgba(29,158,117,0.15)!important;
-    cursor:default!important
-}
-.sb-active-pip{
-    width:6px!important;height:6px!important;border-radius:50%!important;
-    background:#1D9E75!important;flex-shrink:0!important
-}
-
-/* ── Inactive nav buttons ── */
+[data-testid="stSidebar"]{background:#0D1B2A!important}
 [data-testid="stSidebar"] .stButton>button{
-    background:transparent!important;
-    border:none!important;border-left:3px solid transparent!important;
-    border-radius:8px!important;
-    color:rgba(255,255,255,0.62)!important;
-    text-align:left!important;padding:9px 13px!important;
-    font-size:13px!important;font-weight:500!important;
-    letter-spacing:0.2px!important;width:100%!important;
-    transition:all .22s ease!important;margin-bottom:2px!important;
-    justify-content:flex-start!important
+    background:rgba(255,255,255,0.07)!important;border:1px solid rgba(29,158,117,0.3)!important;
+    color:#FFFFFF!important;border-radius:8px!important;width:100%!important;
+    text-align:left!important;font-size:13px!important;font-weight:500!important;
+    padding:8px 12px!important;margin-bottom:3px!important;transition:all .2s!important
 }
 [data-testid="stSidebar"] .stButton>button:hover{
-    background:rgba(29,158,117,0.1)!important;
-    border-left-color:rgba(29,158,117,0.5)!important;
-    color:#FFFFFF!important;
-    transform:translateX(4px)!important
+    background:rgba(29,158,117,0.18)!important;border-color:#1D9E75!important;color:#FFFFFF!important
 }
-[data-testid="stSidebar"] .stButton>button p{
-    color:inherit!important;font-size:inherit!important;font-weight:inherit!important
-}
-
+[data-testid="stSidebar"] .stButton>button p{color:#FFFFFF!important}
+/* ── Sidebar class definitions (used by render_sidebar_nav HTML) ── */
+.sb-section{font-size:9.5px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;text-transform:uppercase;margin:10px 0 5px 4px;display:block}
+.sb-divider{width:100%;height:1px;background:rgba(29,158,117,0.25);margin:10px 0}
+.sb-nav-active{display:flex;align-items:center;justify-content:space-between;background:rgba(29,158,117,0.2);border-left:3px solid #1D9E75;border-radius:8px;color:#FFFFFF;padding:9px 13px;font-size:13px;font-weight:700;margin-bottom:3px}
+.sb-active-pip{width:6px;height:6px;border-radius:50%;background:#1D9E75;flex-shrink:0}
+.sb-header{display:flex;align-items:center;gap:11px;padding:18px 4px 12px}
+.sb-logo{font-size:26px;line-height:1}
+.sb-brand{font-size:19px;font-weight:900;color:#FFFFFF;letter-spacing:-0.5px}
+.sb-tagline{font-size:9.5px;color:rgba(255,255,255,0.55);margin-top:2px}
+.sb-version{display:inline-block;background:rgba(29,158,117,0.2);color:#4CD4A0;border:1px solid rgba(29,158,117,0.3);border-radius:8px;padding:1px 7px;font-size:9px;font-weight:700;margin-top:4px}
+.sb-stats-card{background:rgba(255,255,255,0.05);border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:12px 13px;margin:4px 0 8px}
+.sb-stat{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sb-stat-num{font-size:13px;font-weight:800;color:#FFFFFF;min-width:44px}
+.sb-stat-label{font-size:10px;color:rgba(255,255,255,0.5)}
+.sb-skills-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 13px;margin-bottom:10px}
+.sb-skills{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.sb-skill{background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600}
 /* ── Form expanders ── */
-[data-testid="stSidebar"] .stExpander{
-    background:rgba(255,255,255,0.04)!important;
-    border:1px solid rgba(29,158,117,0.15)!important;border-radius:8px!important;
-    margin-bottom:6px!important
-}
+[data-testid="stSidebar"] .stExpander{background:rgba(255,255,255,0.04)!important;border:1px solid rgba(29,158,117,0.15)!important;border-radius:8px!important;margin-bottom:6px!important}
 [data-testid="stSidebar"] .stExpander details{background:transparent!important}
-[data-testid="stSidebar"] [data-testid="stExpanderToggleIcon"]{color:#1D9E75!important}
-[data-testid="stSidebar"] details summary{
-    background:transparent!important;color:#A8D5C4!important;font-weight:600!important;
-    padding:8px 10px!important;border-radius:6px!important;font-size:12px!important
-}
-[data-testid="stSidebar"] .stSelectbox label,
-[data-testid="stSidebar"] .stSlider label,
-[data-testid="stSidebar"] .stNumberInput label{color:#A8D5C4!important;font-size:11px!important}
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"]>div{
-    background:rgba(255,255,255,0.07)!important;border-color:rgba(29,158,117,0.35)!important;
-    border-radius:6px!important}
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] span,
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] div,
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] input{color:#FFFFFF!important}
-[data-testid="stSidebar"] .stSelectbox svg{fill:#A8D5C4!important}
-[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] [role="slider"]{
-    background:#1D9E75!important;border-color:#1D9E75!important}
-
-/* ── Portfolio Snapshot card ── */
-.sb-stats-card{
-    background:linear-gradient(135deg,rgba(29,158,117,0.08),rgba(13,27,42,0.5))!important;
-    border:1px solid rgba(29,158,117,0.18)!important;border-radius:10px!important;
-    padding:12px 13px!important;margin:4px 0 6px!important
-}
-.sb-stats-title{
-    font-size:9px!important;font-weight:700!important;color:#1D9E75!important;
-    letter-spacing:1.8px!important;text-transform:uppercase!important;margin-bottom:9px!important
-}
-.sb-stat{
-    display:flex!important;align-items:center!important;
-    gap:8px!important;margin-bottom:6px!important
-}
-.sb-stat-num{
-    font-size:13px!important;font-weight:800!important;
-    color:#FFFFFF!important;min-width:44px!important
-}
-.sb-stat-label{font-size:10px!important;color:rgba(255,255,255,0.5)!important}
-
-/* ── Skills card ── */
-.sb-skills-card{
-    background:rgba(255,255,255,0.03)!important;
-    border:1px solid rgba(255,255,255,0.07)!important;border-radius:10px!important;
-    padding:12px 13px!important;margin-bottom:10px!important
-}
-.sb-skills{display:flex!important;flex-wrap:wrap!important;gap:4px!important;margin-top:7px!important}
-.sb-skill{
-    background:rgba(29,158,117,0.1)!important;color:#A8D5C4!important;
-    border:1px solid rgba(29,158,117,0.18)!important;border-radius:10px!important;
-    padding:2px 8px!important;font-size:9.5px!important;font-weight:600!important;
-    transition:all .15s!important
-}
-
-/* ── Sidebar brand header ── */
-.sb-header{display:flex!important;align-items:center!important;gap:11px!important;padding:18px 4px 12px!important}
-.sb-logo{font-size:26px!important;line-height:1!important}
-.sb-brand{font-size:19px!important;font-weight:900!important;color:#FFFFFF!important;letter-spacing:-0.5px!important;line-height:1.1!important}
-.sb-tagline{font-size:9.5px!important;color:rgba(255,255,255,0.45)!important;margin-top:2px!important;letter-spacing:0.3px!important}
-.sb-version{
-    display:inline-block!important;background:rgba(29,158,117,0.2)!important;
-    color:#4CD4A0!important;border:1px solid rgba(29,158,117,0.3)!important;
-    border-radius:8px!important;padding:1px 7px!important;
-    font-size:9px!important;font-weight:700!important;letter-spacing:0.5px!important;margin-top:4px!important
-}
-
-/* ── Smooth sidebar scroll ── */
-[data-testid="stSidebar"]::-webkit-scrollbar{width:3px}
-[data-testid="stSidebar"]::-webkit-scrollbar-track{background:transparent}
-[data-testid="stSidebar"]::-webkit-scrollbar-thumb{background:rgba(29,158,117,0.3);border-radius:3px}
+[data-testid="stSidebar"] details summary{color:#A8D5C4!important;font-weight:600!important;font-size:12px!important}
+[data-testid="stSidebar"] .stSelectbox label,[data-testid="stSidebar"] .stSlider label,[data-testid="stSidebar"] .stNumberInput label{color:#A8D5C4!important;font-size:11px!important}
+[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"]>div{background:rgba(255,255,255,0.07)!important;border-color:rgba(29,158,117,0.35)!important;border-radius:6px!important}
+[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] span,[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] div,[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] input{color:#FFFFFF!important}
+[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] [role="slider"]{background:#1D9E75!important;border-color:#1D9E75!important}
 
 /* ── Hero section ── */
 .tg-hero{
@@ -715,6 +615,9 @@ def render_landing_kpis():
 def render_sidebar_nav():
     _init_state()
     current = st.session_state.get("page", "home")
+
+    # Force Streamlit to open the sidebar panel before injecting HTML
+    st.sidebar.markdown("", unsafe_allow_html=True)
 
     # ── Brand header ──────────────────────────────────────────────────────────
     st.sidebar.markdown(
