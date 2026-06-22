@@ -65,17 +65,10 @@ html,body,[class*="css"]{font-family:'Inter',system-ui,-apple-system,sans-serif!
    ENTERPRISE SIDEBAR — TrialGuard Navigation Rail
 ═══════════════════════════════════════════════ */
 
-/* ── Hide only the collapse/expand toggle arrow, keep sidebar visible ── */
-[data-testid="stSidebarCollapseButton"]{display:none!important}
-[data-testid="stSidebarHeader"] button{display:none!important}
-
 /* ── Sidebar container ── */
 [data-testid="stSidebar"]{
     background:linear-gradient(180deg,#080f1a 0%,#0D1B2A 35%,#0a1e2e 70%,#080f1a 100%)!important;
-    border-right:1px solid rgba(29,158,117,0.2)!important;
-    min-width:260px!important;
-    position:sticky!important;top:0!important;height:100vh!important;
-    overflow-y:auto!important;overflow-x:hidden!important
+    border-right:1px solid rgba(29,158,117,0.2)!important
 }
 [data-testid="stSidebar"]>div:first-child{padding:0 12px 20px!important}
 [data-testid="stSidebar"] *{color:#FFFFFF!important}
