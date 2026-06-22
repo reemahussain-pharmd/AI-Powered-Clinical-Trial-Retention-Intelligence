@@ -49,11 +49,21 @@ st.markdown("""
    Critical:  Red    #EF4444
 ═══════════════════════════════════════════════ */
 
-/* ── Chrome ── */
+/* ── Chrome — hide toolbar but NOT the sidebar collapse/expand control ── */
 .stDeployButton{display:none!important}
 #MainMenu{visibility:hidden!important}
-header[data-testid="stHeader"]{display:none!important}
 footer{visibility:hidden!important}
+/* Hide only the toolbar content, not the header element (collapsedControl lives inside header) */
+header[data-testid="stHeader"] > div:first-child{visibility:hidden!important}
+header[data-testid="stHeader"]{background:transparent!important;height:0!important;min-height:0!important}
+
+/* ── CRITICAL: always show sidebar expand button ── */
+[data-testid="collapsedControl"]{
+    display:flex!important;visibility:visible!important;
+    opacity:1!important;z-index:99999!important;
+    pointer-events:auto!important;position:fixed!important;
+    left:0!important;top:0.5rem!important
+}
 
 /* ── Global typography & background ── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -2927,6 +2937,14 @@ def main():
     render_sidebar_nav()
     page   = st.session_state.page
     config = load_config()
+
+    # ── Emergency sidebar recovery button (shown when sidebar is collapsed) ──
+    st.markdown(
+        "<style>"
+        ".sidebar-recovery-btn{position:fixed;top:8px;left:52px;z-index:99998}"
+        "</style>",
+        unsafe_allow_html=True,
+    )
 
     # ── Landing (Overview) ────────────────────────────────────────────────────
     if page == "home":
