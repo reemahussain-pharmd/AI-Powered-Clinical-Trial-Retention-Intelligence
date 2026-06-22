@@ -495,6 +495,7 @@ def _init_state():
 def _load_demo(profile_key: str):
     for k, v in DEMO_PROFILES[profile_key].items():
         st.session_state[k] = v
+    st.session_state.page = "assessment"
     st.rerun()
 
 
@@ -617,29 +618,61 @@ def render_landing_kpis():
     )
 
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
-def render_sidebar() -> pd.DataFrame:
+# ── Sidebar navigation (always visible) ──────────────────────────────────────
+def render_sidebar_nav():
     _init_state()
 
     st.sidebar.markdown(
-        "<div style='padding:12px 0 4px'>"
-        "<div style='font-size:18px;font-weight:700;color:#1D9E75'>🛡️ TrialGuard &nbsp;&mdash;&nbsp; Participant Input</div>"
-        "<div style='font-size:11px;color:#9CA3AF;margin-top:2px'>Select a demo profile or configure manually</div>"
+        "<div style='padding:18px 4px 14px'>"
+        "<div style='font-size:22px;font-weight:900;color:#FFFFFF;letter-spacing:-0.5px'>🛡️ TrialGuard</div>"
+        "<div style='font-size:10px;color:#A8D5C4;font-weight:500;margin-top:3px;letter-spacing:0.4px'>"
+        "AI-Powered Clinical Trial Intelligence Platform</div>"
+        "<div style='width:100%;height:1px;background:rgba(29,158,117,0.3);margin:14px 0 0'></div>"
         "</div>",
         unsafe_allow_html=True,
     )
 
-    # Demo profile buttons
     st.sidebar.markdown(
-        "<div style='font-size:11px;font-weight:600;color:#AADDCC;text-transform:uppercase;"
-        "letter-spacing:0.5px;margin:8px 0 6px'>Quick Demo Profiles</div>",
+        "<div style='font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1.5px;"
+        "text-transform:uppercase;margin:2px 0 8px'>Platform</div>",
+        unsafe_allow_html=True,
+    )
+    nav_items = [
+        ("home",         "🏠", "Overview"),
+        ("intake",       "📄", "Document Intake"),
+        ("assessment",   "⚠️",  "Risk Assessment"),
+        ("dashboard",    "📊", "Trial Dashboard"),
+        ("intelligence", "🧠", "AI Intelligence"),
+        ("batch",        "📁", "Batch Screening"),
+        ("about",        "ℹ️",  "About"),
+    ]
+    current = st.session_state.get("page", "home")
+    for page_key, icon, label in nav_items:
+        display = f"{icon}  {label}  ◀" if current == page_key else f"{icon}  {label}"
+        if st.sidebar.button(display, key=f"nav_{page_key}", use_container_width=True):
+            st.session_state.page = page_key
+            st.rerun()
+
+    st.sidebar.markdown(
+        "<div style='width:100%;height:1px;background:rgba(29,158,117,0.2);margin:12px 0 10px'></div>"
+        "<div style='font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1.5px;"
+        "text-transform:uppercase;margin-bottom:8px'>Demo Scenarios</div>",
         unsafe_allow_html=True,
     )
     if st.sidebar.button("🔴 Scenario A — High Attrition Risk",    key="demo_hr", use_container_width=True): _load_demo("high_risk")
     if st.sidebar.button("🚗 Scenario B — Logistical Friction",    key="demo_ru", use_container_width=True): _load_demo("rural")
     if st.sidebar.button("💊 Scenario C — Pharmacological Burden", key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
     if st.sidebar.button("🟢 Scenario D — Low-Risk Benchmark",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
-    st.sidebar.divider()
+
+
+# ── Sidebar participant input form (assessment page only) ─────────────────────
+def render_sidebar_inputs() -> pd.DataFrame:
+    st.sidebar.markdown(
+        "<div style='width:100%;height:1px;background:rgba(29,158,117,0.2);margin:10px 0 10px'></div>"
+        "<div style='font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1.5px;"
+        "text-transform:uppercase;margin-bottom:8px'>Participant Parameters</div>",
+        unsafe_allow_html=True,
+    )
 
     # Demographics
     with st.sidebar.expander("👤 Demographics", expanded=True):
@@ -2503,8 +2536,6 @@ def render_landing():
       <span class="tg-badge tg-badge-teal">&#9679; XGBoost &amp; Logistic Regression</span>
       <span class="tg-badge tg-badge-teal">&#9679; Clinical Document Intelligence</span>
       <span class="tg-badge tg-badge-navy">v3.0 &mdash; Current Release</span>
-      <span class="tg-badge tg-badge-navy">Portfolio Demonstration</span>
-      <span class="tg-badge tg-badge-amber">&#9888; Educational Use Only</span>
     </div>
   </div>
 </div>
@@ -2709,65 +2740,131 @@ def render_landing():
         )
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ── Architecture pipeline ─────────────────────────────────────────────────
+    # ── Architecture visual flow diagram ─────────────────────────────────────
     st.markdown(
         "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
-        "text-transform:uppercase;margin:20px 0 12px'>&#9632; 9-Step Intelligence Pipeline</div>",
+        "text-transform:uppercase;margin:20px 0 14px'>&#9632; Intelligence Pipeline</div>",
         unsafe_allow_html=True,
     )
-    steps = [
-        ("01", "Participant Risk Prediction",     "XGBoost + Logistic Regression ensemble generates a calibrated dropout probability score"),
-        ("02", "SHAP Explainability",             "TreeExplainer surfaces per-participant risk drivers and protective factors with exact attributions"),
-        ("03", "Clinical Persona Classification", "4 validated archetypes: Pharmacological Burden, Logistical Friction, Protocol Complexity, Low-Risk Benchmark"),
-        ("04", "Intervention Engine",             "7 evidence-based retention strategies matched to each participant's specific risk profile"),
-        ("05", "Clinical Evidence Retrieval",     "Lightweight RAG engine retrieves FDA, ICH E6(R2), and peer-reviewed citations for each recommendation"),
-        ("06", "Business Impact Calculation",     "Replacement cost avoidance, intervention ROI, and net savings modelled per participant and cohort"),
-        ("07", "Protocol Change Simulation",      "5 preset what-if scenarios model the impact of design changes on individual attrition risk"),
-        ("08", "AI Coordinator Copilot",          "Deterministic clinical reasoning engine generates structured summaries and prioritised action plans"),
-        ("09", "Clinical Intelligence Report",    "Enterprise PDF report: risk summary, SHAP analysis, interventions, financial impact, evidence citations"),
-    ]
-    p1, p2 = st.columns(2)
-    for i, (num, title, desc) in enumerate(steps):
-        col = p1 if i % 2 == 0 else p2
-        col.markdown(
-            f'<div class="pipeline-step">'
-            f'<div class="pipeline-num">Step {num}</div>'
-            f'<div class="pipeline-title">{title}</div>'
-            f'<div class="pipeline-desc">{desc}</div>'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
+    _fc, _mc, _rc = st.columns([1, 2, 1])
+    with _mc:
+        st.markdown("""
+<div style="display:flex;flex-direction:column;align-items:center;gap:0">
+
+  <div style="background:linear-gradient(135deg,#1D9E75,#17836A);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(29,158,117,0.3)">
+    📄 &nbsp; Clinical PDF / CRF Upload
+  </div>
+  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
+
+  <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(13,27,42,0.2)">
+    🔬 &nbsp; Clinical Intake Engine
+    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
+      Rule-based extraction &nbsp;·&nbsp; Confidence scoring &nbsp;·&nbsp; Human-in-the-loop
+    </div>
+  </div>
+  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
+
+  <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(13,27,42,0.2)">
+    ⚙️ &nbsp; Feature Engineering
+    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
+      25 inputs &nbsp;·&nbsp; 5 PharmD composite features &nbsp;·&nbsp; Clinical preprocessing
+    </div>
+  </div>
+  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
+
+  <div style="background:linear-gradient(135deg,#1D4ED8,#1e40af);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(29,78,216,0.25)">
+    🧠 &nbsp; Risk Prediction Engine
+    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.65);margin-top:3px">
+      XGBoost + Logistic Regression ensemble &nbsp;·&nbsp; Calibrated probability
+    </div>
+  </div>
+  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
+
+  <div style="background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(124,58,237,0.25)">
+    🔍 &nbsp; SHAP Explainability
+    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.65);margin-top:3px">
+      TreeExplainer &nbsp;·&nbsp; Per-participant attribution &nbsp;·&nbsp; Global feature importance
+    </div>
+  </div>
+  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
+
+  <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(13,27,42,0.2)">
+    🎯 &nbsp; Intervention Engine
+    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
+      7 evidence-based strategies &nbsp;·&nbsp; FDA &amp; ICH E6(R2) grounded
+    </div>
+  </div>
+  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
+
+  <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(13,27,42,0.2)">
+    💰 &nbsp; Business Impact Calculator
+    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
+      ROI modelling &nbsp;·&nbsp; Net savings &nbsp;·&nbsp; Protocol change simulation
+    </div>
+  </div>
+  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
+
+  <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(13,27,42,0.2)">
+    🤖 &nbsp; AI Coordinator Copilot
+    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
+      Clinical reasoning engine &nbsp;·&nbsp; Prioritised action plan &nbsp;·&nbsp; Structured summary
+    </div>
+  </div>
+  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
+
+  <div style="background:linear-gradient(135deg,#1D9E75,#17836A);color:#FFFFFF;border-radius:10px;
+    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
+    box-shadow:0 4px 14px rgba(29,158,117,0.3)">
+    📄 &nbsp; TrialGuard Clinical Intelligence Report
+    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.8);margin-top:3px">
+      Enterprise PDF &nbsp;·&nbsp; Risk summary &nbsp;·&nbsp; SHAP &nbsp;·&nbsp; Interventions &nbsp;·&nbsp; Financial impact
+    </div>
+  </div>
+
+</div>
+""", unsafe_allow_html=True)
 
     # ── Professional footer ───────────────────────────────────────────────────
     st.markdown("""
 <div class="tg-footer">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
     <div>
       <div class="tg-footer-brand">🛡️ Trial<span>Guard</span></div>
       <div class="tg-footer-tagline">AI-Powered Clinical Trial Intelligence Platform &nbsp;|&nbsp; v3.0</div>
-      <div style="margin-top:12px">
-        <a class="tg-footer-link" href="https://github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence" target="_blank">&#128025; GitHub Repository</a>
-        <a class="tg-footer-link" href="mailto:reemahussain2097@gmail.com">&#128140; reemahussain2097@gmail.com</a>
+      <div style="margin-top:10px">
+        <a class="tg-footer-link" href="https://github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence" target="_blank">&#128025; GitHub</a>
         <a class="tg-footer-link" href="https://linkedin.com/in/reema-mohamed-sulthan" target="_blank">&#128188; LinkedIn</a>
+        <a class="tg-footer-link" href="mailto:reemahussain2097@gmail.com">&#128140; Email</a>
       </div>
     </div>
     <div style="text-align:right">
-      <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:6px">Built by</div>
-      <div style="font-size:15px;font-weight:800;color:#FFFFFF">Dr. Reema Mohamed Sulthan</div>
-      <div style="font-size:12px;color:#A8D5C4;margin-top:3px">PharmD &nbsp;|&nbsp; Clinical Data Scientist &nbsp;|&nbsp; Certified AI Expert</div>
-      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end">
-        <span style="background:rgba(29,158,117,0.15);color:#4CD4A0;border:1px solid rgba(29,158,117,0.3);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">IQVIA Portfolio Target</span>
-        <span style="background:rgba(29,158,117,0.15);color:#4CD4A0;border:1px solid rgba(29,158,117,0.3);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">AI Expert — IABAC 2025</span>
-      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px">Built by</div>
+      <div style="font-size:14px;font-weight:800;color:#FFFFFF">Dr. Reema Mohamed Sulthan</div>
+      <div style="font-size:11px;color:#A8D5C4;margin-top:3px">PharmD &nbsp;|&nbsp; Clinical Data Scientist &nbsp;|&nbsp; Healthcare AI &amp; Clinical Research Analytics</div>
     </div>
   </div>
   <hr class="tg-footer-divider"/>
   <div class="tg-footer-disclaimer">
-    &#9888; <strong style="color:rgba(255,255,255,0.6)">Disclaimer:</strong>
-    TrialGuard is an educational and portfolio demonstration project. All data is fully synthetic.
-    This platform does not provide clinical recommendations and must not be used for patient care decisions,
-    regulatory submissions, or operational sponsor decision-making. All modelled estimates are approximations only.
-    &nbsp;|&nbsp; References: FDA (2012) &nbsp;|&nbsp; ICH E6(R2) (2016) &nbsp;|&nbsp; Getz KA et al., Ther Innov Regul Sci (2016)
+    &#9888; <strong style="color:rgba(255,255,255,0.55)">Disclaimer:</strong>
+    For educational and portfolio demonstration purposes only. All data is fully synthetic.
+    Not for clinical use, patient care decisions, or regulatory submissions.
+    &nbsp;|&nbsp; FDA (2012) &nbsp;·&nbsp; ICH E6(R2) (2016) &nbsp;·&nbsp; Getz KA et al., Ther Innov Regul Sci (2016)
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -2775,46 +2872,61 @@ def render_landing():
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
-    # Apply intake-confirmed values BEFORE the sidebar renders its widgets.
-    # This is required by Streamlit: widget-bound keys can only be set before
-    # the widget appears in the current run.
+    # Auto-navigate to assessment after document intake confirmation
     if "_intake_pending" in st.session_state:
         for k, v in st.session_state["_intake_pending"].items():
             st.session_state[k] = v
         del st.session_state["_intake_pending"]
+        st.session_state.page = "assessment"
 
-    render_landing()
-    st.markdown(
-        "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
-        "text-transform:uppercase;margin:20px 0 10px'>&#9632; Executive Dashboard — Live Cohort Metrics</div>",
-        unsafe_allow_html=True,
-    )
-    render_landing_kpis()
-    st.markdown("<div style='margin:16px 0 4px'></div>", unsafe_allow_html=True)
+    if "page" not in st.session_state:
+        st.session_state.page = "home"
 
-    config     = load_config()
-    patient_df = render_sidebar()
+    render_sidebar_nav()
+    page   = st.session_state.page
+    config = load_config()
 
-    tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📋 Document Intake",
-        "🧬 Risk Assessment",
-        "📊 Trial Dashboard",
-        "🤖 AI Intelligence",
-        "📁 Batch Screening",
-        "ℹ️ About",
-    ])
+    # ── Landing (Overview) ────────────────────────────────────────────────────
+    if page == "home":
+        render_landing()
+        # Launch Platform CTA
+        st.markdown("<div style='margin:6px 0 14px'></div>", unsafe_allow_html=True)
+        _cta_l, _cta_m, _cta_r = st.columns([1, 1.5, 1])
+        with _cta_m:
+            if st.button("🚀  Launch Platform  →", type="primary", use_container_width=True):
+                st.session_state.page = "assessment"
+                st.rerun()
+        st.markdown(
+            "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
+            "text-transform:uppercase;margin:20px 0 10px'>&#9632; Executive Dashboard — Live Cohort Metrics</div>",
+            unsafe_allow_html=True,
+        )
+        render_landing_kpis()
 
-    with tab0:
+    # ── Document Intake ───────────────────────────────────────────────────────
+    elif page == "intake":
+        section_header("Clinical Document Intake & Auto-Population")
         render_tab_intake()
-    with tab1:
+
+    # ── Risk Assessment ───────────────────────────────────────────────────────
+    elif page == "assessment":
+        patient_df = render_sidebar_inputs()
         render_tab1(patient_df, config)
-    with tab2:
+
+    # ── Trial Dashboard ───────────────────────────────────────────────────────
+    elif page == "dashboard":
         render_tab2(config)
-    with tab3:
+
+    # ── AI Intelligence ───────────────────────────────────────────────────────
+    elif page == "intelligence":
         render_tab3()
-    with tab4:
+
+    # ── Batch Screening ───────────────────────────────────────────────────────
+    elif page == "batch":
         render_tab_batch()
-    with tab5:
+
+    # ── About ─────────────────────────────────────────────────────────────────
+    elif page == "about":
         render_tab4()
 
 
