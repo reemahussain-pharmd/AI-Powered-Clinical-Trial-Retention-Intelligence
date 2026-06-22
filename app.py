@@ -49,15 +49,11 @@ st.markdown("""
    Critical:  Red    #EF4444
 ═══════════════════════════════════════════════ */
 
-/* ── Chrome — hide deploy/menu/footer only, never touch sidebar or header layout ── */
+/* ── Chrome chrome — hide only deploy/menu/footer ── */
 .stDeployButton{display:none!important}
 #MainMenu{visibility:hidden!important}
 footer{visibility:hidden!important}
-/* Make header invisible but keep it in layout so sidebar flex row stays intact */
-header[data-testid="stHeader"]{background:transparent!important;border:none!important}
-[data-testid="stToolbar"]{display:none!important}
-
-/* ── Sidebar expand button — always visible and clickable ── */
+/* ── NEVER hide header or collapsedControl — sidebar expand lives inside header ── */
 [data-testid="collapsedControl"]{
     display:flex!important;visibility:visible!important;
     opacity:1!important;z-index:99999!important;pointer-events:auto!important
@@ -81,23 +77,10 @@ html,body,[class*="css"]{font-family:'Inter',system-ui,-apple-system,sans-serif!
     background:rgba(29,158,117,0.18)!important;border-color:#1D9E75!important;color:#FFFFFF!important
 }
 [data-testid="stSidebar"] .stButton>button p{color:#FFFFFF!important}
-/* ── Sidebar class definitions (used by render_sidebar_nav HTML) ── */
-.sb-section{font-size:9.5px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;text-transform:uppercase;margin:10px 0 5px 4px;display:block}
-.sb-divider{width:100%;height:1px;background:rgba(29,158,117,0.25);margin:10px 0}
-.sb-nav-active{display:flex;align-items:center;justify-content:space-between;background:rgba(29,158,117,0.2);border-left:3px solid #1D9E75;border-radius:8px;color:#FFFFFF;padding:9px 13px;font-size:13px;font-weight:700;margin-bottom:3px}
-.sb-active-pip{width:6px;height:6px;border-radius:50%;background:#1D9E75;flex-shrink:0}
-.sb-header{display:flex;align-items:center;gap:11px;padding:18px 4px 12px}
-.sb-logo{font-size:26px;line-height:1}
-.sb-brand{font-size:19px;font-weight:900;color:#FFFFFF;letter-spacing:-0.5px}
-.sb-tagline{font-size:9.5px;color:rgba(255,255,255,0.55);margin-top:2px}
-.sb-version{display:inline-block;background:rgba(29,158,117,0.2);color:#4CD4A0;border:1px solid rgba(29,158,117,0.3);border-radius:8px;padding:1px 7px;font-size:9px;font-weight:700;margin-top:4px}
-.sb-stats-card{background:rgba(255,255,255,0.05);border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:12px 13px;margin:4px 0 8px}
-.sb-stat{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.sb-stat-num{font-size:13px;font-weight:800;color:#FFFFFF;min-width:44px}
-.sb-stat-label{font-size:10px;color:rgba(255,255,255,0.5)}
-.sb-skills-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 13px;margin-bottom:10px}
-.sb-skills{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
-.sb-skill{background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600}
+/* ── Active nav button highlight (◀ indicator on active page) ── */
+[data-testid="stSidebar"] .stButton>button[kind="secondary"]:has(span:contains("◀")){
+    border-left:3px solid #1D9E75!important;background:rgba(29,158,117,0.15)!important;color:#FFFFFF!important;font-weight:700!important
+}
 /* ── Form expanders ── */
 [data-testid="stSidebar"] .stExpander{background:rgba(255,255,255,0.04)!important;border:1px solid rgba(29,158,117,0.15)!important;border-radius:8px!important;margin-bottom:6px!important}
 [data-testid="stSidebar"] .stExpander details{background:transparent!important}
@@ -624,26 +607,23 @@ def render_sidebar_nav():
     _init_state()
     current = st.session_state.get("page", "home")
 
-    # Force Streamlit to open the sidebar panel before injecting HTML
-    st.sidebar.markdown("", unsafe_allow_html=True)
-
     # ── Brand header ──────────────────────────────────────────────────────────
     st.sidebar.markdown(
-        "<div class='sb-header'>"
-        "  <div class='sb-logo'>🛡️</div>"
-        "  <div>"
-        "    <div class='sb-brand'>TrialGuard</div>"
-        "    <div class='sb-tagline'>Clinical Trial Intelligence</div>"
-        "    <div class='sb-version'>v3.0</div>"
-        "  </div>"
-        "</div>"
-        "<div class='sb-divider'></div>",
+        "<div style='padding:16px 4px 10px'>"
+        "<div style='font-size:22px;font-weight:900;color:#FFFFFF;letter-spacing:-0.5px'>🛡️ TrialGuard</div>"
+        "<div style='font-size:10px;color:#A8D5C4;font-weight:500;margin-top:3px;letter-spacing:0.3px'>"
+        "Clinical Trial Intelligence · v3.0</div>"
+        "<div style='width:100%;height:1px;background:rgba(29,158,117,0.3);margin:12px 0 4px'></div>"
+        "</div>",
         unsafe_allow_html=True,
     )
 
-    # ── Platform navigation ───────────────────────────────────────────────────
-    st.sidebar.markdown("<span class='sb-section'>Platform</span>", unsafe_allow_html=True)
-
+    # ── Platform navigation — ALL native buttons (guaranteed sidebar render) ──
+    st.sidebar.markdown(
+        "<div style='font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;"
+        "text-transform:uppercase;margin:6px 0 4px 2px'>Platform</div>",
+        unsafe_allow_html=True,
+    )
     nav_items = [
         ("home",         "🏠", "Overview"),
         ("intake",       "📄", "Document Intake"),
@@ -653,26 +633,18 @@ def render_sidebar_nav():
         ("batch",        "📁", "Batch Screening"),
         ("about",        "ℹ️",  "About"),
     ]
-
     for page_key, icon, label in nav_items:
-        if current == page_key:
-            # Active item: HTML div with left-border highlight + indicator pip
-            st.sidebar.markdown(
-                f"<div class='sb-nav-active'>"
-                f"  <span>{icon}&nbsp;&nbsp;{label}</span>"
-                f"  <span class='sb-active-pip'></span>"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
-        else:
-            if st.sidebar.button(f"{icon}  {label}", key=f"nav_{page_key}", use_container_width=True):
-                st.session_state.page = page_key
-                st.rerun()
+        # Active page gets ◀ indicator; all rendered as native buttons
+        btn_label = f"{icon}  {label}  ◀" if current == page_key else f"{icon}  {label}"
+        if st.sidebar.button(btn_label, key=f"nav_{page_key}", use_container_width=True):
+            st.session_state.page = page_key
+            st.rerun()
 
     # ── Demo Scenarios ────────────────────────────────────────────────────────
     st.sidebar.markdown(
-        "<div class='sb-divider' style='margin-top:14px'></div>"
-        "<span class='sb-section'>Demo Scenarios</span>",
+        "<div style='width:100%;height:1px;background:rgba(29,158,117,0.2);margin:12px 0 4px'></div>"
+        "<div style='font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;"
+        "text-transform:uppercase;margin-bottom:4px'>Demo Scenarios</div>",
         unsafe_allow_html=True,
     )
     if st.sidebar.button("🔴  Scenario A — High Attrition Risk",    key="demo_hr", use_container_width=True): _load_demo("high_risk")
@@ -680,36 +652,47 @@ def render_sidebar_nav():
     if st.sidebar.button("💊  Scenario C — Pharmacological Burden", key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
     if st.sidebar.button("🟢  Scenario D — Low-Risk Benchmark",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
 
-    # ── Portfolio Snapshot card ───────────────────────────────────────────────
+    # ── Portfolio Snapshot ────────────────────────────────────────────────────
     st.sidebar.markdown(
-        "<div class='sb-divider' style='margin-top:14px'></div>"
-        "<span class='sb-section'>Portfolio Snapshot</span>"
-        "<div class='sb-stats-card'>"
-        "  <div class='sb-stat'><span class='sb-stat-num'>2,000</span><span class='sb-stat-label'>Participants Modelled</span></div>"
-        "  <div class='sb-stat'><span class='sb-stat-num'>5</span><span class='sb-stat-label'>ML Models Trained</span></div>"
-        "  <div class='sb-stat'><span class='sb-stat-num'>SHAP</span><span class='sb-stat-label'>Explainability Engine</span></div>"
-        "  <div class='sb-stat'><span class='sb-stat-num'>7</span><span class='sb-stat-label'>Intervention Strategies</span></div>"
-        "  <div class='sb-stat'><span class='sb-stat-num'>PDF</span><span class='sb-stat-label'>Clinical Report Engine</span></div>"
+        "<div style='width:100%;height:1px;background:rgba(29,158,117,0.2);margin:14px 0 4px'></div>"
+        "<div style='font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;"
+        "text-transform:uppercase;margin-bottom:8px'>Portfolio Snapshot</div>"
+        "<div style='background:rgba(255,255,255,0.05);border:1px solid rgba(29,158,117,0.2);"
+        "border-radius:10px;padding:11px 12px;margin-bottom:6px'>"
+        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
+        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>2,000</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>Participants Modelled</span></div>"
+        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
+        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>5</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>ML Models Trained</span></div>"
+        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
+        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>SHAP</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>Explainability Engine</span></div>"
+        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
+        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>7</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>Intervention Strategies</span></div>"
+        "<div style='display:flex;align-items:center;gap:8px'>"
+        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>PDF</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>Clinical Report Engine</span></div>"
         "</div>",
         unsafe_allow_html=True,
     )
 
     # ── Skills Demonstrated ───────────────────────────────────────────────────
     st.sidebar.markdown(
-        "<span class='sb-section'>Skills Demonstrated</span>"
-        "<div class='sb-skills-card'>"
-        "  <div class='sb-skills'>"
-        "    <span class='sb-skill'>Clinical Trial Analytics</span>"
-        "    <span class='sb-skill'>Clinical Operations</span>"
-        "    <span class='sb-skill'>Pharmacovigilance</span>"
-        "    <span class='sb-skill'>Machine Learning</span>"
-        "    <span class='sb-skill'>XGBoost</span>"
-        "    <span class='sb-skill'>SHAP</span>"
-        "    <span class='sb-skill'>Explainable AI</span>"
-        "    <span class='sb-skill'>Healthcare AI</span>"
-        "    <span class='sb-skill'>Streamlit</span>"
-        "    <span class='sb-skill'>Python</span>"
-        "  </div>"
+        "<div style='font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;"
+        "text-transform:uppercase;margin-bottom:7px'>Skills Demonstrated</div>"
+        "<div style='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px'>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Clinical Trial Analytics</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Clinical Operations</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Pharmacovigilance</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Machine Learning</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>XGBoost</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>SHAP</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Explainable AI</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Healthcare AI</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Streamlit</span>"
+        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Python</span>"
         "</div>",
         unsafe_allow_html=True,
     )
