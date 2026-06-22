@@ -65,12 +65,9 @@ html,body,[class*="css"]{font-family:'Inter',system-ui,-apple-system,sans-serif!
    ENTERPRISE SIDEBAR — TrialGuard Navigation Rail
 ═══════════════════════════════════════════════ */
 
-/* ── Hide Streamlit collapse button (keep sidebar always open on desktop) ── */
-[data-testid="stSidebarHeader"]{display:none!important}
+/* ── Hide only the collapse/expand toggle arrow, keep sidebar visible ── */
 [data-testid="stSidebarCollapseButton"]{display:none!important}
-button[data-testid="baseButton-headerNoPadding"]{display:none!important}
-.st-emotion-cache-h5rgaw{display:none!important}
-.st-emotion-cache-1cypcdb{display:none!important}
+[data-testid="stSidebarHeader"] button{display:none!important}
 
 /* ── Sidebar container ── */
 [data-testid="stSidebar"]{
