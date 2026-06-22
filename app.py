@@ -49,20 +49,18 @@ st.markdown("""
    Critical:  Red    #EF4444
 ═══════════════════════════════════════════════ */
 
-/* ── Chrome — hide toolbar but NOT the sidebar collapse/expand control ── */
+/* ── Chrome — hide deploy/menu/footer only, never touch sidebar or header layout ── */
 .stDeployButton{display:none!important}
 #MainMenu{visibility:hidden!important}
 footer{visibility:hidden!important}
-/* Hide only the toolbar content, not the header element (collapsedControl lives inside header) */
-header[data-testid="stHeader"] > div:first-child{visibility:hidden!important}
-header[data-testid="stHeader"]{background:transparent!important;height:0!important;min-height:0!important}
+/* Make header invisible but keep it in layout so sidebar flex row stays intact */
+header[data-testid="stHeader"]{background:transparent!important;border:none!important}
+[data-testid="stToolbar"]{display:none!important}
 
-/* ── CRITICAL: always show sidebar expand button ── */
+/* ── Sidebar expand button — always visible and clickable ── */
 [data-testid="collapsedControl"]{
     display:flex!important;visibility:visible!important;
-    opacity:1!important;z-index:99999!important;
-    pointer-events:auto!important;position:fixed!important;
-    left:0!important;top:0.5rem!important
+    opacity:1!important;z-index:99999!important;pointer-events:auto!important
 }
 
 /* ── Global typography & background ── */
