@@ -1,5 +1,5 @@
 """
-Retention Intelligence Agent.
+TrialGuard Intelligence Agent.
 
 Orchestrates all analytical modules in a sequential 9-step pipeline
 to produce a complete retention analysis for a single patient.
@@ -64,7 +64,7 @@ class RetentionAgent:
         patient_series = patient_features.iloc[0]
 
         # ── Step 1: PREDICT ──────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 1: Predicting dropout risk...")
+        print("[TrialGuard Intelligence Agent] Step 1: Predicting dropout risk...")
         from explainer import explain_patient
         explanation = explain_patient(patient_features, self.model, self.preprocessor)
         result["risk_score"] = explanation["risk_score"]
@@ -72,32 +72,32 @@ class RetentionAgent:
         result["risk_pct"] = explanation["risk_pct"]
 
         # ── Step 2: EXPLAIN ──────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 2: Generating SHAP explanation...")
+        print("[TrialGuard Intelligence Agent] Step 2: Generating SHAP explanation...")
         result["top3_risk_factors"] = explanation["top3_risk_factors"]
         result["top3_protective_factors"] = explanation["top3_protective_factors"]
         result["dropout_window"] = explanation["dropout_window"]
 
         # ── Step 3: PERSONA ──────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 3: Classifying patient persona...")
+        print("[TrialGuard Intelligence Agent] Step 3: Classifying patient persona...")
         from personas import classify_persona
         persona_name, persona_desc = classify_persona(patient_series)
         result["persona"] = persona_name
         result["persona_description"] = persona_desc
 
         # ── Step 4: INTERVENE ────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 4: Generating intervention recommendations...")
+        print("[TrialGuard Intelligence Agent] Step 4: Generating intervention recommendations...")
         from intervention_engine import get_interventions
         interventions = get_interventions(patient_series, explanation["top3_risk_factors"])
         result["interventions"] = interventions
 
         # ── Step 5: EVIDENCE ─────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 5: Retrieving clinical evidence...")
+        print("[TrialGuard Intelligence Agent] Step 5: Retrieving clinical evidence...")
         from evidence_retrieval import get_all_evidence_for_interventions
         evidence = get_all_evidence_for_interventions(interventions)
         result["evidence"] = evidence
 
         # ── Step 6: IMPACT ───────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 6: Calculating business impact...")
+        print("[TrialGuard Intelligence Agent] Step 6: Calculating business impact...")
         from business_impact import calculate_patient_impact
         impact = calculate_patient_impact(
             result["risk_score"], interventions, self.config
@@ -105,27 +105,27 @@ class RetentionAgent:
         result["business_impact"] = impact
 
         # ── Step 7: SIMULATE ─────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 7: Running what-if scenarios...")
+        print("[TrialGuard Intelligence Agent] Step 7: Running what-if scenarios...")
         from scenario_simulator import run_top_scenarios
         scenarios = run_top_scenarios(patient_features, self.model, self.preprocessor, n=2)
         result["top_scenarios"] = scenarios
 
         # ── Step 8: COMPILE ──────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 8: Compiling full analysis...")
+        print("[TrialGuard Intelligence Agent] Step 8: Compiling full analysis...")
         result["patient_features"] = patient_series.to_dict()
         result["config"] = self.config
 
         # ── Step 9: REPORT ───────────────────────────────────────────────────
-        print("[Retention Intelligence Agent] Step 9: Generating PDF report...")
+        print("[TrialGuard Intelligence Agent] Step 9: Generating PDF report...")
         try:
             from report_generator import generate_report
             patient_id = str(patient_series.get("patient_id", "DEMO"))
             report_path = generate_report(result, patient_id)
             result["report_path"] = str(report_path)
-            print(f"[Retention Intelligence Agent] Report saved → {report_path}")
+            print(f"[TrialGuard Intelligence Agent] Report saved → {report_path}")
         except Exception as e:
-            print(f"[Retention Intelligence Agent] PDF generation skipped: {e}")
+            print(f"[TrialGuard Intelligence Agent] PDF generation skipped: {e}")
             result["report_path"] = None
 
-        print("[Retention Intelligence Agent] Pipeline complete.")
+        print("[TrialGuard Intelligence Agent] Pipeline complete.")
         return result

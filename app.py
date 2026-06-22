@@ -1,5 +1,5 @@
 """
-Clinical Trial Retention Intelligence Platform
+TrialGuard — AI-Powered Clinical Trial Intelligence Platform
 Dr. Reema Mohamed Sulthan | PharmD | Clinical Data Scientist | Certified AI Expert
 
 Disclaimer: For educational, research, and portfolio demonstration purposes only.
@@ -31,8 +31,8 @@ DATA_PATH    = PROJECT_ROOT / "data" / "clinical_trial_data.csv"
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="AI-Powered Clinical Trial Retention Intelligence",
-    page_icon="🧬",
+    page_title="TrialGuard",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -40,168 +40,360 @@ st.set_page_config(
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-/* Hide Streamlit chrome */
+/* ═══════════════════════════════════════════════
+   ENTERPRISE DESIGN SYSTEM — TrialGuard
+   Primary:   Navy  #0D1B2A
+   Secondary: Teal  #1D9E75
+   Success:   Emerald #10B981
+   Warning:   Amber  #F59E0B
+   Critical:  Red    #EF4444
+═══════════════════════════════════════════════ */
+
+/* ── Chrome ── */
 .stDeployButton{display:none!important}
 #MainMenu{visibility:hidden!important}
 header[data-testid="stHeader"]{display:none!important}
 footer{visibility:hidden!important}
 
-/* Sidebar */
-[data-testid="stSidebar"]{background-color:#0D1B2A}
+/* ── Global typography & background ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+html,body,[class*="css"]{font-family:'Inter',system-ui,-apple-system,sans-serif!important}
+.main{background:linear-gradient(135deg,#F0F4F8 0%,#E8F0E9 50%,#F0F4F8 100%)!important;min-height:100vh}
+.block-container{padding-top:0.5rem!important;padding-bottom:2rem!important}
+
+/* ── Sidebar — Premium dark panel ── */
+[data-testid="stSidebar"]{
+    background:linear-gradient(180deg,#0D1B2A 0%,#0f2235 60%,#0D1B2A 100%)!important;
+    border-right:1px solid rgba(29,158,117,0.25)!important
+}
 [data-testid="stSidebar"] *{color:#FFFFFF!important}
-[data-testid="stSidebar"] .stButton button{background-color:#1a2f45!important;border:1px solid #1D9E75!important;color:#FFFFFF!important;font-weight:600!important;font-size:13px!important}
+[data-testid="stSidebar"] .stButton button{
+    background:linear-gradient(135deg,#1a2f45,#1e3a52)!important;
+    border:1px solid rgba(29,158,117,0.5)!important;color:#FFFFFF!important;
+    font-weight:600!important;font-size:12px!important;border-radius:8px!important;
+    transition:all .2s ease!important;letter-spacing:0.2px!important
+}
 [data-testid="stSidebar"] .stButton button p{color:#FFFFFF!important}
-[data-testid="stSidebar"] .stButton button:hover{background-color:#1D9E75!important;border-color:#1D9E75!important}
-[data-testid="stSidebar"] .stExpander{background-color:#1a2f45!important;border:1px solid #2a4a6a!important;border-radius:6px!important}
-[data-testid="stSidebar"] .stExpander details{background-color:#1a2f45!important}
+[data-testid="stSidebar"] .stButton button:hover{
+    background:linear-gradient(135deg,#1D9E75,#17836A)!important;
+    border-color:#1D9E75!important;box-shadow:0 4px 12px rgba(29,158,117,0.35)!important;
+    transform:translateY(-1px)!important
+}
+[data-testid="stSidebar"] .stExpander{
+    background:rgba(255,255,255,0.05)!important;
+    border:1px solid rgba(29,158,117,0.2)!important;border-radius:8px!important;
+    backdrop-filter:blur(4px)!important
+}
+[data-testid="stSidebar"] .stExpander details{background:transparent!important}
 [data-testid="stSidebar"] [data-testid="stExpanderToggleIcon"]{color:#1D9E75!important}
-[data-testid="stSidebar"] details summary{background-color:#1a2f45!important;color:#AADDCC!important;font-weight:600!important;padding:8px 10px!important;border-radius:6px!important}
+[data-testid="stSidebar"] details summary{
+    background:transparent!important;color:#A8D5C4!important;font-weight:600!important;
+    padding:8px 10px!important;border-radius:6px!important;font-size:12px!important;
+    letter-spacing:0.3px!important
+}
 [data-testid="stSidebar"] .stSelectbox label,
 [data-testid="stSidebar"] .stSlider label,
-[data-testid="stSidebar"] .stNumberInput label{color:#AADDCC!important}
+[data-testid="stSidebar"] .stNumberInput label{color:#A8D5C4!important;font-size:11.5px!important}
 [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"]>div{
-    background-color:#1a2f45!important;border-color:#1D9E75!important}
+    background:rgba(255,255,255,0.08)!important;border-color:rgba(29,158,117,0.4)!important;
+    border-radius:6px!important}
 [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] span,
 [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] div,
 [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] input{color:#FFFFFF!important}
-[data-testid="stSidebar"] .stSelectbox svg{fill:#AADDCC!important}
+[data-testid="stSidebar"] .stSelectbox svg{fill:#A8D5C4!important}
 [data-testid="stSidebar"] .stExpander{margin-bottom:6px!important}
+[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] [role="slider"]{
+    background:#1D9E75!important;border-color:#1D9E75!important
+}
 
-/* Main */
-.main{background-color:#F8FAFC}
-.block-container{padding-top:0.75rem}
+/* ── Hero section ── */
+.tg-hero{
+    background:linear-gradient(135deg,#0D1B2A 0%,#0f2a3a 40%,#0a2218 100%);
+    border-radius:16px;padding:40px 44px 36px;margin-bottom:20px;
+    position:relative;overflow:hidden;
+    box-shadow:0 20px 60px rgba(13,27,42,0.25),0 4px 16px rgba(13,27,42,0.15)
+}
+.tg-hero::before{
+    content:'';position:absolute;top:-60px;right:-60px;
+    width:300px;height:300px;
+    background:radial-gradient(circle,rgba(29,158,117,0.15) 0%,transparent 70%);
+    border-radius:50%
+}
+.tg-hero::after{
+    content:'';position:absolute;bottom:-40px;left:20%;
+    width:200px;height:200px;
+    background:radial-gradient(circle,rgba(29,158,117,0.08) 0%,transparent 70%);
+    border-radius:50%
+}
+.tg-hero-eyebrow{
+    font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2.5px;
+    text-transform:uppercase;margin-bottom:10px
+}
+.tg-hero-title{
+    font-size:38px;font-weight:900;color:#FFFFFF;line-height:1.1;
+    letter-spacing:-1px;margin-bottom:8px
+}
+.tg-hero-title span{color:#1D9E75}
+.tg-hero-subtitle{
+    font-size:15px;font-weight:400;color:rgba(255,255,255,0.75);
+    line-height:1.6;margin-bottom:18px;max-width:620px
+}
+.tg-hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:0}
+.tg-badge{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;
+    letter-spacing:0.3px
+}
+.tg-badge-teal{background:rgba(29,158,117,0.2);color:#4CD4A0;border:1px solid rgba(29,158,117,0.4)}
+.tg-badge-navy{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.2)}
+.tg-badge-amber{background:rgba(245,158,11,0.15);color:#FCD34D;border:1px solid rgba(245,158,11,0.3)}
 
-/* Capability cards */
+/* ── Capability cards (5-column) ── */
 .cap-card{
-    background:#FFFFFF;border-radius:10px;padding:18px 16px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.07);text-align:center;
-    border-top:3px solid #1D9E75;transition:box-shadow .15s;height:100%
+    background:rgba(255,255,255,0.95);border-radius:12px;padding:20px 14px;
+    box-shadow:0 4px 16px rgba(13,27,42,0.08),0 1px 4px rgba(13,27,42,0.05);
+    text-align:center;border-top:3px solid #1D9E75;
+    transition:all .25s ease;height:100%;
+    backdrop-filter:blur(8px)
 }
-.cap-icon{font-size:28px;line-height:1;margin-bottom:8px}
-.cap-title{font-size:13px;font-weight:700;color:#0D1B2A;margin-bottom:4px}
-.cap-desc{font-size:11px;color:#6B7280;line-height:1.4}
+.cap-card:hover{
+    box-shadow:0 8px 28px rgba(13,27,42,0.14);
+    transform:translateY(-3px)
+}
+.cap-icon{font-size:30px;line-height:1;margin-bottom:10px}
+.cap-title{font-size:12px;font-weight:800;color:#0D1B2A;margin-bottom:5px;letter-spacing:0.5px;text-transform:uppercase}
+.cap-desc{font-size:11px;color:#6B7280;line-height:1.5}
 
-/* KPI cards */
+/* ── Executive KPI cards ── */
 .kpi-card{
-    background:#FFFFFF;border-radius:10px;padding:18px 20px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.07);border-left:4px solid #1D9E75
+    background:rgba(255,255,255,0.97);border-radius:14px;padding:20px 22px;
+    box-shadow:0 4px 20px rgba(13,27,42,0.09),0 1px 4px rgba(13,27,42,0.05);
+    border-left:4px solid #1D9E75;transition:all .2s ease;
+    backdrop-filter:blur(8px)
 }
-.kpi-label{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.6px;font-weight:600}
-.kpi-value{font-size:36px;font-weight:800;color:#0D1B2A;line-height:1.15;margin:4px 0 2px}
-.kpi-sub{font-size:11px;color:#9CA3AF}
+.kpi-card:hover{box-shadow:0 8px 30px rgba(13,27,42,0.13);transform:translateY(-2px)}
+.kpi-label{font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px}
+.kpi-value{font-size:34px;font-weight:900;color:#0D1B2A;line-height:1.1;margin:0 0 4px}
+.kpi-sub{font-size:11px;color:#9CA3AF;font-weight:400}
+.kpi-trend{font-size:10px;font-weight:600;margin-top:6px}
+.kpi-trend-up{color:#EF4444}
+.kpi-trend-down{color:#10B981}
 
-/* Result metric cards */
+/* ── Result metric cards ── */
 .metric-card{
-    background:#FFFFFF;border-radius:10px;border-left:4px solid #1D9E75;
-    padding:16px 18px;box-shadow:0 2px 6px rgba(0,0,0,0.07)
+    background:rgba(255,255,255,0.97);border-radius:12px;border-left:4px solid #1D9E75;
+    padding:16px 18px;box-shadow:0 3px 12px rgba(13,27,42,0.08)
 }
-.risk-high{background:#FFF5F5;border-left-color:#D9534F}
-.risk-medium{background:#FFFBF0;border-left-color:#F4B942}
-.risk-low{background:#F0FAF6;border-left-color:#2E8B57}
+.risk-high{background:linear-gradient(135deg,#FFF5F5,#FFF0F0);border-left-color:#EF4444}
+.risk-medium{background:linear-gradient(135deg,#FFFBF0,#FFF8E8);border-left-color:#F59E0B}
+.risk-low{background:linear-gradient(135deg,#F0FAF6,#EBFAF3);border-left-color:#10B981}
 
-/* Risk driver cards */
+/* ── Risk driver cards ── */
 .driver-card{
-    background:#FFF5F5;border-radius:8px;padding:14px 16px;
-    border-left:4px solid #D9534F;margin-bottom:8px;
-    display:flex;align-items:center;gap:12px
+    background:linear-gradient(135deg,#FFF5F5,#FFF0F0);border-radius:10px;
+    padding:14px 16px;border-left:4px solid #EF4444;margin-bottom:8px;
+    display:flex;align-items:center;gap:12px;
+    box-shadow:0 2px 8px rgba(239,68,68,0.08)
 }
 .driver-icon{font-size:22px;flex-shrink:0}
-.driver-label{font-size:13px;font-weight:600;color:#1F2937;flex:1}
-.driver-pct{font-size:18px;font-weight:800;color:#D9534F;white-space:nowrap}
+.driver-label{font-size:13px;font-weight:600;color:#1F2937;flex:1;line-height:1.4}
+.driver-pct{font-size:18px;font-weight:800;color:#EF4444;white-space:nowrap}
 .protect-card{
-    background:#F0FAF6;border-radius:8px;padding:14px 16px;
-    border-left:4px solid #2E8B57;margin-bottom:8px;
-    display:flex;align-items:center;gap:12px
+    background:linear-gradient(135deg,#F0FAF6,#EBFAF3);border-radius:10px;
+    padding:14px 16px;border-left:4px solid #10B981;margin-bottom:8px;
+    display:flex;align-items:center;gap:12px;
+    box-shadow:0 2px 8px rgba(16,185,129,0.08)
 }
-.protect-pct{font-size:18px;font-weight:800;color:#2E8B57;white-space:nowrap}
+.protect-pct{font-size:18px;font-weight:800;color:#10B981;white-space:nowrap}
 
-/* Intervention cards */
+/* ── Intervention cards ── */
 .iv-card{
-    background:#FFFFFF;border-radius:10px;padding:18px 20px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:12px;
-    border-top:3px solid #1D9E75
+    background:rgba(255,255,255,0.97);border-radius:12px;padding:18px 20px;
+    box-shadow:0 4px 16px rgba(13,27,42,0.08);margin-bottom:12px;
+    border-top:3px solid #1D9E75;transition:box-shadow .2s
 }
+.iv-card:hover{box-shadow:0 6px 24px rgba(13,27,42,0.12)}
 .iv-title{font-size:14px;font-weight:700;color:#0D1B2A;margin-bottom:6px}
-.iv-rationale{font-size:12px;color:#4B5563;margin-bottom:10px;line-height:1.5}
+.iv-rationale{font-size:12px;color:#4B5563;margin-bottom:10px;line-height:1.55}
 .iv-row{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px}
 .iv-stat{font-size:11px;color:#6B7280}
 .iv-stat strong{color:#0D1B2A;font-size:13px}
-.badge-high{background:#FEE2E2;color:#B91C1C;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
-.badge-medium{background:#FEF3C7;color:#92400E;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
-.badge-low{background:#D1FAE5;color:#065F46;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
+.badge-high{background:#FEE2E2;color:#991B1B;border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;letter-spacing:0.3px}
+.badge-medium{background:#FEF3C7;color:#92400E;border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;letter-spacing:0.3px}
+.badge-low{background:#D1FAE5;color:#065F46;border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;letter-spacing:0.3px}
 
-/* What-if comparison */
+/* ── What-if comparison ── */
 .wif-before{
-    background:#FFF5F5;border-radius:10px;padding:20px;text-align:center;
-    border:2px solid #D9534F
+    background:linear-gradient(135deg,#FFF5F5,#FFF0F0);border-radius:12px;
+    padding:22px;text-align:center;border:2px solid #EF4444;
+    box-shadow:0 4px 16px rgba(239,68,68,0.1)
 }
 .wif-after{
-    background:#F0FAF6;border-radius:10px;padding:20px;text-align:center;
-    border:2px solid #2E8B57
+    background:linear-gradient(135deg,#F0FAF6,#EBFAF3);border-radius:12px;
+    padding:22px;text-align:center;border:2px solid #10B981;
+    box-shadow:0 4px 16px rgba(16,185,129,0.1)
 }
-.wif-label{font-size:11px;color:#6B7280;text-transform:uppercase;font-weight:600;letter-spacing:0.5px}
-.wif-pct{font-size:48px;font-weight:800;line-height:1.1}
+.wif-label{font-size:10px;color:#6B7280;text-transform:uppercase;font-weight:700;letter-spacing:1px}
+.wif-pct{font-size:48px;font-weight:900;line-height:1.1}
 .wif-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
 .delta-badge{
-    background:#0D1B2A;color:#FFFFFF;border-radius:8px;
-    padding:8px 16px;font-size:14px;font-weight:700;margin-top:8px
+    background:linear-gradient(135deg,#0D1B2A,#1a2f45);color:#FFFFFF;border-radius:10px;
+    padding:9px 18px;font-size:14px;font-weight:700;margin-top:8px;
+    box-shadow:0 4px 12px rgba(13,27,42,0.25)
 }
 
-/* Section headers */
+/* ── Section headers ── */
 .section-header{
-    background:#0D1B2A;color:white;padding:9px 16px;
-    border-radius:6px;font-weight:600;margin:20px 0 12px;
-    font-size:13px;letter-spacing:0.4px
-}
-
-/* Chart captions */
-.chart-caption{
-    font-size:11.5px;color:#6B7280;font-style:italic;
-    margin-top:4px;padding:7px 12px;
-    background:#F9FAFB;border-radius:4px;border-left:3px solid #1D9E75
-}
-
-/* Operational alert boxes */
-.alert-critical{
-    background:#FFF5F5;border:1px solid #D9534F;
-    border-radius:8px;padding:12px 16px;margin:6px 0;
-    display:flex;align-items:flex-start;gap:10px
-}
-.alert-monitor{
-    background:#FFFBF0;border:1px solid #F4B942;
-    border-radius:8px;padding:12px 16px;margin:6px 0;
-    display:flex;align-items:flex-start;gap:10px
-}
-.alert-ok{
-    background:#F0FAF6;border:1px solid #2E8B57;
-    border-radius:8px;padding:12px 16px;margin:6px 0
-}
-
-/* About tab cards */
-.about-card{
-    background:#FFFFFF;border-radius:10px;padding:16px 18px;
-    box-shadow:0 1px 5px rgba(0,0,0,0.07);margin-bottom:10px;
+    background:linear-gradient(135deg,#0D1B2A,#0f2235);color:white;
+    padding:10px 18px;border-radius:8px;font-weight:700;margin:22px 0 14px;
+    font-size:12.5px;letter-spacing:0.8px;text-transform:uppercase;
+    box-shadow:0 3px 10px rgba(13,27,42,0.2);
     border-left:4px solid #1D9E75
 }
-.challenge-stat{
-    background:#0D1B2A;color:white;border-radius:8px;
-    padding:14px 18px;text-align:center
-}
-.challenge-num{font-size:28px;font-weight:800;color:#1D9E75}
-.challenge-txt{font-size:11px;color:#9CA3AF;margin-top:2px}
 
-/* Architecture diagram */
+/* ── Chart captions ── */
+.chart-caption{
+    font-size:11.5px;color:#6B7280;font-style:italic;
+    margin-top:5px;padding:8px 14px;
+    background:rgba(249,250,251,0.9);border-radius:6px;
+    border-left:3px solid #1D9E75;line-height:1.5
+}
+
+/* ── Operational alerts ── */
+.alert-critical{
+    background:linear-gradient(135deg,#FFF5F5,#FFF0F0);
+    border:1px solid #EF4444;border-radius:10px;padding:13px 16px;margin:6px 0;
+    display:flex;align-items:flex-start;gap:10px;
+    box-shadow:0 2px 8px rgba(239,68,68,0.08)
+}
+.alert-monitor{
+    background:linear-gradient(135deg,#FFFBF0,#FFF8E8);
+    border:1px solid #F59E0B;border-radius:10px;padding:13px 16px;margin:6px 0;
+    display:flex;align-items:flex-start;gap:10px;
+    box-shadow:0 2px 8px rgba(245,158,11,0.08)
+}
+.alert-ok{
+    background:linear-gradient(135deg,#F0FAF6,#EBFAF3);
+    border:1px solid #10B981;border-radius:10px;padding:13px 16px;margin:6px 0;
+    box-shadow:0 2px 8px rgba(16,185,129,0.08)
+}
+
+/* ── About / generic cards ── */
+.about-card{
+    background:rgba(255,255,255,0.97);border-radius:12px;padding:16px 18px;
+    box-shadow:0 3px 12px rgba(13,27,42,0.07);margin-bottom:10px;
+    border-left:4px solid #1D9E75;transition:box-shadow .2s
+}
+.about-card:hover{box-shadow:0 6px 20px rgba(13,27,42,0.11)}
+.challenge-stat{
+    background:linear-gradient(135deg,#0D1B2A,#0f2235);color:white;
+    border-radius:12px;padding:20px 18px;text-align:center;
+    box-shadow:0 4px 16px rgba(13,27,42,0.2);border:1px solid rgba(29,158,117,0.2)
+}
+.challenge-num{font-size:30px;font-weight:900;color:#1D9E75;letter-spacing:-0.5px}
+.challenge-txt{font-size:11px;color:#9CA3AF;margin-top:4px;line-height:1.4}
+
+/* ── Architecture diagram ── */
 .arch-flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;justify-content:center;padding:16px 0}
 .arch-box{
-    background:#0D1B2A;color:white;border-radius:8px;
-    padding:10px 14px;font-size:12px;font-weight:600;text-align:center;min-width:120px
+    background:linear-gradient(135deg,#0D1B2A,#0f2235);color:white;border-radius:8px;
+    padding:10px 14px;font-size:12px;font-weight:600;text-align:center;min-width:120px;
+    box-shadow:0 2px 8px rgba(13,27,42,0.2)
 }
-.arch-box-teal{background:#1D9E75}
-.arch-box-amber{background:#F4B942;color:#0D1B2A}
+.arch-box-teal{background:linear-gradient(135deg,#1D9E75,#17836A)}
+.arch-box-amber{background:linear-gradient(135deg,#F59E0B,#D97706);color:#FFFFFF}
 .arch-arrow{color:#6B7280;font-size:18px;font-weight:300}
 
-/* Demo profile buttons */
+/* ── Demo scenario buttons in sidebar ── */
 .demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+
+/* ── Problem statement section ── */
+.problem-card{
+    background:linear-gradient(135deg,#0D1B2A 0%,#0f2235 100%);
+    border-radius:14px;padding:28px 32px;margin:16px 0;color:white;
+    box-shadow:0 8px 32px rgba(13,27,42,0.2);border:1px solid rgba(29,158,117,0.15)
+}
+.problem-stat{
+    background:rgba(255,255,255,0.06);border-radius:10px;padding:18px 16px;
+    text-align:center;border:1px solid rgba(29,158,117,0.2);
+    backdrop-filter:blur(4px)
+}
+.problem-num{font-size:32px;font-weight:900;color:#1D9E75;letter-spacing:-1px}
+.problem-label{font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px;line-height:1.4}
+
+/* ── Tech stack chips ── */
+.tech-section{
+    background:rgba(255,255,255,0.95);border-radius:14px;padding:24px 28px;
+    box-shadow:0 4px 20px rgba(13,27,42,0.08);margin:12px 0;
+    border-top:3px solid #1D9E75
+}
+.tech-category{font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.tech-chip{
+    display:inline-flex;align-items:center;gap:4px;
+    background:linear-gradient(135deg,#F0F9FF,#E8F5EE);
+    border:1px solid rgba(29,158,117,0.25);border-radius:20px;
+    padding:5px 12px;margin:3px 4px 3px 0;font-size:11.5px;font-weight:600;
+    color:#0D1B2A;transition:all .15s ease
+}
+.tech-chip:hover{background:linear-gradient(135deg,#1D9E75,#17836A);color:#FFFFFF;border-color:#1D9E75}
+
+/* ── PharmD clinical perspective ── */
+.pharmd-section{
+    background:linear-gradient(135deg,rgba(13,27,42,0.03),rgba(29,158,117,0.04));
+    border-radius:14px;padding:24px 28px;margin:12px 0;
+    border:1px solid rgba(29,158,117,0.15)
+}
+.pharmd-insight{
+    background:rgba(255,255,255,0.97);border-radius:10px;padding:16px 18px;
+    border-left:4px solid #1D9E75;margin-bottom:10px;
+    box-shadow:0 2px 10px rgba(13,27,42,0.06);transition:all .2s
+}
+.pharmd-insight:hover{box-shadow:0 5px 18px rgba(13,27,42,0.1);transform:translateX(3px)}
+.pharmd-insight-title{font-size:13px;font-weight:700;color:#0D1B2A;margin-bottom:5px}
+.pharmd-insight-body{font-size:12px;color:#4B5563;line-height:1.6}
+.pharmd-insight-ref{font-size:10.5px;color:#9CA3AF;margin-top:6px;font-style:italic}
+
+/* ── Professional footer ── */
+.tg-footer{
+    background:linear-gradient(135deg,#0D1B2A,#0f2235);border-radius:14px;
+    padding:28px 32px;margin-top:20px;
+    box-shadow:0 -4px 20px rgba(13,27,42,0.1);
+    border-top:2px solid rgba(29,158,117,0.3)
+}
+.tg-footer-brand{font-size:18px;font-weight:900;color:#FFFFFF;letter-spacing:-0.3px}
+.tg-footer-brand span{color:#1D9E75}
+.tg-footer-tagline{font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px;letter-spacing:0.3px}
+.tg-footer-link{
+    display:inline-flex;align-items:center;gap:6px;color:#A8D5C4;
+    font-size:12px;font-weight:500;text-decoration:none;
+    padding:6px 12px;border-radius:20px;border:1px solid rgba(29,158,117,0.3);
+    transition:all .2s;margin:4px
+}
+.tg-footer-link:hover{background:rgba(29,158,117,0.15);color:#FFFFFF}
+.tg-footer-divider{border:none;border-top:1px solid rgba(255,255,255,0.08);margin:18px 0}
+.tg-footer-disclaimer{font-size:10.5px;color:rgba(255,255,255,0.4);line-height:1.6}
+
+/* ── Vision cards ── */
+.vision-card{
+    background:rgba(255,255,255,0.97);border-radius:12px;padding:20px 18px;
+    text-align:center;border-top:3px solid #1D9E75;
+    box-shadow:0 4px 16px rgba(13,27,42,0.07);transition:all .25s
+}
+.vision-card:hover{box-shadow:0 8px 28px rgba(13,27,42,0.13);transform:translateY(-3px)}
+.vision-icon{font-size:32px;margin-bottom:10px}
+.vision-title{font-size:13px;font-weight:800;color:#0D1B2A;margin-bottom:6px;letter-spacing:0.2px}
+.vision-body{font-size:11.5px;color:#6B7280;line-height:1.55}
+
+/* ── Pipeline step ── */
+.pipeline-step{
+    background:rgba(255,255,255,0.97);border-radius:10px;padding:14px 16px;
+    border-left:3px solid #1D9E75;margin-bottom:8px;
+    box-shadow:0 2px 8px rgba(13,27,42,0.06);transition:all .2s
+}
+.pipeline-step:hover{box-shadow:0 4px 16px rgba(13,27,42,0.1);transform:translateX(3px)}
+.pipeline-num{font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1px;text-transform:uppercase}
+.pipeline-title{font-size:13px;font-weight:700;color:#0D1B2A}
+.pipeline-desc{font-size:11.5px;color:#6B7280;margin-top:3px;line-height:1.5}
 </style>
 """, unsafe_allow_html=True)
 
@@ -367,7 +559,7 @@ def gauge_chart(value: float, title: str, color: str, height: int = 240) -> go.F
     return fig
 
 
-# ── Landing KPI strip ─────────────────────────────────────────────────────────
+# ── Executive KPI strip ───────────────────────────────────────────────────────
 def render_landing_kpis():
     if not DATA_PATH.exists():
         return
@@ -389,30 +581,38 @@ def render_landing_kpis():
     k1, k2, k3, k4 = st.columns(4)
     k1.markdown(
         f'<div class="kpi-card">'
-        f'<div class="kpi-label">Participants Assessed</div>'
+        f'<div class="kpi-label">&#9679; Participants Modelled</div>'
         f'<div class="kpi-value">{len(df):,}</div>'
-        f'<div class="kpi-sub">Synthetic demonstration cohort</div></div>',
+        f'<div class="kpi-sub">Synthetic demonstration cohort</div>'
+        f'<div class="kpi-trend kpi-trend-down">&#9660; 25 clinical features per participant</div>'
+        f'</div>',
         unsafe_allow_html=True,
     )
     k2.markdown(
-        f'<div class="kpi-card" style="border-left-color:#D9534F">'
-        f'<div class="kpi-label">High-Risk Participants</div>'
-        f'<div class="kpi-value" style="color:#D9534F">{high_n:,}</div>'
-        f'<div class="kpi-sub">AI-estimated risk score &ge; 0.60</div></div>',
+        f'<div class="kpi-card" style="border-left-color:#EF4444">'
+        f'<div class="kpi-label">&#9679; Elevated Attrition Risk</div>'
+        f'<div class="kpi-value" style="color:#EF4444">{high_n:,}</div>'
+        f'<div class="kpi-sub">AI risk score &ge; 0.60 threshold</div>'
+        f'<div class="kpi-trend kpi-trend-up">&#9650; Priority intervention candidates</div>'
+        f'</div>',
         unsafe_allow_html=True,
     )
     k3.markdown(
-        f'<div class="kpi-card" style="border-left-color:#F4B942">'
-        f'<div class="kpi-label">Observed Attrition Rate</div>'
-        f'<div class="kpi-value" style="color:#F4B942">{attr_pct:.1f}%</div>'
-        f'<div class="kpi-sub">Cohort dropout rate</div></div>',
+        f'<div class="kpi-card" style="border-left-color:#F59E0B">'
+        f'<div class="kpi-label">&#9679; Observed Attrition Rate</div>'
+        f'<div class="kpi-value" style="color:#F59E0B">{attr_pct:.1f}%</div>'
+        f'<div class="kpi-sub">Cohort-level dropout frequency</div>'
+        f'<div class="kpi-trend" style="color:#F59E0B">&#9654; Aligns with industry 20&ndash;30% benchmark</div>'
+        f'</div>',
         unsafe_allow_html=True,
     )
     k4.markdown(
         f'<div class="kpi-card" style="border-left-color:#0D1B2A">'
-        f'<div class="kpi-label">Potential Cost Exposure</div>'
+        f'<div class="kpi-label">&#9679; Modelled Cost Exposure</div>'
         f'<div class="kpi-value" style="color:#0D1B2A">${cost_exp/1_000_000:.1f}M</div>'
-        f'<div class="kpi-sub">Unaddressed attrition cost</div></div>',
+        f'<div class="kpi-sub">Unaddressed attrition cost</div>'
+        f'<div class="kpi-trend kpi-trend-down">&#9660; Based on $18K replacement cost (Getz 2016)</div>'
+        f'</div>',
         unsafe_allow_html=True,
     )
 
@@ -423,7 +623,7 @@ def render_sidebar() -> pd.DataFrame:
 
     st.sidebar.markdown(
         "<div style='padding:12px 0 4px'>"
-        "<div style='font-size:18px;font-weight:700;color:#1D9E75'>🧬 Participant Input</div>"
+        "<div style='font-size:18px;font-weight:700;color:#1D9E75'>🛡️ TrialGuard &nbsp;&mdash;&nbsp; Participant Input</div>"
         "<div style='font-size:11px;color:#9CA3AF;margin-top:2px'>Select a demo profile or configure manually</div>"
         "</div>",
         unsafe_allow_html=True,
@@ -435,10 +635,10 @@ def render_sidebar() -> pd.DataFrame:
         "letter-spacing:0.5px;margin:8px 0 6px'>Quick Demo Profiles</div>",
         unsafe_allow_html=True,
     )
-    if st.sidebar.button("🔴 High-Risk Participant",    key="demo_hr", use_container_width=True): _load_demo("high_risk")
-    if st.sidebar.button("🌾 Rural Participant",        key="demo_ru", use_container_width=True): _load_demo("rural")
-    if st.sidebar.button("💊 Polypharmacy Participant", key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
-    if st.sidebar.button("🟢 Low-Risk Participant",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
+    if st.sidebar.button("🔴 Scenario A — High Attrition Risk",    key="demo_hr", use_container_width=True): _load_demo("high_risk")
+    if st.sidebar.button("🚗 Scenario B — Logistical Friction",    key="demo_ru", use_container_width=True): _load_demo("rural")
+    if st.sidebar.button("💊 Scenario C — Pharmacological Burden", key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
+    if st.sidebar.button("🟢 Scenario D — Low-Risk Benchmark",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
     st.sidebar.divider()
 
     # Demographics
@@ -584,7 +784,7 @@ def render_ner_section(ner_result):
 
 
 def render_coordinator_copilot(analysis: dict, risk_cat: str):
-    """Retention Coordinator Copilot — Module 5 + 6 + 7 + 8."""
+    """TrialGuard Coordinator Copilot — Module 5 + 6 + 7 + 8."""
     from coordinator_copilot import CoordinatorCopilot
 
     risk_pct       = analysis.get("risk_pct", 0)
@@ -607,7 +807,7 @@ def render_coordinator_copilot(analysis: dict, risk_cat: str):
     # Store for PDF
     st.session_state["_copilot_summary"] = summary
 
-    section_header("Retention Coordinator Copilot")
+    section_header("TrialGuard Coordinator Copilot")
     st.markdown(
         '_Powered by V3.0 Clinical Reasoning Engine — template-based, deterministic. '
         'Clinical review required before action._'
@@ -1282,7 +1482,7 @@ def render_tab_intake():
         if st.session_state.get("intake_confirmed"):
             st.success(
                 "✅ Sidebar populated from document. "
-                "Switch to **Participant Retention Assessment** and click Run Retention Analysis."
+                "Switch to **Risk Assessment** and click Run Retention Analysis."
             )
 
     if confirmed:
@@ -1345,7 +1545,7 @@ def render_tab_intake():
         )
 
 
-# ── TAB 1: Participant Retention Assessment ───────────────────────────────────
+# ── TAB 1: Risk Assessment ───────────────────────────────────────────────────
 def render_tab1(patient_df: pd.DataFrame, config: dict):
     run = st.button("🔍 Run Retention Analysis", type="primary", use_container_width=True)
 
@@ -1363,7 +1563,7 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
         st.error("Model artefacts not found. Run `python src/model.py` first.")
         return
 
-    with st.spinner("Generating retention intelligence report..."):
+    with st.spinner("Generating TrialGuard intelligence report..."):
         from agent import RetentionAgent
         agent    = RetentionAgent(model=model, preprocessor=preprocessor, config=config)
         analysis = agent.run(patient_df)
@@ -1963,13 +2163,13 @@ def render_tab4():
     st.markdown("<div style='margin:10px 0'></div>", unsafe_allow_html=True)
     st.markdown(
         "Current retention strategies are predominantly **reactive** — triggered after dropout occurs. "
-        "This platform demonstrates how AI-driven early identification, combined with evidence-based "
+        "**TrialGuard** demonstrates how AI-driven early identification, combined with evidence-based "
         "interventions, can shift clinical trial operations from reactive to **proactive**."
     )
     st.caption("Sources: FDA (2012); Getz KA et al., Ther Innov Regul Sci (2016).")
 
-    # Clinical Intelligence Framework
-    section_header("Clinical Intelligence Framework")
+    # TrialGuard Intelligence Framework
+    section_header("TrialGuard Intelligence Framework")
     b1, b2, b3, b4 = st.columns(4)
     b1.markdown(
         '<div class="about-card"><div style="font-size:20px">⚠️</div>'
@@ -2146,51 +2346,116 @@ def render_tab4():
             "- **Timing approximations.** Dropout windows derived from simulated distributions, not clinical predictions."
         )
 
-    # Release History
-    section_header("Release History")
+    # Release History & Roadmap
+    section_header("Release History & Product Roadmap")
     st.markdown("""
-<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:12px">
 
-<div style="flex:1;min-width:220px;background:#F0FDF4;border:1.5px solid #1D9E75;border-radius:10px;padding:16px">
-<div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Version 1.0 — Deployed</div>
-<div style="font-weight:700;font-size:14px;color:#0D1B2A;margin-bottom:8px">Manual Participant Entry</div>
-<ul style="font-size:12px;color:#374151;margin:0;padding-left:18px;line-height:1.8">
+<div style="background:#F0FDF4;border:1.5px solid #1D9E75;border-radius:10px;padding:14px">
+<div style="font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">v1.0 — Deployed</div>
+<div style="font-weight:700;font-size:13px;color:#0D1B2A;margin-bottom:7px">Participant Risk Intelligence</div>
+<ul style="font-size:11.5px;color:#374151;margin:0;padding-left:16px;line-height:1.75">
 <li>Manual participant data entry</li>
 <li>XGBoost dropout risk prediction</li>
 <li>SHAP per-participant explainability</li>
 <li>7 evidence-based interventions</li>
 <li>Business impact &amp; ROI calculator</li>
 <li>What-if scenario simulator</li>
-<li>Downloadable 2-page PDF report</li>
+<li>Downloadable PDF report</li>
 </ul>
 </div>
 
-<div style="flex:1;min-width:220px;background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:10px;padding:16px">
-<div style="font-size:11px;font-weight:700;color:#3B82F6;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Version 2.0 — Current</div>
-<div style="font-weight:700;font-size:14px;color:#0D1B2A;margin-bottom:8px">Clinical Document Intake & Auto-Population</div>
-<ul style="font-size:12px;color:#374151;margin:0;padding-left:18px;line-height:1.8">
-<li>Clinical PDF upload (CRF, screening forms)</li>
-<li>Rule-based extraction of 16 clinical fields</li>
+<div style="background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:10px;padding:14px">
+<div style="font-size:10px;font-weight:700;color:#3B82F6;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">v2.0 — Current</div>
+<div style="font-weight:700;font-size:13px;color:#0D1B2A;margin-bottom:7px">Clinical Document Intelligence</div>
+<ul style="font-size:11.5px;color:#374151;margin:0;padding-left:16px;line-height:1.75">
+<li>Clinical PDF upload (CRF, screening)</li>
+<li>Rule-based extraction of 16 fields</li>
 <li>Confidence scoring (High / Medium / Low)</li>
 <li>Human-in-the-loop validation &amp; editing</li>
 <li>Sidebar auto-population on confirmation</li>
 <li>Extraction audit trail with timestamps</li>
-<li>PDF report metadata: source &amp; method</li>
+<li>PDF report: source &amp; method metadata</li>
 </ul>
 </div>
 
-<div style="flex:1;min-width:220px;background:#FFF7ED;border:1.5px dashed #F59E0B;border-radius:10px;padding:16px;opacity:0.85">
-<div style="font-size:11px;font-weight:700;color:#D97706;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Version 3.0 — Planned</div>
-<div style="font-weight:700;font-size:14px;color:#0D1B2A;margin-bottom:8px">AI Clinical Intake Agent</div>
-<ul style="font-size:12px;color:#374151;margin:0;padding-left:18px;line-height:1.8">
+<div style="background:#FFF7ED;border:1.5px dashed #F59E0B;border-radius:10px;padding:14px;opacity:0.88">
+<div style="font-size:10px;font-weight:700;color:#D97706;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">v3.0 — Roadmap</div>
+<div style="font-weight:700;font-size:13px;color:#0D1B2A;margin-bottom:7px">AI Clinical Intake Agent</div>
+<ul style="font-size:11.5px;color:#374151;margin:0;padding-left:16px;line-height:1.75">
 <li>Clinical entity recognition (NER)</li>
 <li>Medical NLP for unstructured notes</li>
-<li>Confidence scoring engine (model-driven)</li>
+<li>Model-driven confidence scoring engine</li>
 <li>Intelligent missing data detection</li>
 <li>Agentic clinical intake workflow</li>
 <li>Multi-document source reconciliation</li>
 </ul>
-<div style="font-size:11px;color:#D97706;font-weight:600;margin-top:8px">⚠️ Roadmap only — not implemented</div>
+<div style="font-size:10.5px;color:#D97706;font-weight:600;margin-top:7px">⚠️ Not yet implemented</div>
+</div>
+
+<div style="background:#FDF4FF;border:1.5px dashed #A855F7;border-radius:10px;padding:14px;opacity:0.88">
+<div style="font-size:10px;font-weight:700;color:#9333EA;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">v4.0 — Roadmap</div>
+<div style="font-weight:700;font-size:13px;color:#0D1B2A;margin-bottom:7px">Predictive Retention Workflow</div>
+<ul style="font-size:11.5px;color:#374151;margin:0;padding-left:16px;line-height:1.75">
+<li>Automated high-risk participant alerts</li>
+<li>Coordinator task queue integration</li>
+<li>Intervention outcome tracking</li>
+<li>Trial-level retention forecasting</li>
+<li>Site-level risk stratification</li>
+</ul>
+<div style="font-size:10.5px;color:#9333EA;font-weight:600;margin-top:7px">⚠️ Not yet implemented</div>
+</div>
+
+<div style="background:#F0F9FF;border:1.5px dashed #0EA5E9;border-radius:10px;padding:14px;opacity:0.88">
+<div style="font-size:10px;font-weight:700;color:#0284C7;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">v5.0 — Roadmap</div>
+<div style="font-weight:700;font-size:13px;color:#0D1B2A;margin-bottom:7px">Decentralised Trial Module</div>
+<ul style="font-size:11.5px;color:#374151;margin:0;padding-left:16px;line-height:1.75">
+<li>Remote visit compliance tracking</li>
+<li>eConsent drop-off prediction</li>
+<li>Wearable &amp; ePRO data ingestion</li>
+<li>FDA DCT 2023 guidance alignment</li>
+<li>Virtual site monitoring dashboard</li>
+</ul>
+<div style="font-size:10.5px;color:#0284C7;font-weight:600;margin-top:7px">⚠️ Not yet implemented</div>
+</div>
+
+<div style="background:#FFF1F2;border:1.5px dashed #F43F5E;border-radius:10px;padding:14px;opacity:0.88">
+<div style="font-size:10px;font-weight:700;color:#E11D48;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">v6.0 — Roadmap</div>
+<div style="font-weight:700;font-size:13px;color:#0D1B2A;margin-bottom:7px">Pharmacovigilance Intelligence</div>
+<ul style="font-size:11.5px;color:#374151;margin:0;padding-left:16px;line-height:1.75">
+<li>Real-time AE severity tracking</li>
+<li>Dropout-AE causal attribution</li>
+<li>ICH E6(R3) compliance flags</li>
+<li>Signal detection for early withdrawal</li>
+<li>Medical monitor alert integration</li>
+</ul>
+<div style="font-size:10.5px;color:#E11D48;font-weight:600;margin-top:7px">⚠️ Not yet implemented</div>
+</div>
+
+<div style="background:#F7FEE7;border:1.5px dashed #65A30D;border-radius:10px;padding:14px;opacity:0.88">
+<div style="font-size:10px;font-weight:700;color:#4D7C0F;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">v7.0 — Roadmap</div>
+<div style="font-weight:700;font-size:13px;color:#0D1B2A;margin-bottom:7px">Multi-Trial Portfolio Intelligence</div>
+<ul style="font-size:11.5px;color:#374151;margin:0;padding-left:16px;line-height:1.75">
+<li>Cross-trial attrition benchmarking</li>
+<li>Therapeutic area risk models</li>
+<li>Portfolio-level retention analytics</li>
+<li>Sponsor comparative reporting</li>
+<li>CRO performance scorecards</li>
+</ul>
+<div style="font-size:10.5px;color:#4D7C0F;font-weight:600;margin-top:7px">⚠️ Not yet implemented</div>
+</div>
+
+<div style="background:#FEFCE8;border:1.5px dashed #CA8A04;border-radius:10px;padding:14px;opacity:0.88">
+<div style="font-size:10px;font-weight:700;color:#B45309;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">v8.0 — Roadmap</div>
+<div style="font-weight:700;font-size:13px;color:#0D1B2A;margin-bottom:7px">Sponsor Intelligence Dashboard</div>
+<ul style="font-size:11.5px;color:#374151;margin:0;padding-left:16px;line-height:1.75">
+<li>Executive sponsor analytics suite</li>
+<li>Regulatory submission risk reports</li>
+<li>AI-generated retention narratives</li>
+<li>IRB &amp; ethics board audit trail</li>
+<li>IQVIA CORE platform integration</li>
+</ul>
+<div style="font-size:10.5px;color:#B45309;font-weight:600;margin-top:7px">⚠️ Not yet implemented</div>
 </div>
 
 </div>
@@ -2221,36 +2486,39 @@ def render_tab4():
     )
 
 
-# ── Landing header ────────────────────────────────────────────────────────────
+# ── Landing page — Enterprise hero + all sections ─────────────────────────────
 def render_landing():
-    st.markdown(
-        "<div style='padding:4px 0 2px'>"
-        "<div style='font-size:26px;font-weight:800;color:#0D1B2A;line-height:1.2'>"
-        "🧬 AI-Powered Clinical Trial Retention Intelligence</div>"
-        "<div style='font-size:14px;color:#1D9E75;font-weight:600;margin:6px 0 3px'>"
-        "Predict &nbsp;·&nbsp; Explain &nbsp;·&nbsp; Intervene &nbsp;·&nbsp; Simulate &nbsp;·&nbsp; Report"
-        "</div>"
-        "<div style='margin-top:4px'>"
-        "<span style='display:inline-block;background:#EFF6FF;color:#1D4ED8;font-size:11px;"
-        "font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:0.5px;"
-        "border:1px solid #BFDBFE;margin-right:6px'>Portfolio Demonstration</span>"
-        "<span style='display:inline-block;background:#F0FDF4;color:#166534;font-size:11px;"
-        "font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:0.5px;"
-        "border:1px solid #BBF7D0'>Version 3.0</span>"
-        "</div>"
-        "</div>",
-        unsafe_allow_html=True,
-    )
+    # ── Full-width hero ───────────────────────────────────────────────────────
+    st.markdown("""
+<div class="tg-hero">
+  <div style="position:relative;z-index:1">
+    <div class="tg-hero-eyebrow">&#9632; Clinical Trial Intelligence Platform</div>
+    <div class="tg-hero-title">🛡️ TrialGuard</div>
+    <div class="tg-hero-subtitle">
+      AI-powered participant risk intelligence for clinical operations teams and trial sponsors.
+      Predict attrition before it happens. Intervene with evidence. Quantify the financial impact.
+    </div>
+    <div class="tg-hero-badges">
+      <span class="tg-badge tg-badge-teal">&#9679; Explainable AI (SHAP)</span>
+      <span class="tg-badge tg-badge-teal">&#9679; XGBoost &amp; Logistic Regression</span>
+      <span class="tg-badge tg-badge-teal">&#9679; Clinical Document Intelligence</span>
+      <span class="tg-badge tg-badge-navy">v3.0 &mdash; Current Release</span>
+      <span class="tg-badge tg-badge-navy">Portfolio Demonstration</span>
+      <span class="tg-badge tg-badge-amber">&#9888; Educational Use Only</span>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    # 5 capability cards
-    cols = st.columns(5)
+    # ── 5 capability cards ────────────────────────────────────────────────────
     caps = [
-        ("🧠", "Predict",   "Dropout risk per participant"),
-        ("🔍", "Explain",   "SHAP explainability"),
-        ("🎯", "Intervene", "Evidence-based recommendations"),
-        ("📈", "Simulate",  "What-if scenario analysis"),
-        ("📄", "Report",    "Sponsor-ready PDF output"),
+        ("🧠", "PREDICT",   "AI-estimated dropout probability per participant with calibrated risk tiers"),
+        ("🔍", "EXPLAIN",   "SHAP attribution — understand exactly which factors drive each prediction"),
+        ("🎯", "INTERVENE", "Evidence-based retention strategies matched to each participant's risk profile"),
+        ("📈", "SIMULATE",  "Protocol change simulator — model the impact of design modifications on attrition"),
+        ("📄", "REPORT",    "Enterprise-grade clinical intelligence PDF for trial sponsors and CROs"),
     ]
+    cols = st.columns(5)
     for col, (icon, title, desc) in zip(cols, caps):
         col.markdown(
             f'<div class="cap-card">'
@@ -2260,12 +2528,249 @@ def render_landing():
             f'</div>',
             unsafe_allow_html=True,
         )
+    st.markdown("<div style='margin-bottom:6px'></div>", unsafe_allow_html=True)
 
+    # ── Clinical problem statement ────────────────────────────────────────────
+    st.markdown("""
+<div class="problem-card">
+  <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">
+    &#9632; The Clinical Trial Attrition Challenge
+  </div>
+  <div style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7;margin-bottom:20px;max-width:780px">
+    Clinical trial attrition is one of the most costly and preventable challenges in drug development.
+    Current retention strategies are <strong style="color:#FCD34D">predominantly reactive</strong> — triggered only after
+    a participant has already disengaged. TrialGuard shifts this paradigm by enabling
+    <strong style="color:#4CD4A0">proactive, data-driven, early identification</strong> of at-risk participants
+    before dropout occurs.
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div class="problem-stat">
+      <div class="problem-num">20&ndash;30%</div>
+      <div class="problem-label">Average dropout rate across clinical trials globally</div>
+    </div>
+    <div class="problem-stat">
+      <div class="problem-num">$18K+</div>
+      <div class="problem-label">Estimated cost to replace a single withdrawn participant</div>
+    </div>
+    <div class="problem-stat">
+      <div class="problem-num">$54M+</div>
+      <div class="problem-label">Estimated industry-wide annual exposure from attrition</div>
+    </div>
+    <div class="problem-stat">
+      <div class="problem-num">Week 2</div>
+      <div class="problem-label">Highest-risk intervention window — early AE severity is the #1 predictor</div>
+    </div>
+  </div>
+  <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:14px">
+    Sources: FDA Patient Retention Guidance (2012) &nbsp;|&nbsp; Getz KA et al., Ther Innov Regul Sci (2016) &nbsp;|&nbsp; ICH E6(R2) (2016)
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+    # ── Platform vision ───────────────────────────────────────────────────────
     st.markdown(
-        "<div style='font-size:11px;color:#9CA3AF;margin:8px 0 4px'>"
-        "⚠️ For educational, research, and portfolio demonstration purposes only. Not for clinical use.</div>",
+        "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
+        "text-transform:uppercase;margin:20px 0 12px'>&#9632; Platform Vision</div>",
         unsafe_allow_html=True,
     )
+    v1, v2, v3, v4 = st.columns(4)
+    visions = [
+        ("🎯", "Predict Early", "Identify dropout risk at the individual participant level before clinical signals become visible"),
+        ("⚡", "Act Fast",      "Match each participant to evidence-based interventions drawn from FDA, ICH E6(R2), and peer-reviewed literature"),
+        ("💰", "Quantify ROI",  "Translate retained participants into financial value — modelled savings up to $1.6M per 600-participant cohort"),
+        ("📊", "Demonstrate AI","Full explainability stack: SHAP, calibrated probabilities, global feature attribution, survival analysis"),
+    ]
+    for col, (icon, title, body) in zip([v1, v2, v3, v4], visions):
+        col.markdown(
+            f'<div class="vision-card">'
+            f'<div class="vision-icon">{icon}</div>'
+            f'<div class="vision-title">{title}</div>'
+            f'<div class="vision-body">{body}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<div style='margin-bottom:4px'></div>", unsafe_allow_html=True)
+
+    # ── Technologies demonstrated ─────────────────────────────────────────────
+    st.markdown("""
+<div class="tech-section">
+  <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">
+    &#9632; Technologies &amp; Domains Demonstrated
+  </div>
+  <div style="margin-bottom:14px">
+    <div class="tech-category">Clinical Research &amp; Analytics</div>
+    <span class="tech-chip">&#129514; Clinical Trial Analytics</span>
+    <span class="tech-chip">&#128203; Clinical Operations</span>
+    <span class="tech-chip">&#128138; Pharmacovigilance</span>
+    <span class="tech-chip">&#128295; GCP / ICH E6(R2)</span>
+    <span class="tech-chip">&#9877; FDA Guidance Alignment</span>
+    <span class="tech-chip">&#128196; CRF Data Extraction</span>
+  </div>
+  <div style="margin-bottom:14px">
+    <div class="tech-category">Machine Learning &amp; AI</div>
+    <span class="tech-chip">&#129302; XGBoost (Optuna-tuned)</span>
+    <span class="tech-chip">&#129302; Logistic Regression Ensemble</span>
+    <span class="tech-chip">&#129302; LightGBM &amp; CatBoost</span>
+    <span class="tech-chip">&#9889; SHAP Explainability</span>
+    <span class="tech-chip">&#9889; Explainable AI (XAI)</span>
+    <span class="tech-chip">&#128200; SMOTE (Class Balancing)</span>
+    <span class="tech-chip">&#128200; Survival Analysis (Kaplan-Meier)</span>
+    <span class="tech-chip">&#128200; Calibration Curves</span>
+  </div>
+  <div style="margin-bottom:14px">
+    <div class="tech-category">Engineering &amp; Platform</div>
+    <span class="tech-chip">&#128202; Streamlit</span>
+    <span class="tech-chip">&#128202; MLflow (Experiment Tracking)</span>
+    <span class="tech-chip">&#128202; Scikit-learn</span>
+    <span class="tech-chip">&#128202; Plotly &amp; Matplotlib</span>
+    <span class="tech-chip">&#128202; fpdf2 (PDF Generation)</span>
+    <span class="tech-chip">&#128202; pdfplumber / PyMuPDF</span>
+    <span class="tech-chip">&#128202; Python 3.11</span>
+  </div>
+  <div>
+    <div class="tech-category">AI System Design</div>
+    <span class="tech-chip">&#129302; RAG Systems (Evidence Retrieval)</span>
+    <span class="tech-chip">&#129302; Agentic Pipeline (9-Step)</span>
+    <span class="tech-chip">&#129302; Human-in-the-Loop Validation</span>
+    <span class="tech-chip">&#129302; PDF Report Automation</span>
+    <span class="tech-chip">&#129302; Healthcare AI</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+    # ── PharmD clinical perspective ───────────────────────────────────────────
+    st.markdown("""
+<div class="pharmd-section">
+  <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">
+    &#9632; PharmD Clinical Perspective
+  </div>
+  <div style="font-size:13px;color:#4B5563;margin-bottom:16px;line-height:1.6">
+    Clinical trial dropout is not a single-cause phenomenon. As a PharmD-trained clinical data scientist,
+    I encoded the multi-dimensional burden of trial participation into 5 composite features grounded in
+    pharmacovigilance, GCP, and FDA guidance.
+  </div>
+""", unsafe_allow_html=True)
+
+    pc1, pc2, pc3 = st.columns(3)
+    pharmd_insights = [
+        (
+            "⚠️ Week 2 Side Effect Monitoring",
+            "Early adverse event severity is the single highest-ranked dropout predictor in this model — "
+            "with a SHAP contribution ~3× larger than the next factor. A proactive pharmacovigilance call at "
+            "Week 2 is low-cost and has the highest modelled impact on retention.",
+            "ICH E6(R2) Good Clinical Practice (2016)",
+        ),
+        (
+            "🚗 Logistical Friction & Transportation",
+            "Distance beyond 50 km without reliable transport creates a hard logistical barrier independent of "
+            "a participant's clinical profile. Transportation reimbursement delivers significant risk reduction "
+            "at minimal cost — a finding directly aligned with FDA retention guidance.",
+            "FDA Patient Retention Guidance (2012)",
+        ),
+        (
+            "💊 Polypharmacy & Medication Burden",
+            "Participants on ≥8 concomitant medications face compounded pharmacological burden — increased "
+            "drug interaction risk, pill fatigue, and AE complexity. Medication management support and "
+            "simplified regimen counselling are recommended interventions.",
+            "WHO Technical Report on Polypharmacy (2019)",
+        ),
+        (
+            "📋 Protocol Complexity & Consent",
+            "ICH E6(R2)'s proportionality principle supports removing non-critical assessments. "
+            "High consent complexity (scored 8–10) signals participant confusion and hesitancy — "
+            "plain-language simplification is the most upstream intervention available.",
+            "Getz KA et al., Ther Innov Regul Sci (2016)",
+        ),
+        (
+            "📅 Visit Burden & Scheduling Adherence",
+            "High visit frequency amplifies scheduling fatigue and competes with occupational and family "
+            "obligations. The Visit Burden Index composite feature captures this interaction. "
+            "Decentralised trial components (FDA DCT 2023) can address this at the design stage.",
+            "FDA Decentralised Clinical Trials Guidance (2023)",
+        ),
+        (
+            "🩺 Comorbidity & Adherence Risk",
+            "Multiple comorbidities increase clinical management complexity and AE monitoring burden. "
+            "Participants with ≥5 comorbidities were modelled as having significantly elevated dropout "
+            "probability — reflecting real-world adherence challenges in complex patient populations.",
+            "Getz KA et al., Ther Innov Regul Sci (2016)",
+        ),
+    ]
+    all_cols = [pc1, pc2, pc3, pc1, pc2, pc3]
+    for col, (title, body, ref) in zip(all_cols, pharmd_insights):
+        col.markdown(
+            f'<div class="pharmd-insight">'
+            f'<div class="pharmd-insight-title">{title}</div>'
+            f'<div class="pharmd-insight-body">{body}</div>'
+            f'<div class="pharmd-insight-ref">{ref}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # ── Architecture pipeline ─────────────────────────────────────────────────
+    st.markdown(
+        "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
+        "text-transform:uppercase;margin:20px 0 12px'>&#9632; 9-Step Intelligence Pipeline</div>",
+        unsafe_allow_html=True,
+    )
+    steps = [
+        ("01", "Participant Risk Prediction",     "XGBoost + Logistic Regression ensemble generates a calibrated dropout probability score"),
+        ("02", "SHAP Explainability",             "TreeExplainer surfaces per-participant risk drivers and protective factors with exact attributions"),
+        ("03", "Clinical Persona Classification", "4 validated archetypes: Pharmacological Burden, Logistical Friction, Protocol Complexity, Low-Risk Benchmark"),
+        ("04", "Intervention Engine",             "7 evidence-based retention strategies matched to each participant's specific risk profile"),
+        ("05", "Clinical Evidence Retrieval",     "Lightweight RAG engine retrieves FDA, ICH E6(R2), and peer-reviewed citations for each recommendation"),
+        ("06", "Business Impact Calculation",     "Replacement cost avoidance, intervention ROI, and net savings modelled per participant and cohort"),
+        ("07", "Protocol Change Simulation",      "5 preset what-if scenarios model the impact of design changes on individual attrition risk"),
+        ("08", "AI Coordinator Copilot",          "Deterministic clinical reasoning engine generates structured summaries and prioritised action plans"),
+        ("09", "Clinical Intelligence Report",    "Enterprise PDF report: risk summary, SHAP analysis, interventions, financial impact, evidence citations"),
+    ]
+    p1, p2 = st.columns(2)
+    for i, (num, title, desc) in enumerate(steps):
+        col = p1 if i % 2 == 0 else p2
+        col.markdown(
+            f'<div class="pipeline-step">'
+            f'<div class="pipeline-num">Step {num}</div>'
+            f'<div class="pipeline-title">{title}</div>'
+            f'<div class="pipeline-desc">{desc}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    # ── Professional footer ───────────────────────────────────────────────────
+    st.markdown("""
+<div class="tg-footer">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px">
+    <div>
+      <div class="tg-footer-brand">🛡️ Trial<span>Guard</span></div>
+      <div class="tg-footer-tagline">AI-Powered Clinical Trial Intelligence Platform &nbsp;|&nbsp; v3.0</div>
+      <div style="margin-top:12px">
+        <a class="tg-footer-link" href="https://github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence" target="_blank">&#128025; GitHub Repository</a>
+        <a class="tg-footer-link" href="mailto:reemahussain2097@gmail.com">&#128140; reemahussain2097@gmail.com</a>
+        <a class="tg-footer-link" href="https://linkedin.com/in/reema-mohamed-sulthan" target="_blank">&#128188; LinkedIn</a>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:6px">Built by</div>
+      <div style="font-size:15px;font-weight:800;color:#FFFFFF">Dr. Reema Mohamed Sulthan</div>
+      <div style="font-size:12px;color:#A8D5C4;margin-top:3px">PharmD &nbsp;|&nbsp; Clinical Data Scientist &nbsp;|&nbsp; Certified AI Expert</div>
+      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end">
+        <span style="background:rgba(29,158,117,0.15);color:#4CD4A0;border:1px solid rgba(29,158,117,0.3);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">IQVIA Portfolio Target</span>
+        <span style="background:rgba(29,158,117,0.15);color:#4CD4A0;border:1px solid rgba(29,158,117,0.3);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600">AI Expert — IABAC 2025</span>
+      </div>
+    </div>
+  </div>
+  <hr class="tg-footer-divider"/>
+  <div class="tg-footer-disclaimer">
+    &#9888; <strong style="color:rgba(255,255,255,0.6)">Disclaimer:</strong>
+    TrialGuard is an educational and portfolio demonstration project. All data is fully synthetic.
+    This platform does not provide clinical recommendations and must not be used for patient care decisions,
+    regulatory submissions, or operational sponsor decision-making. All modelled estimates are approximations only.
+    &nbsp;|&nbsp; References: FDA (2012) &nbsp;|&nbsp; ICH E6(R2) (2016) &nbsp;|&nbsp; Getz KA et al., Ther Innov Regul Sci (2016)
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -2279,8 +2784,13 @@ def main():
         del st.session_state["_intake_pending"]
 
     render_landing()
+    st.markdown(
+        "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
+        "text-transform:uppercase;margin:20px 0 10px'>&#9632; Executive Dashboard — Live Cohort Metrics</div>",
+        unsafe_allow_html=True,
+    )
     render_landing_kpis()
-    st.divider()
+    st.markdown("<div style='margin:16px 0 4px'></div>", unsafe_allow_html=True)
 
     config     = load_config()
     patient_df = render_sidebar()

@@ -179,7 +179,7 @@ class RetentionReport(FPDF):
         self.set_text_color(*WHITE)
         self.set_font("Helvetica", "B", 11)
         self.set_xy(10, 3.5)
-        self.cell(140, 7, "Clinical Trial Retention Intelligence Report", ln=False)
+        self.cell(140, 7, "TrialGuard Clinical Intelligence Report", ln=False)
         self.set_font("Helvetica", "", 7.5)
         self.set_xy(10, 10)
         self.cell(
@@ -203,7 +203,7 @@ class RetentionReport(FPDF):
         col = self.epw / 3
         self.set_font("Helvetica", "", 7)
         self.set_x(self.l_margin)
-        self.cell(col, 4, "AI-Powered Clinical Trial Retention Intelligence", ln=False, align="L")
+        self.cell(col, 4, "TrialGuard  |  Clinical Trial Intelligence Platform", ln=False, align="L")
         self.cell(col, 4, f"Generated: {self.generated_at}", ln=False, align="C")
         self.cell(col, 4, f"Page {self.page_no()}/{{nb}}  |  Model v3.0", ln=False, align="R")
 

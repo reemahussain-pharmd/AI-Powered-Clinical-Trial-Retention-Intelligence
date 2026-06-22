@@ -19,7 +19,7 @@ BOXES = [
     "Feature Engineering\n(PharmD-Informed Feature Store)",
     "Retention Prediction Engine\n(XGBoost + LightGBM + CatBoost)",
     "SHAP Explainability\n(Global & Per-Patient)",
-    "Retention Intelligence Agent\n(9-Step Orchestration Pipeline)",
+    "TrialGuard Intelligence Agent\n(9-Step Orchestration Pipeline)",
     "Patient Persona Classification\n(4 Clinical Archetypes)",
     "Intervention Engine\n(7 Evidence-Based Strategies)",
     "What-If Scenario Simulator\n(5 Protocol Change Presets)",
@@ -48,7 +48,7 @@ def generate_architecture(output_path: Path = None) -> None:
 
     # Title
     ax.text(5, len(BOXES) * 1.4 + 0.6,
-            "AI-Powered Clinical Trial Retention Intelligence System",
+            "TrialGuard — AI-Powered Clinical Trial Intelligence Platform",
             ha="center", va="center", fontsize=12, fontweight="bold",
             color=NAVY)
     ax.text(5, len(BOXES) * 1.4 + 0.15,

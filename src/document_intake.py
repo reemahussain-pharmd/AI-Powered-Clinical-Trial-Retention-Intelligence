@@ -649,7 +649,7 @@ def generate_sample_crf() -> bytes:
     pdf.set_text_color(130, 130, 130)
     pdf.cell(0, 5,
              "Synthetic document - for demonstration purposes only.  "
-             "AI-Powered Clinical Trial Retention Intelligence Platform  |  v2.0",
+             "TrialGuard  |  AI-Powered Clinical Trial Intelligence Platform  |  v2.0",
              align="C")
 
     return bytes(pdf.output())

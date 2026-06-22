@@ -1,5 +1,5 @@
 """
-Retention Coordinator Copilot — Version 3.0
+TrialGuard Coordinator Copilot — Version 3.0
 
 Generates AI-powered coordinator summaries, clinical reasoning narratives,
 prioritised action plans, and scenario optimisation from retention analysis.
