@@ -47,24 +47,62 @@ def _make_qr_bytes(url: str):
 
 
 def _safe(text: str) -> str:
-    """Replace Unicode characters unsupported by Helvetica with ASCII equivalents."""
-    return (
-        str(text)
-        .replace("–", "-").replace("—", "--")
-        .replace("→", "->").replace("←", "<-")
-        .replace("°", " deg").replace("×", "x")
-        .replace("‘", "'").replace("’", "'")
-        .replace("“", '"').replace("”", '"')
-        .replace("é", "e").replace("à", "a")
-        .replace("∞", "inf")
-        .replace("≥", ">=").replace("≤", "<=")
-        .replace("–", "-").replace("—", "--")
-        .replace("→", "->").replace("°", " deg")
-        .replace("×", "x").replace("'", "'").replace("'", "'")
-    )
+    # Maps common Unicode to ASCII; catch-all drops anything above U+00FF.
+    s = str(text)
+    for src_ch, dst in [
+        ('–', '-'),
+        ('—', '--'),
+        ('→', '->'),
+        ('←', '<-'),
+        ('↑', '^'),
+        ('↓', 'v'),
+        ('°', ' deg'),
+        ('×', 'x'),
+        ('·', '.'),
+        ('‘', "'"),
+        ('’', "'"),
+        ('“', '"'),
+        ('”', '"'),
+        ('é', 'e'),
+        ('è', 'e'),
+        ('ê', 'e'),
+        ('ë', 'e'),
+        ('à', 'a'),
+        ('â', 'a'),
+        ('ä', 'a'),
+        ('ü', 'u'),
+        ('ö', 'o'),
+        ('ç', 'c'),
+        ('ñ', 'n'),
+        ('∞', 'inf'),
+        ('≥', '>='),
+        ('≤', '<='),
+        ('≈', '~'),
+        ('≠', '!='),
+        ('±', '+/-'),
+        ('★', '*'),
+        ('✓', 'OK'),
+        ('✗', 'X'),
+        ('•', '-'),
+        ('▪', '-'),
+        ('▸', '>'),
+        ('▶', '>'),
+        ('█', '|'),
+        ('▓', '|'),
+        ('░', '-'),
+        ('▒', '-'),
+        ('■', '[x]'),
+        ('□', '[ ]'),
+        ('◆', '*'),
+        ('◇', '*'),
+        ('©', '(c)'),
+        ('®', '(R)'),
+        ('™', '(TM)'),
+        ('\xa0', ' '),
+    ]:
+        s = s.replace(src_ch, dst)
+    return ''.join(c if ord(c) <= 255 else '?' for c in s)
 
-
-# ── Colour palette ────────────────────────────────────────────────────────────
 
 TEAL        = (29, 158, 117)
 NAVY        = (13, 27, 42)
