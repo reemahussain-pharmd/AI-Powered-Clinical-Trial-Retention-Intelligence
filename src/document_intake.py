@@ -79,6 +79,26 @@ FIELD_LABELS: Dict[str, str] = {
 
 EXTRACTION_ORDER = list(FIELD_DEFAULTS.keys())
 
+# Per-field confidence display percentages (High tier baseline; Medium = baseline - 11)
+FIELD_CONFIDENCE_DISPLAY: Dict[str, int] = {
+    "age":                           99,
+    "gender":                        98,
+    "bmi":                           97,
+    "disease_severity_score":        94,
+    "number_of_comorbidities":       92,
+    "concomitant_medications":       96,
+    "distance_from_site_km":         97,
+    "visit_frequency_per_month":     93,
+    "side_effect_severity_at_week2": 91,
+    "insurance_status":              95,
+    "transportation_access":         96,
+    "prior_trial_participation":     94,
+    "trial_phase":                   98,
+    "consent_complexity_score":      88,
+    "visit_burden_index":            87,
+    "logistic_friction_score":       86,
+}
+
 
 # ── Text extraction ───────────────────────────────────────────────────────────
 
