@@ -658,7 +658,7 @@ def render_sidebar_nav():
         ("intake",       "📄", "Document Intake"),
         ("assessment",   "⚠️",  "Risk Assessment"),
         ("dashboard",    "📊", "Retention Intelligence Center"),
-        ("batch",        "📁", "Batch Screening"),
+        ("batch",        "📁", "Population Risk Screening"),
         ("intelligence", "🧠", "AI Intelligence"),
         ("about",        "ℹ️",  "About"),
     ]
@@ -1069,37 +1069,62 @@ def render_coordinator_copilot(analysis: dict, risk_cat: str):
 
 
 def render_tab_batch():
-    """Multi-Participant Batch Screening — Module 9."""
-    section_header("Multi-Participant Screening")
+    """Population Risk Screening — Multi-Participant Retention Intelligence."""
+    from datetime import date as _date, timedelta as _td
+
+    section_header("Population Risk Screening")
     st.markdown(
-        "Upload a CSV file containing participant data for batch risk scoring. "
-        "The system scores all participants and returns a ranked attrition risk table."
+        "<div style='font-size:13px;color:#6B7280;margin-bottom:6px'>"
+        "Upload a participant cohort CSV to score all participants, rank retention risk, "
+        "generate coordinator worklists, and produce site-level retention intelligence.</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<div style='background:#EFF9F5;border-left:4px solid #1D9E75;border-radius:8px;"
+        "padding:10px 16px;margin-bottom:16px;font-size:12.5px;color:#0D1B2A;line-height:1.6'>"
+        "<b>Module purpose:</b> Participant-level risk scoring &rarr; site-level retention intelligence "
+        "&rarr; coordinator action queues &rarr; CRO-grade retention reporting.</div>",
+        unsafe_allow_html=True,
     )
 
-    # Template download
-    import io as _io
-    template_cols = (
-        "patient_id,site_id,age,gender,bmi,disease_severity_score,"
+    _today_str = _date.today().strftime("%Y%m%d")
+
+    # ── Template download ─────────────────────────────────────────────────────
+    _template_csv = (
+        "patient_id,site_id,study_id,country,investigator_id,enrollment_date,site_region,"
+        "age,gender,bmi,disease_severity_score,"
         "number_of_comorbidities,concomitant_medications,distance_from_site_km,"
         "visit_frequency_per_month,side_effect_severity_at_week2,"
         "insurance_status,transportation_access,prior_trial_participation,"
         "trial_phase,consent_complexity_score,visit_burden_index,logistic_friction_score\n"
-        "PT-0001,SITE_01,58,M,26.5,7.0,3,8,75,5,3.5,insured,no,1,2,6,6,5\n"
-        "PT-0002,SITE_01,42,F,22.1,4.0,1,2,12,3,0.5,insured,yes,0,3,4,2,1\n"
-        "PT-0003,SITE_02,67,F,30.2,8.5,5,11,90,6,4.5,uninsured,no,0,2,8,8,7\n"
+        "PT-0001,SITE_01,STUDY-2024-001,USA,INV-042,2024-01-15,North,"
+        "58,M,26.5,7.0,3,8,75,5,3.5,insured,no,1,2,6,6,5\n"
+        "PT-0002,SITE_01,STUDY-2024-001,USA,INV-042,2024-01-18,North,"
+        "42,F,22.1,4.0,1,2,12,3,0.5,insured,yes,0,3,4,2,1\n"
+        "PT-0003,SITE_02,STUDY-2024-001,UK,INV-017,2024-01-20,South,"
+        "67,F,30.2,8.5,5,11,90,6,4.5,uninsured,no,0,2,8,8,7\n"
     )
-    st.download_button(
-        "📥 Download Sample CSV Template",
-        data=template_cols,
-        file_name="batch_screening_template.csv",
-        mime="text/csv",
-    )
+    tdl1, tdl2 = st.columns([2, 5])
+    with tdl1:
+        st.download_button(
+            "📥 Download CSV Template",
+            data=_template_csv,
+            file_name="TrialGuard_Batch_Template.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    with tdl2:
+        st.caption(
+            "Template includes CRO study metadata: study_id, country, investigator_id, "
+            "enrollment_date, site_region. These carry through to exports but do not affect risk scoring."
+        )
 
+    # ── File upload ───────────────────────────────────────────────────────────
     uploaded_csv = st.file_uploader(
         "Upload Participant CSV",
         type=["csv"],
         key="batch_uploader",
-        help="Required columns: age, gender, bmi, disease_severity_score, number_of_comorbidities, "
+        help="Required: age, gender, bmi, disease_severity_score, number_of_comorbidities, "
              "concomitant_medications, distance_from_site_km, visit_frequency_per_month, "
              "side_effect_severity_at_week2, insurance_status, transportation_access, "
              "prior_trial_participation, trial_phase, consent_complexity_score, "
@@ -1107,7 +1132,10 @@ def render_tab_batch():
     )
 
     if uploaded_csv is None:
-        st.info("Upload a CSV file to begin batch screening. Use the template above as a guide.")
+        st.info(
+            "Upload a participant CSV to begin population risk screening. "
+            "Download the template above for the correct format including study metadata fields."
+        )
         return
 
     try:
@@ -1127,40 +1155,155 @@ def render_tab_batch():
         st.error("Model artefacts not found. Run `python src/model.py` first.")
         return
 
-    with st.spinner(f"Scoring {len(df)} participants…"):
+    with st.spinner(f"Scoring {len(df)} participants across {df['site_id'].nunique()} sites…"):
         result = batch_screen(df, model, preprocessor)
 
     if "error" in result:
         st.error(result["error"])
         return
 
-    # KPI row
+    results_df   = result["results_df"].copy()
+    small_sample = result["small_sample"]
+
+    # ── KPI row ───────────────────────────────────────────────────────────────
     k1, k2, k3, k4, k5 = st.columns(5)
     k1.metric("Total Participants", result["total"])
-    k2.metric("Critical Risk",  result["critical_n"],  delta=None)
+    k2.metric("Critical Risk",  result["critical_n"])
     k3.metric("High Risk",      result["high_n"])
     k4.metric("Moderate Risk",  result["moderate_n"])
     k5.metric("Low Risk",       result["low_n"])
     st.markdown("<div style='margin-bottom:8px'></div>", unsafe_allow_html=True)
 
-    # Budget summary
+    # ── Population Risk Intelligence ──────────────────────────────────────────
+    section_header("Population Risk Intelligence")
+
+    avg_risk = results_df["Risk Score (%)"].mean()
+
+    pi1, pi2, pi3 = st.columns(3)
+    pi1.markdown(
+        f'<div class="kpi-card" style="border-left-color:#D9534F">'
+        f'<div class="kpi-label">High/Critical Participants</div>'
+        f'<div class="kpi-value" style="color:#D9534F">{result["at_risk_n"]}</div>'
+        f'<div class="kpi-sub">Require active retention intervention</div></div>',
+        unsafe_allow_html=True,
+    )
+    pi2.markdown(
+        f'<div class="kpi-card" style="border-left-color:#F4B942">'
+        f'<div class="kpi-label">Average Risk Score</div>'
+        f'<div class="kpi-value" style="color:#F4B942">{avg_risk:.1f}%</div>'
+        f'<div class="kpi-sub">Cohort mean attrition probability</div></div>',
+        unsafe_allow_html=True,
+    )
+    pi3.markdown(
+        f'<div class="kpi-card" style="border-left-color:#EF4444">'
+        f'<div class="kpi-label">Highest Risk Site</div>'
+        f'<div class="kpi-value" style="color:#EF4444;font-size:20px">{result["highest_risk_site"]}</div>'
+        f'<div class="kpi-sub">Highest mean participant risk score</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    pi4, pi5, pi6 = st.columns(3)
+    pi4.markdown(
+        f'<div class="kpi-card" style="border-left-color:#6366F1">'
+        f'<div class="kpi-label">Top Risk Driver</div>'
+        f'<div class="kpi-value" style="color:#6366F1;font-size:17px">{result["top_driver"]}</div>'
+        f'<div class="kpi-sub">Affected {result["top_driver_pct"]}% of participants</div></div>',
+        unsafe_allow_html=True,
+    )
+    hr_df = results_df[results_df["Risk Score (%)"] >= 61]
+    if not hr_df.empty and "Primary Risk Driver" in hr_df.columns:
+        barrier     = hr_df["Primary Risk Driver"].value_counts().idxmax()
+        barrier_pct = round(hr_df["Primary Risk Driver"].value_counts().max() / len(hr_df) * 100)
+    else:
+        barrier, barrier_pct = "N/A", 0
+    pi5.markdown(
+        f'<div class="kpi-card" style="border-left-color:#F59E0B">'
+        f'<div class="kpi-label">Most Common Retention Barrier</div>'
+        f'<div class="kpi-value" style="color:#F59E0B;font-size:16px">{barrier}</div>'
+        f'<div class="kpi-sub">In high/critical participants ({barrier_pct}%)</div></div>',
+        unsafe_allow_html=True,
+    )
+    if not hr_df.empty and "Attrition Window" in hr_df.columns:
+        top_window = hr_df["Attrition Window"].value_counts().idxmax()
+    else:
+        top_window = "N/A"
+    pi6.markdown(
+        f'<div class="kpi-card" style="border-left-color:#1D9E75">'
+        f'<div class="kpi-label">Peak Attrition Window</div>'
+        f'<div class="kpi-value" style="color:#1D9E75;font-size:15px">{top_window}</div>'
+        f'<div class="kpi-sub">Most common high-risk timing</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("<div style='margin-bottom:8px'></div>", unsafe_allow_html=True)
+
+    # ── Executive Summary ─────────────────────────────────────────────────────
+    section_header("Executive Summary")
+    _crit_txt = (
+        f"<b>{result['critical_n']} participant{'s' if result['critical_n'] > 1 else ''}</b> "
+        f"{'require' if result['critical_n'] > 1 else 'requires'} immediate retention intervention (Critical Risk). "
+    ) if result["critical_n"] > 0 else ""
+    _high_txt = (
+        f"<b>{result['high_n']} participant{'s' if result['high_n'] > 1 else ''}</b> "
+        f"{'are' if result['high_n'] > 1 else 'is'} classified as High Risk — priority outreach within 24 hours. "
+    ) if result["high_n"] > 0 else ""
+    _exec_body = (
+        f"Batch scoring complete across <b>{result['total']} participants</b> at "
+        f"<b>{df['site_id'].nunique()} site{'s' if df['site_id'].nunique() > 1 else ''}</b>. "
+        f"{_crit_txt}{_high_txt}"
+        f"<b>{result['top_driver']}</b> is the dominant dropout driver, affecting "
+        f"<b>{result['top_driver_pct']}%</b> of the cohort. "
+        f"<b>{result['highest_risk_site']}</b> contains the highest concentration of retention risk "
+        f"and should be prioritised for coordinator outreach."
+    )
+    st.markdown(
+        "<div style='background:linear-gradient(135deg,#0D1B2A,#0f2336);"
+        "border:1px solid rgba(29,158,117,0.3);border-radius:12px;padding:20px 24px;margin-bottom:18px'>"
+        "<div style='font-size:11px;font-weight:700;color:#1D9E75;text-transform:uppercase;"
+        "letter-spacing:1.5px;margin-bottom:10px'>Executive Summary</div>"
+        f"<div style='font-size:13.5px;color:rgba(255,255,255,0.88);line-height:1.9'>{_exec_body}</div>"
+        "<div style='margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)'>"
+        f"Generated: {_date.today().strftime('%d-%b-%Y')} &bull; Population Risk Screening Engine v3.1 &bull; Synthetic demonstration data"
+        "</div></div>",
+        unsafe_allow_html=True,
+    )
+
+    # ── Intervention Budget Estimate ──────────────────────────────────────────
     at_risk = result["at_risk_n"]
     if at_risk > 0:
         section_header("Intervention Budget Estimate")
-        b1, b2, b3, b4 = st.columns(4)
-        b1.metric("High/Critical Participants", at_risk,
+        if small_sample:
+            st.warning(
+                "⚠️ **Small sample size** (<25 participants). Economic calculations are shown for "
+                "demonstration purposes only. Reliable financial modelling requires larger participant populations."
+            )
+        b1, b2, b3, b4, b5, b6 = st.columns(6)
+        b1.metric("High/Critical", at_risk,
                   help="Participants recommended for active retention intervention.")
-        b2.metric("Est. Intervention Budget", f"${result['est_budget']:,}",
+        b2.metric("Est. Budget", f"${result['est_budget']:,}",
                   help="Estimated total intervention cost at $1,800 per at-risk participant.")
-        b3.metric("Est. Dropouts Preventable", result["est_prevented"],
+        b3.metric("Dropouts Preventable", result["est_prevented"],
                   help="Based on model recall × estimated 45% intervention success rate.")
         b4.metric("Est. Net Benefit", f"${result['net_benefit']:,}",
-                  help="Estimated savings minus intervention cost. Modelled estimate only.")
-        st.caption("_Modelled estimates. $18,000 average replacement cost (Getz KA et al., 2016)._")
+                  help="Estimated savings minus intervention cost.")
+        b5.metric("Exp. Retained", result["est_prevented"],
+                  help="Expected number of participants retained through intervention.")
+        b6.metric("ROI",
+                  f"+{result['roi_pct']}%" if result["roi_pct"] >= 0 else f"{result['roi_pct']}%",
+                  help="Return on investment: (savings - cost) / cost x 100.")
+        _sample_note = (
+            "<b style='color:#D97706'>Small sample — estimates are illustrative only</b>"
+            if small_sample else "Synthetic demonstration dataset"
+        )
+        st.markdown(
+            f"<div style='background:#F8FAFC;border:1px solid #E5E7EB;border-radius:8px;"
+            f"padding:8px 16px;margin-top:8px;font-size:12px;color:#6B7280'>"
+            f"Confidence: <b>{result['confidence']}</b> &bull; $18,000 replacement cost (Getz KA et al., 2016) "
+            f"&bull; 45% intervention success rate &bull; {_sample_note}"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
 
-    results_df = result["results_df"].copy()
-
-    # ── Filters ───────────────────────────────────────────────────────────────
+    # ── Participant Risk Ranking ───────────────────────────────────────────────
     section_header("Participant Risk Ranking")
     fc1, fc2, fc3 = st.columns(3)
     with fc1:
@@ -1194,18 +1337,72 @@ def render_tab_batch():
     }
 
     def risk_color_row(row):
-        color = _ROW_COLORS.get(row["Risk Category"], "")
-        return [color] * len(row)
+        return [_ROW_COLORS.get(row["Risk Category"], "")] * len(row)
 
-    styled = filtered_df.style.apply(risk_color_row, axis=1)
+    _display_cols = [
+        "Participant ID", "Site", "Risk Score (%)", "Risk Category",
+        "Age", "Distance (km)", "Comorbidities", "Medications",
+        "Primary Risk Driver", "Attrition Window", "Recommended Action",
+    ]
+    _display_cols = [c for c in _display_cols if c in filtered_df.columns]
+    styled = filtered_df[_display_cols].style.apply(risk_color_row, axis=1)
     st.dataframe(styled, use_container_width=True, hide_index=True)
+
+    # Per-participant explainability expander
+    with st.expander("🔍 Risk Driver Analysis — Select Participant", expanded=False):
+        if not filtered_df.empty and "Top 3 Risk Drivers" in filtered_df.columns:
+            sel_pt  = st.selectbox("Select Participant", filtered_df["Participant ID"].tolist(), key="explain_pt")
+            pt_row  = filtered_df[filtered_df["Participant ID"] == sel_pt].iloc[0]
+            cat     = pt_row["Risk Category"]
+            score   = pt_row["Risk Score (%)"]
+            _bc     = {"Critical": "#EF4444", "High": "#F59E0B", "Moderate": "#F97316", "Low": "#10B981"}.get(cat, "#6B7280")
+            ec1, ec2 = st.columns(2)
+            with ec1:
+                st.markdown(
+                    f"<div style='background:{_bc};border-radius:8px;padding:14px;text-align:center;margin-bottom:10px'>"
+                    f"<div style='font-size:11px;font-weight:700;color:white;text-transform:uppercase'>Risk Score</div>"
+                    f"<div style='font-size:32px;font-weight:800;color:white'>{score}%</div>"
+                    f"<div style='font-size:13px;color:rgba(255,255,255,0.85)'>{cat} Risk</div>"
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    f"<div style='background:#F8FAFC;border:1px solid #E5E7EB;border-radius:8px;padding:12px'>"
+                    f"<div style='font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin-bottom:6px'>Clinical Profile</div>"
+                    f"<div style='font-size:13px;color:#374151'>"
+                    f"Age: <b>{pt_row.get('Age','N/A')}</b> &bull; Distance: <b>{pt_row.get('Distance (km)','N/A')} km</b><br>"
+                    f"Comorbidities: <b>{pt_row.get('Comorbidities','N/A')}</b> &bull; "
+                    f"Medications: <b>{pt_row.get('Medications','N/A')}</b>"
+                    f"</div></div>",
+                    unsafe_allow_html=True,
+                )
+            with ec2:
+                st.markdown("**Top Risk Drivers**")
+                drv_colors = ["#EF4444", "#F59E0B", "#6366F1"]
+                for i, drv in enumerate([d.strip() for d in pt_row.get("Top 3 Risk Drivers", "").split("|") if d.strip()]):
+                    dc = drv_colors[i % len(drv_colors)]
+                    st.markdown(
+                        f"<div style='background:white;border-left:4px solid {dc};"
+                        f"border:1px solid #E5E7EB;border-radius:6px;padding:8px 14px;margin-bottom:6px'>"
+                        f"<div style='font-size:13px;font-weight:600;color:#0D1B2A'>{drv}</div></div>",
+                        unsafe_allow_html=True,
+                    )
+            st.markdown(
+                f"<div style='background:#F1F5F9;border-radius:6px;padding:10px 14px;margin-top:8px;font-size:12px;color:#64748B'>"
+                f"<b>Attrition Window:</b> {pt_row.get('Attrition Window','N/A')} &bull; "
+                f"<b>Recommended Action:</b> {pt_row.get('Recommended Action','N/A')} &bull; "
+                f"<b>SLA:</b> {pt_row.get('SLA','N/A')} &bull; "
+                f"<b>Owner:</b> {pt_row.get('Owner','N/A')}"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
 
     dl1, dl2 = st.columns(2)
     with dl1:
         st.download_button(
-            "📥 Download Full Rankings CSV",
+            "📥 Download Full Risk Ranking CSV",
             data=results_df.to_csv(index=False),
-            file_name="batch_risk_ranking.csv",
+            file_name=f"TrialGuard_Risk_Ranking_{_today_str}.csv",
             mime="text/csv",
             use_container_width=True,
         )
@@ -1213,63 +1410,68 @@ def render_tab_batch():
         st.download_button(
             "📥 Download Filtered View CSV",
             data=filtered_df.to_csv(index=False),
-            file_name="batch_risk_filtered.csv",
+            file_name=f"TrialGuard_Filtered_Risk_View_{_today_str}.csv",
             mime="text/csv",
             use_container_width=True,
         )
 
-    # ── Priority Queue ────────────────────────────────────────────────────────
-    section_header("Participant Priority Queue")
-    st.markdown(
-        "_Coordinator-ready ranked action list. Top 10 highest-risk participants shown._"
-    )
+    # ── Coordinator Priority Queue ────────────────────────────────────────────
+    section_header("Coordinator Priority Queue")
+    st.markdown("_Coordinator-ready operational queue. Top 10 highest-risk participants ordered by clinical urgency._")
 
-    _PRIORITY_ACTIONS = {
-        "Critical": "Immediate Outreach — contact within 4 hours",
-        "High":     "Immediate Outreach — schedule safety call within 24h",
-        "Moderate": "Monitor Weekly — review transportation and visit status",
-        "Low":      "Routine Follow-up — standard site engagement",
+    _PQ_ACTIONS = {
+        "Critical": "Emergency retention intervention — within 4 hours",
+        "High":     "Priority safety call — within 24 hours",
+        "Moderate": "Weekly monitoring check-in — review barriers",
+        "Low":      "Routine follow-up — standard engagement",
     }
-    _PRIORITY_BADGE = {
-        "Critical": "🔴",
-        "High":     "🔴",
-        "Moderate": "🟡",
-        "Low":      "🟢",
-    }
+    _PQ_SLA   = {"Critical": "4 Hours", "High": "24 Hours", "Moderate": "7 Days", "Low": "Standard"}
+    _PQ_OWNER = {"Critical": "PI + Coordinator", "High": "Study Coordinator", "Moderate": "Site Coordinator", "Low": "Site Staff"}
 
     top10 = results_df.head(10).copy()
     pq_df = pd.DataFrame({
         "Rank":               range(1, len(top10) + 1),
-        "Participant ID":         top10["Participant ID"].values,
+        "Participant ID":     top10["Participant ID"].values,
         "Site":               top10["Site"].values,
         "Risk Score (%)":     top10["Risk Score (%)"].values,
         "Risk Category":      top10["Risk Category"].values,
-        "Action Recommended": top10["Risk Category"].map(_PRIORITY_ACTIONS).values,
+        "Priority Level":     top10["Risk Category"].values,
+        "SLA":                top10["Risk Category"].map(_PQ_SLA).values,
+        "Owner":              top10["Risk Category"].map(_PQ_OWNER).values,
+        "Status":             "Pending",
+        "Action Recommended": top10["Risk Category"].map(_PQ_ACTIONS).values,
     })
 
     def pq_color_row(row):
-        color = _ROW_COLORS.get(row["Risk Category"], "")
-        return [color] * len(row)
+        return [_ROW_COLORS.get(row["Risk Category"], "")] * len(row)
 
-    st.dataframe(
-        pq_df.style.apply(pq_color_row, axis=1),
-        use_container_width=True,
-        hide_index=True,
-    )
+    st.dataframe(pq_df.style.apply(pq_color_row, axis=1), use_container_width=True, hide_index=True)
     st.download_button(
         "📥 Download Priority Queue CSV",
         data=pq_df.to_csv(index=False),
-        file_name="coordinator_priority_queue.csv",
+        file_name=f"TrialGuard_Priority_Queue_{_today_str}.csv",
         mime="text/csv",
     )
 
     # ── Coordinator Worklist ──────────────────────────────────────────────────
     section_header("Coordinator Worklist")
     st.markdown(
-        "_Today's retention tasks, auto-generated from batch risk scoring. "
-        "High and Critical participants require immediate action._"
+        "_Today's retention tasks auto-generated from population risk scoring. "
+        "Critical and High participants require immediate action._"
     )
 
+    _DUE = {
+        "Critical": _date.today().strftime("%d-%b-%Y") + " (Today)",
+        "High":     (_date.today() + _td(days=1)).strftime("%d-%b-%Y"),
+        "Moderate": (_date.today() + _td(days=7)).strftime("%d-%b-%Y"),
+        "Low":      (_date.today() + _td(days=30)).strftime("%d-%b-%Y"),
+    }
+    _ASSIGNED = {
+        "Critical": "PI + Study Coordinator",
+        "High":     "Study Coordinator",
+        "Moderate": "Site Coordinator",
+        "Low":      "Site Staff",
+    }
     _WORKLIST_TASKS = {
         "Critical": [
             "Schedule emergency safety call — target: within 4 hours",
@@ -1301,44 +1503,60 @@ def render_tab_batch():
         "Moderate": ("#FFF7ED", "#EA580C"),
         "Low":      ("#D1FAE5", "#059669"),
     }
+    _BADGE = {"Critical": "🔴", "High": "🟠", "Moderate": "🟡", "Low": "🟢"}
 
-    # Show only Critical + High + up to 5 Moderate; skip Low to keep list actionable
-    worklist_rows = results_df[
-        results_df["Risk Category"].isin(["Critical", "High", "Moderate"])
-    ].copy()
+    worklist_rows = results_df[results_df["Risk Category"].isin(["Critical", "High", "Moderate"])].copy()
     if worklist_rows.empty:
         worklist_rows = results_df.head(5).copy()
 
     for _, row in worklist_rows.iterrows():
         cat        = row["Risk Category"]
-        badge      = _PRIORITY_BADGE.get(cat, "🟢")
         bg, border = _CARD_COLORS.get(cat, ("#F9FAFB", "#6B7280"))
         tasks      = _WORKLIST_TASKS.get(cat, _WORKLIST_TASKS["Low"])
         task_html  = "".join(f"<li>{t}</li>" for t in tasks)
+        pdrv       = row.get("Primary Risk Driver", "N/A") if "Primary Risk Driver" in results_df.columns else "N/A"
         st.markdown(
-            f"""
-<div style="background:{bg};border-left:4px solid {border};
-            border-radius:6px;padding:10px 14px;margin-bottom:8px;">
-  <div style="font-weight:700;font-size:15px;margin-bottom:4px;">
-    {badge} {row['Participant ID']}
-    <span style="font-weight:400;font-size:13px;color:#555;margin-left:8px;">
-      {cat} Risk ({row['Risk Score (%)']}%) — {row['Site']}
-    </span>
+            f"""<div style="background:{bg};border-left:4px solid {border};border-radius:6px;padding:12px 16px;margin-bottom:10px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:2px">
+        {_BADGE.get(cat,'🟢')} {row['Participant ID']}
+        <span style="font-weight:400;font-size:13px;color:#555;margin-left:8px">{cat} Risk ({row['Risk Score (%)']}%) — {row['Site']}</span>
+      </div>
+      <div style="font-size:12px;color:#6B7280;margin-bottom:4px">Primary Driver: <b>{pdrv}</b></div>
+    </div>
+    <div style="display:flex;gap:10px;font-size:11.5px;flex-wrap:wrap">
+      <div style="background:white;border:1px solid {border};border-radius:4px;padding:4px 10px;text-align:center">
+        <div style="color:#9CA3AF;font-size:10px;font-weight:600">ASSIGNED TO</div>
+        <div style="font-weight:700;color:#0D1B2A">{_ASSIGNED.get(cat,'Site Staff')}</div>
+      </div>
+      <div style="background:white;border:1px solid {border};border-radius:4px;padding:4px 10px;text-align:center">
+        <div style="color:#9CA3AF;font-size:10px;font-weight:600">DUE DATE</div>
+        <div style="font-weight:700;color:#0D1B2A">{_DUE.get(cat,'TBD')}</div>
+      </div>
+      <div style="background:{border};border-radius:4px;padding:4px 10px;text-align:center">
+        <div style="color:rgba(255,255,255,0.7);font-size:10px;font-weight:600">STATUS</div>
+        <div style="font-weight:700;color:white">Open</div>
+      </div>
+    </div>
   </div>
-  <ul style="margin:4px 0 0 16px;padding:0;font-size:13px;color:#333;">
-    {task_html}
-  </ul>
+  <ul style="margin:6px 0 0 16px;padding:0;font-size:13px;color:#333">{task_html}</ul>
 </div>""",
             unsafe_allow_html=True,
         )
 
-    # ── Site summary ──────────────────────────────────────────────────────────
+    # ── Site-Level Retention Summary ──────────────────────────────────────────
     if not result["site_summary"].empty:
         section_header("Site-Level Retention Summary")
+        if result["total"] < 20:
+            st.info(
+                "ℹ️ **Site analytics are shown for demonstration purposes.** "
+                "Reliable site-level retention analytics typically require larger participant populations."
+            )
         st.dataframe(result["site_summary"], use_container_width=True, hide_index=True)
         chart_caption(
-            "Mean risk and high/critical count per site. Sites with elevated mean risk "
-            "may require site-level retention intervention or investigator support."
+            "Mean risk and high/critical count per site. Site Risk Status, Risk Trend, and "
+            "Recommended Site Action are derived from aggregated participant risk scores."
         )
 
 
