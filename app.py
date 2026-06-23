@@ -1,5 +1,5 @@
 """
-TrialGuard — AI-Powered Clinical Trial Intelligence Platform
+TrialGuard — AI-Powered Clinical Trial Retention Intelligence Platform
 Dr. Reema Mohamed Sulthan | PharmD | Clinical Data Scientist | Certified AI Expert
 
 Disclaimer: For educational, research, and portfolio demonstration purposes only.
@@ -641,7 +641,7 @@ def render_sidebar_nav():
         "<div style='padding:16px 4px 10px'>"
         "<div style='font-size:22px;font-weight:900;color:#FFFFFF;letter-spacing:-0.5px'>🛡️ TrialGuard</div>"
         "<div style='font-size:10px;color:#A8D5C4;font-weight:500;margin-top:3px;letter-spacing:0.3px'>"
-        "AI-Powered Clinical Trial Retention Intelligence</div>"
+        "AI-Powered Clinical Trial Retention Intelligence Platform</div>"
         "<div style='width:100%;height:1px;background:rgba(29,158,117,0.3);margin:12px 0 4px'></div>"
         "</div>",
         unsafe_allow_html=True,
@@ -2752,7 +2752,7 @@ def render_landing():
     st.markdown("""
 <div class="tg-hero">
   <div style="position:relative;z-index:1">
-    <div class="tg-hero-eyebrow">&#9632; Clinical Trial Intelligence Platform</div>
+    <div class="tg-hero-eyebrow">&#9632; AI-Powered Clinical Trial Retention Intelligence Platform</div>
     <div class="tg-hero-title">🛡️ TrialGuard</div>
     <div class="tg-hero-subtitle">
       AI-powered participant retention intelligence for clinical operations teams, trial sponsors, and healthcare research organizations.
@@ -2922,7 +2922,7 @@ def render_landing():
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
     <div>
       <div class="tg-footer-brand">🛡️ Trial<span>Guard</span></div>
-      <div class="tg-footer-tagline">AI-Powered Clinical Trial Intelligence &nbsp;|&nbsp; v3.0</div>
+      <div class="tg-footer-tagline">AI-Powered Clinical Trial Retention Intelligence Platform</div>
       <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
         <a class="tg-footer-link" href="https://github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence" target="_blank">&#128025; GitHub</a>
         <a class="tg-footer-link" href="https://linkedin.com/in/reema-mohamed-sulthan" target="_blank">&#128188; LinkedIn</a>
