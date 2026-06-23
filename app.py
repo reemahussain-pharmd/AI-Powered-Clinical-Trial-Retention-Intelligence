@@ -656,8 +656,8 @@ def render_sidebar_nav():
     nav_items = [
         ("home",         "🏠", "Overview"),
         ("intake",       "📄", "Document Intake"),
-        ("assessment",   "⚠️",  "Risk Assessment"),
-        ("dashboard",    "📊", "Retention Intelligence Center"),
+        ("assessment",   "⚠️",  "Participant Risk Assessment"),
+        ("dashboard",    "📊", "Retention Intelligence"),
         ("batch",        "📁", "Population Risk Screening"),
         ("intelligence", "🧠", "AI Intelligence"),
         ("about",        "ℹ️",  "About"),
@@ -669,28 +669,28 @@ def render_sidebar_nav():
             st.session_state.page = page_key
             st.rerun()
 
-    # ── Participant Personas ──────────────────────────────────────────────────
+    # ── Demo Scenarios ────────────────────────────────────────────────────────
     st.sidebar.markdown(
         "<div style='width:100%;height:1px;background:rgba(29,158,117,0.2);margin:12px 0 4px'></div>"
         "<div style='font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;"
-        "text-transform:uppercase;margin-bottom:4px'>Participant Personas</div>",
+        "text-transform:uppercase;margin-bottom:4px'>Demo Scenarios</div>",
         unsafe_allow_html=True,
     )
-    if st.sidebar.button("🔴  High Attrition Risk",      key="demo_hr", use_container_width=True): _load_demo("high_risk")
-    if st.sidebar.button("🚗  Transportation Barrier",   key="demo_ru", use_container_width=True): _load_demo("rural")
-    if st.sidebar.button("💊  Polypharmacy Burden",      key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
-    if st.sidebar.button("🟢  Low-Risk Benchmark",       key="demo_lr", use_container_width=True): _load_demo("low_risk")
+    if st.sidebar.button("🔴  Demo 1: High Attrition Risk",   key="demo_hr", use_container_width=True): _load_demo("high_risk")
+    if st.sidebar.button("🚗  Demo 2: Transportation Barrier", key="demo_ru", use_container_width=True): _load_demo("rural")
+    if st.sidebar.button("💊  Demo 3: Polypharmacy Burden",    key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
+    if st.sidebar.button("🟢  Demo 4: Low-Risk Benchmark",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
 
     # On assessment page: participant inputs appear here (injected by main())
     # so skip Portfolio Snapshot/Skills to avoid pushing inputs off-screen
     if current == "assessment":
         return
 
-    # ── Portfolio Snapshot ────────────────────────────────────────────────────
+    # ── Platform Snapshot ─────────────────────────────────────────────────────
     st.sidebar.markdown(
         "<div style='width:100%;height:1px;background:rgba(29,158,117,0.2);margin:14px 0 4px'></div>"
         "<div style='font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;"
-        "text-transform:uppercase;margin-bottom:8px'>Portfolio Snapshot</div>"
+        "text-transform:uppercase;margin-bottom:8px'>Platform Snapshot</div>"
         "<div style='background:rgba(255,255,255,0.05);border:1px solid rgba(29,158,117,0.2);"
         "border-radius:10px;padding:11px 12px;margin-bottom:6px'>"
         "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
@@ -712,22 +712,27 @@ def render_sidebar_nav():
         unsafe_allow_html=True,
     )
 
-    # ── Skills Demonstrated ───────────────────────────────────────────────────
+    # ── Platform Capabilities ─────────────────────────────────────────────────
+    _cap_items = [
+        "Participant Risk Prediction",
+        "Clinical Document Intelligence",
+        "Population Risk Screening",
+        "Site Performance Analytics",
+        "SHAP Explainability",
+        "Evidence-Based Interventions",
+        "Clinical Operations Intelligence",
+        "Enterprise PDF Reporting",
+    ]
+    _cap_chips = "".join(
+        f"<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;"
+        f"border:1px solid rgba(29,158,117,0.2);border-radius:10px;"
+        f"padding:2px 8px;font-size:9.5px;font-weight:600'>{c}</span>"
+        for c in _cap_items
+    )
     st.sidebar.markdown(
         "<div style='font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:1.8px;"
-        "text-transform:uppercase;margin-bottom:7px'>Skills Demonstrated</div>"
-        "<div style='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px'>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Clinical Trial Analytics</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Clinical Operations</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Pharmacovigilance</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Machine Learning</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>XGBoost</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>SHAP</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Explainable AI</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Healthcare AI</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Streamlit</span>"
-        "<span style='background:rgba(29,158,117,0.12);color:#A8D5C4;border:1px solid rgba(29,158,117,0.2);border-radius:10px;padding:2px 8px;font-size:9.5px;font-weight:600'>Python</span>"
-        "</div>",
+        "text-transform:uppercase;margin-bottom:7px'>Platform Capabilities</div>"
+        f"<div style='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px'>{_cap_chips}</div>",
         unsafe_allow_html=True,
     )
 
