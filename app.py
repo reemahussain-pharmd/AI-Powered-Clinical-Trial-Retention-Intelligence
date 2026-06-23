@@ -3267,19 +3267,21 @@ def render_tab4():
     )
     snap_cols = st.columns(6)
     snap_data = [
-        ("2,000",  "Participants Modelled"),
-        ("31.6%",  "Observed Attrition Rate"),
-        ("5",      "Models Evaluated"),
-        ("7",      "Intervention Strategies"),
-        ("30",     "Clinical Features"),
-        ("$1.6M",  "Modelled Cohort Savings"),
+        ("2,000",  "Participants Modelled",      "👥", "#6366F1", "#EEF2FF", "#C7D2FE"),
+        ("31.6%",  "Observed Attrition Rate",    "📉", "#F59E0B", "#FFFBEB", "#FDE68A"),
+        ("5",      "Models Evaluated",           "🧠", "#7C3AED", "#F5F3FF", "#DDD6FE"),
+        ("7",      "Intervention Strategies",    "🎯", "#1D9E75", "#ECFDF5", "#A7F3D0"),
+        ("30",     "Clinical Features",          "🔬", "#3B82F6", "#EFF6FF", "#BFDBFE"),
+        ("$1.6M",  "Modelled Cohort Savings",    "💰", "#059669", "#F0FDF4", "#86EFAC"),
     ]
-    for col, (val, lbl) in zip(snap_cols, snap_data):
+    for col, (val, lbl, icon, accent, bg, border) in zip(snap_cols, snap_data):
         col.markdown(
-            f"<div style='background:#0D1B2A;border:1px solid rgba(29,158,117,0.3);border-radius:10px;"
-            f"padding:14px 10px;text-align:center'>"
-            f"<div style='font-size:20px;font-weight:900;color:#4CD4A0;line-height:1.1'>{val}</div>"
-            f"<div style='font-size:10px;color:rgba(255,255,255,0.55);margin-top:4px;line-height:1.4'>{lbl}</div>"
+            f"<div style='background:{bg};border-top:4px solid {accent};"
+            f"border:1px solid {border};border-top:4px solid {accent};"
+            f"border-radius:10px;padding:14px 10px;text-align:center'>"
+            f"<div style='font-size:18px;margin-bottom:4px'>{icon}</div>"
+            f"<div style='font-size:18px;font-weight:900;color:{accent};line-height:1.1'>{val}</div>"
+            f"<div style='font-size:10px;color:#6B7280;margin-top:4px;line-height:1.4;font-weight:500'>{lbl}</div>"
             f"</div>",
             unsafe_allow_html=True,
         )
@@ -3310,18 +3312,33 @@ def render_tab4():
     section_header("Clinical Problem")
     s1, s2, s3 = st.columns(3)
     s1.markdown(
-        '<div class="challenge-stat"><div class="challenge-num">20–30%</div>'
-        '<div class="challenge-txt">Average attrition rate across clinical trials</div></div>',
+        "<div style='background:linear-gradient(135deg,#FEF2F2,#FFF5F5);border-top:4px solid #EF4444;"
+        "border:1px solid #FECACA;border-top:4px solid #EF4444;"
+        "border-radius:12px;padding:22px 18px;text-align:center;box-shadow:0 2px 12px rgba(239,68,68,0.08)'>"
+        "<div style='font-size:28px;margin-bottom:6px'>📉</div>"
+        "<div style='font-size:32px;font-weight:900;color:#DC2626;letter-spacing:-1px;line-height:1.1'>20–30%</div>"
+        "<div style='font-size:11px;color:#7F1D1D;margin-top:6px;font-weight:600;letter-spacing:0.3px'>"
+        "Average attrition rate across clinical trials</div></div>",
         unsafe_allow_html=True,
     )
     s2.markdown(
-        '<div class="challenge-stat"><div class="challenge-num">$18K+</div>'
-        '<div class="challenge-txt">Estimated cost to replace one dropout participant</div></div>',
+        "<div style='background:linear-gradient(135deg,#FFFBEB,#FFFDF5);border-top:4px solid #F59E0B;"
+        "border:1px solid #FDE68A;border-top:4px solid #F59E0B;"
+        "border-radius:12px;padding:22px 18px;text-align:center;box-shadow:0 2px 12px rgba(245,158,11,0.08)'>"
+        "<div style='font-size:28px;margin-bottom:6px'>💸</div>"
+        "<div style='font-size:32px;font-weight:900;color:#D97706;letter-spacing:-1px;line-height:1.1'>$18K+</div>"
+        "<div style='font-size:11px;color:#78350F;margin-top:6px;font-weight:600;letter-spacing:0.3px'>"
+        "Estimated cost to replace one dropout participant</div></div>",
         unsafe_allow_html=True,
     )
     s3.markdown(
-        '<div class="challenge-stat"><div class="challenge-num">$54M+</div>'
-        '<div class="challenge-txt">Industry-wide annual cost exposure from attrition</div></div>',
+        "<div style='background:linear-gradient(135deg,#FFF7ED,#FFFAF5);border-top:4px solid #EA580C;"
+        "border:1px solid #FED7AA;border-top:4px solid #EA580C;"
+        "border-radius:12px;padding:22px 18px;text-align:center;box-shadow:0 2px 12px rgba(234,88,12,0.08)'>"
+        "<div style='font-size:28px;margin-bottom:6px'>🏭</div>"
+        "<div style='font-size:32px;font-weight:900;color:#C2410C;letter-spacing:-1px;line-height:1.1'>$54M+</div>"
+        "<div style='font-size:11px;color:#7C2D12;margin-top:6px;font-weight:600;letter-spacing:0.3px'>"
+        "Industry-wide annual cost exposure from attrition</div></div>",
         unsafe_allow_html=True,
     )
     st.markdown("<div style='margin:10px 0'></div>", unsafe_allow_html=True)
