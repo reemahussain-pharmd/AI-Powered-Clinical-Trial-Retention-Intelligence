@@ -641,7 +641,7 @@ def render_sidebar_nav():
         "<div style='padding:16px 4px 10px'>"
         "<div style='font-size:22px;font-weight:900;color:#FFFFFF;letter-spacing:-0.5px'>🛡️ TrialGuard</div>"
         "<div style='font-size:10px;color:#A8D5C4;font-weight:500;margin-top:3px;letter-spacing:0.3px'>"
-        "Clinical Trial Intelligence · v3.0</div>"
+        "AI-Powered Clinical Trial Retention Intelligence</div>"
         "<div style='width:100%;height:1px;background:rgba(29,158,117,0.3);margin:12px 0 4px'></div>"
         "</div>",
         unsafe_allow_html=True,
@@ -2479,36 +2479,6 @@ def render_tab4():
     ])
     st.dataframe(ev_tbl, use_container_width=True, hide_index=True)
 
-    # ── Intelligence Pipeline ─────────────────────────────────────────────────
-    section_header("Intelligence Pipeline — End-to-End Architecture")
-    arch_img = OUTPUTS_DIR / "architecture.png"
-    if arch_img.exists():
-        st.image(str(arch_img), use_container_width=True)
-    else:
-        st.markdown(
-            '<div class="arch-flow">'
-            '<div class="arch-box">🗂️<br>Synthetic<br>Data</div>'
-            '<div class="arch-arrow">→</div>'
-            '<div class="arch-box">⚗️<br>Feature<br>Engineering</div>'
-            '<div class="arch-arrow">→</div>'
-            '<div class="arch-box arch-box-teal">🤖<br>Multi-Model<br>Prediction Layer</div>'
-            '<div class="arch-arrow">→</div>'
-            '<div class="arch-box arch-box-teal">🔍<br>SHAP<br>Explainability</div>'
-            '<div class="arch-arrow">→</div>'
-            '<div class="arch-box">🎯<br>Intervention<br>Engine</div>'
-            '<div class="arch-arrow">→</div>'
-            '<div class="arch-box arch-box-amber">💰<br>Business<br>Impact</div>'
-            '<div class="arch-arrow">→</div>'
-            '<div class="arch-box">📄<br>Report<br>Generator</div>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-    chart_caption(
-        "End-to-end pipeline: data generation → PharmD feature engineering → "
-        "multi-model prediction layer (LR + XGBoost + LightGBM + CatBoost, tracked via MLflow) → "
-        "SHAP explainability → evidence retrieval → intervention engine → business impact → 9-step agent → PDF report."
-    )
-
     # ── Technology Stack ──────────────────────────────────────────────────────
     section_header("Technology Stack")
     st.markdown("""
@@ -2557,6 +2527,36 @@ def render_tab4():
   </div>
 </div>
 """, unsafe_allow_html=True)
+
+    # ── Intelligence Pipeline ─────────────────────────────────────────────────
+    section_header("Intelligence Pipeline — End-to-End Architecture")
+    arch_img = OUTPUTS_DIR / "architecture.png"
+    if arch_img.exists():
+        st.image(str(arch_img), use_container_width=True)
+    else:
+        st.markdown(
+            '<div class="arch-flow">'
+            '<div class="arch-box">🗂️<br>Synthetic<br>Data</div>'
+            '<div class="arch-arrow">→</div>'
+            '<div class="arch-box">⚗️<br>Feature<br>Engineering</div>'
+            '<div class="arch-arrow">→</div>'
+            '<div class="arch-box arch-box-teal">🤖<br>Multi-Model<br>Prediction Layer</div>'
+            '<div class="arch-arrow">→</div>'
+            '<div class="arch-box arch-box-teal">🔍<br>SHAP<br>Explainability</div>'
+            '<div class="arch-arrow">→</div>'
+            '<div class="arch-box">🎯<br>Intervention<br>Engine</div>'
+            '<div class="arch-arrow">→</div>'
+            '<div class="arch-box arch-box-amber">💰<br>Business<br>Impact</div>'
+            '<div class="arch-arrow">→</div>'
+            '<div class="arch-box">📄<br>Report<br>Generator</div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    chart_caption(
+        "End-to-end pipeline: data generation → PharmD feature engineering → "
+        "multi-model prediction layer (LR + XGBoost + LightGBM + CatBoost, tracked via MLflow) → "
+        "SHAP explainability → evidence retrieval → intervention engine → business impact → 9-step agent → PDF report."
+    )
 
     # ── Skills Demonstrated ───────────────────────────────────────────────────
     section_header("Skills Demonstrated")
@@ -2755,10 +2755,7 @@ def render_landing():
     <div class="tg-hero-eyebrow">&#9632; Clinical Trial Intelligence Platform</div>
     <div class="tg-hero-title">🛡️ TrialGuard</div>
     <div class="tg-hero-subtitle">
-      Predict participant attrition before dropout occurs.<br>
-      Explain risk drivers with transparent AI.<br>
-      Recommend evidence-based interventions.<br>
-      Quantify operational and financial impact.
+      AI-powered participant retention intelligence for clinical operations teams, trial sponsors, and healthcare research organizations.
     </div>
     <div class="tg-hero-badges">
       <span class="tg-badge tg-badge-teal">&#9679; Explainable AI (SHAP)</span>
