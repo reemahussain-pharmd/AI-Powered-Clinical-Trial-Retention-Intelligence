@@ -657,7 +657,7 @@ def render_sidebar_nav():
         ("home",         "🏠", "Overview"),
         ("intake",       "📄", "Document Intake"),
         ("assessment",   "⚠️",  "Participant Risk Assessment"),
-        ("dashboard",    "📊", "Retention Intelligence"),
+        ("dashboard",    "📊", "Retention Intelligence Center"),
         ("batch",        "📁", "Population Risk Screening"),
         ("intelligence", "🧠", "AI Intelligence"),
         ("about",        "ℹ️",  "About"),
