@@ -2736,7 +2736,7 @@ def render_tab4():
               border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;text-decoration:none">
       🐙 GitHub
     </a>
-    <a href="https://linkedin.com/in/reema-mohamed-sulthan" target="_blank"
+    <a href="https://www.linkedin.com/in/reemahussain/" target="_blank"
        style="background:rgba(29,158,117,0.12);color:#4CD4A0;border:1px solid rgba(29,158,117,0.3);
               border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;text-decoration:none">
       💼 LinkedIn
@@ -2932,7 +2932,7 @@ def render_landing():
         "style='display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.07);"
         "color:#A8D5C4;border:1px solid rgba(255,255,255,0.15);border-radius:6px;"
         "padding:5px 14px;font-size:11px;font-weight:600;text-decoration:none'>&#9900; GitHub</a>"
-        "<a href='https://linkedin.com/in/reema-mohamed-sulthan' target='_blank' "
+        "<a href='https://www.linkedin.com/in/reemahussain/' target='_blank' "
         "style='display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.07);"
         "color:#A8D5C4;border:1px solid rgba(255,255,255,0.15);border-radius:6px;"
         "padding:5px 14px;font-size:11px;font-weight:600;text-decoration:none'>&#9900; LinkedIn</a>"
