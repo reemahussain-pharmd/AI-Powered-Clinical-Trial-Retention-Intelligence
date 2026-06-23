@@ -37,7 +37,7 @@ FEATURE_LABEL_MAP = {
     "protocol_complexity_score": "Protocol Complexity Score",
     "trial_duration_months": "Trial Duration (Months)",
     "consent_complexity_score": "Consent Complexity Score",
-    "investigator_experience_years": "Investigator Experience (Years)",
+    "investigator_experience_years": "Site Investigator Experience",
     "trial_phase": "Trial Phase",
     "visit_burden_index": "Visit Burden Index",
     "polypharmacy_risk_score": "Polypharmacy Risk Score",
@@ -259,16 +259,24 @@ def explain_patient(
     shap_triples = list(zip(feature_names, shap_vals, feature_vals))
     shap_triples_sorted = sorted(shap_triples, key=lambda x: x[1], reverse=True)
 
+    # Filter out OHE site columns where value=0 (participant NOT at that site).
+    # These zero-valued site OHE features produce labels like "Trial Site: SITE_01"
+    # for a participant at SITE_04, which is misleading in reports and UI.
+    _display_triples = [
+        (f, sv, fv) for f, sv, fv in shap_triples_sorted
+        if not (f.startswith("site_id_") and fv == 0.0)
+    ]
+
     top3_risk = [
         (f, sv, _contextual_label(f, fv))
-        for f, sv, fv in shap_triples_sorted[:3]
+        for f, sv, fv in _display_triples
         if sv > 0
-    ]
+    ][:3]
     top3_protective = [
         (f, sv, _contextual_label(f, fv))
-        for f, sv, fv in shap_triples_sorted[-3:]
+        for f, sv, fv in reversed(_display_triples)
         if sv < 0
-    ]
+    ][:3]
 
     # Domain-knowledge direction override:
     # Clinically-known risk features must not appear as protective factors.
