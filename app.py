@@ -2924,7 +2924,7 @@ def render_landing():
 
     <!-- Left: Brand -->
     <div>
-      <div class="tg-footer-brand">&#127965; Trial<span>Guard</span></div>
+      <div class="tg-footer-brand">🛡️ Trial<span>Guard</span></div>
       <div class="tg-footer-tagline" style="margin-top:4px">AI-Powered Clinical Trial Retention Intelligence Platform</div>
     </div>
 
