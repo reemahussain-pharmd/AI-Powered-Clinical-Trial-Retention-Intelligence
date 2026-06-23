@@ -2755,13 +2755,13 @@ def render_landing():
     <div class="tg-hero-eyebrow">&#9632; AI-Powered Clinical Trial Retention Intelligence Platform</div>
     <div class="tg-hero-title">🛡️ TrialGuard</div>
     <div class="tg-hero-subtitle">
-      AI-powered participant retention intelligence for clinical operations teams, trial sponsors, and healthcare research organizations.
+      AI-powered participant retention intelligence platform for clinical operations teams, trial sponsors, and healthcare research organizations.
     </div>
     <div class="tg-hero-badges">
       <span class="tg-badge tg-badge-teal">&#9679; Explainable AI (SHAP)</span>
       <span class="tg-badge tg-badge-teal">&#9679; XGBoost Ensemble</span>
       <span class="tg-badge tg-badge-teal">&#9679; Clinical Document Intelligence</span>
-      <span class="tg-badge tg-badge-teal">&#9679; PharmD Clinical Data Science</span>
+      <span class="tg-badge tg-badge-teal">&#9679; Evidence-Based Interventions</span>
     </div>
   </div>
 </div>
