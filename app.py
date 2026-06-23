@@ -2054,42 +2054,76 @@ def render_tab_intake():
 def render_tab1(patient_df: pd.DataFrame, config: dict):
     # ── Page header ───────────────────────────────────────────────────────────
     st.markdown(
-        "<div style='margin-top:28px;margin-bottom:14px'>"
-        "<div style='font-size:20px;font-weight:800;color:#0D1B2A;letter-spacing:-0.3px;margin-bottom:4px'>"
+        "<div style='margin-top:20px;margin-bottom:16px'>"
+        "<div style='font-size:22px;font-weight:900;color:#0D1B2A;letter-spacing:-0.4px;margin-bottom:5px'>"
         "Participant Risk Assessment</div>"
-        "<div style='font-size:12px;color:#6B7280;line-height:1.5'>"
-        "Predict dropout risk · Identify clinical risk drivers · Receive evidence-based interventions"
+        "<div style='font-size:13px;color:#4B5563;line-height:1.6;max-width:620px'>"
+        "Predict individual dropout probability, surface the top clinical risk drivers via SHAP attribution, "
+        "and receive targeted evidence-based retention interventions — all in one analysis."
         "</div>"
         "</div>",
         unsafe_allow_html=True,
     )
 
     if not st.session_state.get("_assessment_run", False):
-        # ── Compact instructions card ─────────────────────────────────────────
+        # ── Instructions card ─────────────────────────────────────────────────
         st.markdown(
             "<div style='background:linear-gradient(135deg,#0D1B2A 0%,#0f2336 100%);"
-            "border:1px solid rgba(29,158,117,0.25);border-radius:12px;padding:16px 20px;margin-bottom:12px'>"
-            "<div style='font-size:13px;font-weight:700;color:#FFFFFF;margin-bottom:10px'>How to Run a Risk Assessment</div>"
-            "<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>"
+            "border:1px solid rgba(29,158,117,0.25);border-radius:14px;padding:20px 24px;margin-bottom:14px'>"
 
-            "<div style='background:rgba(29,158,117,0.08);border:1px solid rgba(29,158,117,0.3);"
-            "border-radius:8px;padding:10px 12px'>"
-            "<div style='font-size:11px;font-weight:700;color:#1D9E75;margin-bottom:4px'>⚡ Quick Start — Demo Scenarios</div>"
-            "<div style='font-size:11px;color:rgba(255,255,255,0.6);line-height:1.5'>"
-            "Select <b style='color:#fff'>Demo 1–4</b> in the sidebar — parameters pre-populate instantly.</div>"
+            "<div style='font-size:14px;font-weight:800;color:#FFFFFF;margin-bottom:4px'>How to Run a Risk Assessment</div>"
+            "<div style='font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px'>"
+            "Choose a path below, then click <b style='color:#1D9E75'>Generate Risk Assessment</b>.</div>"
+
+            "<div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px'>"
+
+            # Quick Start card
+            "<div style='background:rgba(29,158,117,0.09);border:1px solid rgba(29,158,117,0.35);"
+            "border-radius:10px;padding:14px 16px'>"
+            "<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'>"
+            "<span style='font-size:18px'>⚡</span>"
+            "<span style='font-size:12px;font-weight:700;color:#1D9E75'>Quick Start — Demo Scenarios</span></div>"
+            "<div style='font-size:11.5px;color:rgba(255,255,255,0.65);line-height:1.65'>"
+            "Select <b style='color:#fff'>Demo 1, 2, 3, or 4</b> from the sidebar.<br>"
+            "Each scenario pre-populates a complete clinical participant profile — "
+            "high attrition, transportation barrier, polypharmacy, or low-risk benchmark.</div>"
+            "<div style='margin-top:8px;font-size:10px;color:#4CD4A0;font-weight:600'>"
+            "↑ Demo Scenarios — top of left sidebar</div>"
             "</div>"
 
+            # Manual config card
             "<div style='background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);"
-            "border-radius:8px;padding:10px 12px'>"
-            "<div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>🎛️ Manual Configuration</div>"
-            "<div style='font-size:11px;color:rgba(255,255,255,0.6);line-height:1.5'>"
-            "Expand <b style='color:#fff'>Demographics · Clinical · Trial</b> in the sidebar and adjust sliders.</div>"
+            "border-radius:10px;padding:14px 16px'>"
+            "<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'>"
+            "<span style='font-size:18px'>🎛️</span>"
+            "<span style='font-size:12px;font-weight:700;color:#FFFFFF'>Manual Configuration</span></div>"
+            "<div style='font-size:11.5px;color:rgba(255,255,255,0.65);line-height:1.65'>"
+            "Expand <b style='color:#fff'>Demographics</b>, <b style='color:#fff'>Clinical Profile</b>, "
+            "and <b style='color:#fff'>Trial Characteristics</b> in the sidebar.<br>"
+            "Adjust sliders to match your participant's clinical and operational profile.</div>"
+            "<div style='margin-top:8px;font-size:10px;color:rgba(255,255,255,0.4);font-weight:600'>"
+            "↓ Participant Parameters — below demo scenarios</div>"
             "</div>"
 
             "</div>"
-            "<div style='margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35)'>"
-            "📊 Output: Dropout probability · SHAP attribution · 7 interventions · Financial impact · PDF report"
+
+            # Output strip
+            "<div style='padding-top:12px;border-top:1px solid rgba(29,158,117,0.15);"
+            "display:flex;flex-wrap:wrap;gap:6px'>"
+            "<span style='font-size:10px;color:rgba(255,255,255,0.4);font-weight:500'>📊 Output:</span>"
+            "<span style='font-size:10px;color:rgba(255,255,255,0.35)'>Dropout probability</span>"
+            "<span style='color:rgba(29,158,117,0.4);font-size:10px'>·</span>"
+            "<span style='font-size:10px;color:rgba(255,255,255,0.35)'>Risk category</span>"
+            "<span style='color:rgba(29,158,117,0.4);font-size:10px'>·</span>"
+            "<span style='font-size:10px;color:rgba(255,255,255,0.35)'>SHAP attribution</span>"
+            "<span style='color:rgba(29,158,117,0.4);font-size:10px'>·</span>"
+            "<span style='font-size:10px;color:rgba(255,255,255,0.35)'>7 interventions</span>"
+            "<span style='color:rgba(29,158,117,0.4);font-size:10px'>·</span>"
+            "<span style='font-size:10px;color:rgba(255,255,255,0.35)'>Financial impact</span>"
+            "<span style='color:rgba(29,158,117,0.4);font-size:10px'>·</span>"
+            "<span style='font-size:10px;color:rgba(255,255,255,0.35)'>Exportable PDF report</span>"
             "</div>"
+
             "</div>",
             unsafe_allow_html=True,
         )
