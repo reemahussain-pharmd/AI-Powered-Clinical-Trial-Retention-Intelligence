@@ -3332,11 +3332,75 @@ def render_tab4():
     )
     st.caption("Sources: FDA (2012); Getz KA et al., Ther Innov Regul Sci (2016).")
 
-    # ── Clinical Intelligence Framework ───────────────────────────────────────
-    section_header("Clinical Intelligence Framework")
+    # ── Business Impact Framework ─────────────────────────────────────────────
+    section_header("Business Impact Framework")
+    st.markdown(
+        "<div style='background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:20px 24px;margin-bottom:8px'>"
+        "<div style='font-size:11px;font-weight:700;color:#6366F1;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px'>"
+        "&#9632; From Clinical Problem to Measurable Outcome</div>"
+        "<div style='display:flex;align-items:center;flex-wrap:wrap;gap:0'>"
+
+        "<div style='background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;flex:1'>"
+        "<div style='font-size:18px;margin-bottom:4px'>📉</div>"
+        "<div style='font-size:11px;font-weight:700;color:#DC2626'>20–30%</div>"
+        "<div style='font-size:10px;color:#991B1B;margin-top:2px'>Dropout Challenge</div>"
+        "</div>"
+
+        "<div style='font-size:20px;color:#9CA3AF;padding:0 6px;font-weight:300'>→</div>"
+
+        "<div style='background:#EFF9F5;border:1px solid #A7F3D0;border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;flex:1'>"
+        "<div style='font-size:18px;margin-bottom:4px'>🔍</div>"
+        "<div style='font-size:11px;font-weight:700;color:#065F46'>Early Risk Detection</div>"
+        "<div style='font-size:10px;color:#064E3B;margin-top:2px'>ML + SHAP attribution</div>"
+        "</div>"
+
+        "<div style='font-size:20px;color:#9CA3AF;padding:0 6px;font-weight:300'>→</div>"
+
+        "<div style='background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;flex:1'>"
+        "<div style='font-size:18px;margin-bottom:4px'>🎯</div>"
+        "<div style='font-size:11px;font-weight:700;color:#1D40AF'>Targeted Intervention</div>"
+        "<div style='font-size:10px;color:#1E3A8A;margin-top:2px'>PharmD-designed actions</div>"
+        "</div>"
+
+        "<div style='font-size:20px;color:#9CA3AF;padding:0 6px;font-weight:300'>→</div>"
+
+        "<div style='background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;flex:1'>"
+        "<div style='font-size:18px;margin-bottom:4px'>📈</div>"
+        "<div style='font-size:11px;font-weight:700;color:#5B21B6'>Reduced Attrition</div>"
+        "<div style='font-size:10px;color:#4C1D95;margin-top:2px'>~45% of at-risk retained</div>"
+        "</div>"
+
+        "<div style='font-size:20px;color:#9CA3AF;padding:0 6px;font-weight:300'>→</div>"
+
+        "<div style='background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;flex:1'>"
+        "<div style='font-size:18px;margin-bottom:4px'>💰</div>"
+        "<div style='font-size:11px;font-weight:700;color:#92400E'>Lower Costs</div>"
+        "<div style='font-size:10px;color:#78350F;margin-top:2px'>$18K+ saved per retained</div>"
+        "</div>"
+
+        "<div style='font-size:20px;color:#9CA3AF;padding:0 6px;font-weight:300'>→</div>"
+
+        "<div style='background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;flex:1'>"
+        "<div style='font-size:18px;margin-bottom:4px'>🚀</div>"
+        "<div style='font-size:11px;font-weight:700;color:#166534'>Faster Completion</div>"
+        "<div style='font-size:10px;color:#14532D;margin-top:2px'>On-time trial delivery</div>"
+        "</div>"
+
+        "</div>"
+        "<div style='font-size:10px;color:#9CA3AF;margin-top:10px;text-align:center'>"
+        "Estimates based on synthetic demonstration dataset · Industry cost benchmarks: FDA (2012), Getz KA et al. (2016)"
+        "</div>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    # ── PharmD-Driven Retention Intelligence Framework ────────────────────────
+    section_header("PharmD-Driven Retention Intelligence Framework")
     st.markdown(
         "<div style='font-size:13px;color:#4B5563;margin-bottom:16px;line-height:1.6'>"
-        "Four interconnected risk domains — each mapped to composite features, SHAP attribution, and targeted interventions."
+        "Four interconnected risk domains derived from clinical pharmacology and GCP practice — "
+        "each mapped to PharmD-engineered composite features, SHAP attribution, and evidence-based interventions. "
+        "This framework reflects clinical domain expertise, not generic feature selection."
         "</div>",
         unsafe_allow_html=True,
     )
@@ -3362,18 +3426,26 @@ def render_tab4():
         )
     st.markdown("<div style='margin:14px 0 4px'></div>", unsafe_allow_html=True)
 
-    with st.expander("View 5 engineered composite features"):
+    with st.expander("View 5 PharmD-engineered composite features"):
         st.markdown(
-            "| Feature | Clinical Purpose | SHAP Contribution |\n|---------|------------------|-------------------|\n"
-            "| Visit Burden Index | Visit frequency × trial duration — captures participant fatigue | High |\n"
-            "| Polypharmacy Risk Score | Multi-drug complexity and management burden | High |\n"
-            "| Participant Burden Score | Aggregated physical, logistical, and clinical load | Medium |\n"
-            "| Logistic Friction Score | Distance adjusted for transportation access | High |\n"
-            "| Phase-Complexity Interaction | Risk amplification in early-phase, high-complexity trials | Medium |"
+            "| Feature | Clinical Purpose | PharmD Contribution | SHAP Contribution |\n"
+            "|---------|------------------|---------------------|-------------------|\n"
+            "| Visit Burden Index | Visit frequency × trial duration — captures participant fatigue | Protocol adherence burden assessment | High |\n"
+            "| Polypharmacy Risk Score | Multi-drug complexity and management burden | Medication burden assessment — PharmD core competency | High |\n"
+            "| Participant Burden Score | Aggregated physical, logistical, and clinical load | Holistic participant stress mapping across domains | Medium |\n"
+            "| Logistic Friction Score | Distance adjusted for transportation access | Access barrier quantification from clinical site data | High |\n"
+            "| Phase-Complexity Interaction | Risk amplification in early-phase, high-complexity trials | Phase-risk stratification from trial pharmacology knowledge | Medium |"
         )
 
-    # ── Clinical Risk Drivers & Intervention Opportunities ────────────────────
-    section_header("Clinical Risk Drivers & Intervention Opportunities")
+    # ── PharmD Intervention Intelligence Layer ────────────────────────────────
+    section_header("PharmD Intervention Intelligence Layer")
+    st.markdown(
+        "<div style='font-size:13px;color:#4B5563;margin-bottom:16px;line-height:1.6'>"
+        "Risk signals translated into targeted clinical actions using PharmD-validated intervention logic — "
+        "not generic ML recommendations."
+        "</div>",
+        unsafe_allow_html=True,
+    )
     p1, p2, p3 = st.columns(3)
     p1.markdown(
         "<div class='about-card' style='border-left-color:#EF4444'>"
@@ -3384,7 +3456,10 @@ def render_tab4():
         "A proactive pharmacovigilance call at Week 2 is the lowest-cost, highest-return intervention available to coordinators.</div>"
         "<div style='margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6'>"
         "<span style='font-size:10px;font-weight:700;color:#1D9E75'>Intervention: </span>"
-        "<span style='font-size:10px;color:#4B5563'>Week 2 review call · AE monitoring protocol</span></div>"
+        "<span style='font-size:10px;color:#4B5563'>Week 2 review call · AE monitoring protocol · Dose adjustment discussion</span></div>"
+        "<div style='margin-top:6px;padding:5px 8px;background:#FEF2F2;border-radius:5px'>"
+        "<span style='font-size:10px;font-weight:700;color:#DC2626'>PharmD Action: </span>"
+        "<span style='font-size:10px;color:#7F1D1D'>Medication review · Pharmacovigilance assessment · Tolerability optimisation</span></div>"
         "<div style='font-size:10px;color:#9CA3AF;margin-top:4px'>ICH E6(R2) GCP, 2016</div></div>",
         unsafe_allow_html=True,
     )
@@ -3393,11 +3468,14 @@ def render_tab4():
         "<div style='font-size:18px'>🚗</div>"
         "<div style='font-weight:800;font-size:13px;margin:6px 0 2px;color:#0D1B2A'>Logistical Access Barrier</div>"
         "<div style='font-size:10px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px'>Site Distance & Transport</div>"
-        "<div style='font-size:12px;color:#6B7280;line-height:1.55'>Distance &gt;50 km without reliable transport creates a hard logistical barrier "
+        "<div style='font-size:12px;color:#6B7280;line-height:1.55'>Elevated travel burden without reliable transport creates a hard logistical barrier "
         "independent of clinical profile. Transportation reimbursement delivers measurable risk reduction at minimal programme cost.</div>"
         "<div style='margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6'>"
         "<span style='font-size:10px;font-weight:700;color:#1D9E75'>Intervention: </span>"
-        "<span style='font-size:10px;color:#4B5563'>Transport reimbursement · Decentralised visit options</span></div>"
+        "<span style='font-size:10px;color:#4B5563'>Transport reimbursement · Decentralised visit options · Home visit scheduling</span></div>"
+        "<div style='margin-top:6px;padding:5px 8px;background:#FFFBEB;border-radius:5px'>"
+        "<span style='font-size:10px;font-weight:700;color:#B45309'>PharmD Action: </span>"
+        "<span style='font-size:10px;color:#78350F'>Logistics barrier assessment · Site coordinator escalation · DCT eligibility review</span></div>"
         "<div style='font-size:10px;color:#9CA3AF;margin-top:4px'>FDA Patient Retention Guidance, 2012</div></div>",
         unsafe_allow_html=True,
     )
@@ -3410,7 +3488,10 @@ def render_tab4():
         "ICH E6(R2) proportionality supports eliminating non-critical assessments — the most upstream intervention available.</div>"
         "<div style='margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6'>"
         "<span style='font-size:10px;font-weight:700;color:#1D9E75'>Intervention: </span>"
-        "<span style='font-size:10px;color:#4B5563'>Plain-language consent · Protocol simplification</span></div>"
+        "<span style='font-size:10px;color:#4B5563'>Plain-language consent · Protocol simplification · Assessment load reduction</span></div>"
+        "<div style='margin-top:6px;padding:5px 8px;background:#F0FDF4;border-radius:5px'>"
+        "<span style='font-size:10px;font-weight:700;color:#166534'>PharmD Action: </span>"
+        "<span style='font-size:10px;color:#14532D'>Consent readability review · Phase-proportional protocol design · Participant literacy assessment</span></div>"
         "<div style='font-size:10px;color:#9CA3AF;margin-top:4px'>Getz KA et al., Ther Innov Regul Sci, 2016</div></div>",
         unsafe_allow_html=True,
     )
@@ -3476,8 +3557,8 @@ def render_tab4():
         unsafe_allow_html=True,
     )
 
-    # ── Clinical Evidence Base ────────────────────────────────────────────────
-    section_header("Clinical Evidence Base")
+    # ── Evidence-to-Intervention Mapping ─────────────────────────────────────
+    section_header("Evidence-to-Intervention Mapping")
     ev_tbl = pd.DataFrame([
         {"Risk Domain": "Adverse event management", "Reference": "ICH E6(R2) GCP (2016)",                         "Platform Feature": "Week 2 AE monitoring flag",          "Platform Use Case": "Triggers pharmacovigilance call recommendation"},
         {"Risk Domain": "Transportation barriers",  "Reference": "FDA Patient Retention Guidance (2012)",          "Platform Feature": "Logistic Friction Score composite",  "Platform Use Case": "Transport reimbursement intervention"},
@@ -3503,7 +3584,7 @@ def render_tab4():
           "SHAP TreeExplainer", "SMOTE Class Balancing", "Calibration · Survival Analysis (Kaplan-Meier)"]),
         (ts3, "#7C3AED", "Data Platform",
          ["MLflow — Experiment Tracking", "Scikit-learn Pipeline", "Pandas / NumPy",
-          "Stratified Train/Val/Test Split", "pdfplumber / PyMuPDF — Document Parsing", "Synthetic Data Generation"]),
+          "Stratified Train/Val/Test Split", "pdfplumber / PyMuPDF — Document Parsing", "Clinically-Informed Data Simulation"]),
         (ts4, "#F59E0B", "Platform Engineering",
          ["Python 3.11", "Streamlit (Web Application)", "Plotly & Matplotlib (Visualisation)",
           "fpdf2 (PDF Report Generation)", "9-Step Agentic Pipeline", "Human-in-the-Loop Validation"]),
@@ -3535,7 +3616,7 @@ def render_tab4():
         "</div>"
         "<div style='text-align:center;color:#1D9E75;font-size:18px;margin:4px 0'>&#8595;</div>"
 
-        "<div style='font-size:10px;font-weight:800;color:#6B7280;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px'>Layer 2 — Clinical Intelligence</div>"
+        "<div style='font-size:10px;font-weight:800;color:#6B7280;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px'>Layer 2 — PharmD Clinical Intelligence</div>"
         "<div style='display:flex;gap:10px;margin-bottom:6px;flex-wrap:wrap'>"
         "<div style='background:#0f2336;color:#FFF;border-radius:8px;padding:10px 18px;font-size:12px;font-weight:700;flex:1;text-align:center'>🔬 Rule-Based Extraction · Confidence Scoring</div>"
         "<div style='background:#0f2336;color:#FFF;border-radius:8px;padding:10px 18px;font-size:12px;font-weight:700;flex:1;text-align:center'>⚙️ PharmD Feature Engineering (30 features)</div>"
@@ -3563,7 +3644,7 @@ def render_tab4():
     # ── Capabilities Delivered ────────────────────────────────────────────────
     section_header("Capabilities Delivered")
     cap_categories = [
-        ("Clinical Analytics",         ["Participant Attrition Modelling", "Site Performance Analytics", "Protocol Risk Scoring", "Visit Burden Analysis", "Pharmacovigilance Integration"]),
+        ("Clinical Analytics",         ["Participant Attrition Modelling", "Site Performance Analytics", "Protocol Risk Scoring", "Visit Burden Analysis", "Pharmacovigilance Integration", "Medication Burden Analytics", "Pharmacovigilance Signal Monitoring", "Patient Retention Intervention Design"]),
         ("AI & Explainability",         ["XGBoost Ensemble Prediction", "SHAP Per-Participant Attribution", "Global Feature Importance", "Calibrated Probability Outputs", "Survival Analysis (Kaplan-Meier)"]),
         ("Clinical Operations",        ["Evidence-Based Intervention Engine", "Business Impact & ROI Modelling", "Batch Participant Screening", "Document Intelligence (CRF/PDF)", "Sponsor-Ready PDF Reports"]),
         ("Domain Expertise",            ["GCP / ICH E6(R2) Alignment", "FDA Guidance Integration", "PharmD Feature Engineering", "Clinical Trial Analytics", "Regulatory-Grade Transparency"]),
@@ -3606,13 +3687,11 @@ def render_tab4():
           "Clinical document intelligence (PDF/CRF)", "Site performance analytics", "Sponsor-ready PDF reports",
           "Batch participant screening", "Business impact & ROI modelling"]),
         (v2, "#3B82F6", "&#9654; Near-Term Vision", "In Design",
-         ["Medical NLP & clinical entity recognition (NER)", "Agentic intake workflow with multi-doc reconciliation",
-          "Automated high-risk coordinator alerts", "Intervention outcome tracking & feedback loop",
-          "Trial-level retention forecasting", "eConsent drop-off prediction"]),
-        (v3, "#9333EA", "&#9675; Enterprise Vision", "Roadmap",
-         ["Real-time AE severity signal detection", "ICH E6(R3) compliance automation",
-          "Cross-trial portfolio attrition benchmarking", "Decentralised trial (DCT) module",
-          "Sponsor executive analytics suite", "CRO performance intelligence dashboard"]),
+         ["Clinical NLP — medical entity recognition (NER)", "Automated coordinator alert engine",
+          "Intervention outcome tracking & feedback loop", "Trial-level retention forecasting"]),
+        (v3, "#9333EA", "&#9675; Extended Vision", "Roadmap",
+         ["Real-time AE severity signal detection", "eConsent drop-off prediction",
+          "Site performance benchmarking dashboard", "Decentralised trial (DCT) module"]),
     ]
     for col, colour, title, status, items in vision_data:
         items_html = "".join(
@@ -3636,8 +3715,8 @@ def render_tab4():
         "and must not be used for patient care decisions, regulatory submissions, or operational sponsor decisions."
     )
 
-    # ── Project Leadership ────────────────────────────────────────────────────
-    section_header("Project Leadership")
+    # ── Project Author & Clinical AI Architect ────────────────────────────────
+    section_header("Project Author & Clinical AI Architect")
     pl_left, pl_right = st.columns([3, 2])
     with pl_left:
         st.markdown(
