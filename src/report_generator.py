@@ -458,7 +458,7 @@ def generate_report(
     op_col   = _risk_colour(op_severity)
     pdf.metric_cards(
         labels=["Attrition Risk", "Operational Severity", "Model Confidence", "Attrition Window"],
-        values=[f"{risk_pct}%", op_severity, f"{conf_label} ({model_conf}%)", dropout_window],
+        values=[f"{risk_pct}%", op_severity, f"{conf_label} ({model_conf}%)", dropout_window.split("(")[0].strip() if dropout_window and "(" in dropout_window else (dropout_window or "N/A")],
         colors=[risk_col, op_col, conf_col, NAVY],
     )
 
@@ -606,7 +606,7 @@ def generate_report(
         pdf.set_fill_color(*color)
         pdf.set_text_color(*WHITE)
         pdf.set_font("Helvetica", "B", 7)
-        pdf.cell(34, 5, _safe(wk), fill=True, ln=False, align="C")
+        pdf.cell(48, 5, _safe(wk), fill=True, ln=False, align="C")
         pdf.set_fill_color(*LIGHT_GRAY)
         pdf.set_text_color(30, 30, 30)
         pdf.set_font("Helvetica", "", 7.5)
@@ -692,7 +692,7 @@ def generate_report(
     pdf.check_page_space(28)
     pdf.section_heading("Intervention Scorecard")
 
-    sc_col_w = [50, 28, 26, 22, 26, 28]   # total = 180
+    sc_col_w = [44, 34, 26, 22, 26, 28]   # total = 180
     sc_hdrs  = ["Intervention", "Owner", "Impact", "Cost Tier", "Cost (USD)", "Priority"]
     priority_color = {"Critical": RED_RISK, "High": AMBER_RISK, "Medium": TEAL}
     impact_color   = {
@@ -721,7 +721,7 @@ def generate_report(
         pdf.set_text_color(20, 20, 20)
         pdf.set_font("Helvetica", "", 6.5)
         pdf.cell(sc_col_w[0], 5.5, _safe(iv["name"][:42]), border=1, fill=fill, ln=False)
-        pdf.cell(sc_col_w[1], 5.5, _safe(iv["owner"][:22]), border=1, fill=fill, ln=False)
+        pdf.cell(sc_col_w[1], 5.5, _safe(iv["owner"][:30]), border=1, fill=fill, ln=False)
 
         ir, ig, ib = impact_color.get(iv_impact, MID_GRAY)
         pdf.set_fill_color(ir, ig, ib)
@@ -1037,7 +1037,7 @@ def generate_report(
     bi_items = [
         ("Participants Modelled",   "2,000 synthetic profiles (stratified by risk tier)"),
         ("Models Evaluated",        "5 ML algorithms: XGBoost, LR, RF, Decision Tree, SVM"),
-        ("Primary Model Selected",  "Logistic Regression -- AUC 0.82, Precision 0.81, F1 0.79"),
+        ("Primary Model Selected",  "Logistic Regression -- AUC 0.694, Recall 0.779, Precision 0.403, F1 0.531"),
         ("SHAP Explainability",     "Per-participant feature attribution on every prediction"),
         ("Intervention Strategies", "7 evidence-based retention protocols with priority scoring"),
         ("Report Automation",       "Single-click branded PDF with 4-section clinical layout"),
