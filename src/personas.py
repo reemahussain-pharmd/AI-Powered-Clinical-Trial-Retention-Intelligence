@@ -12,7 +12,7 @@ from typing import Tuple
 
 
 PERSONA_DESCRIPTIONS = {
-    "High Burden Elderly Participant": (
+    "High AE Vulnerability Participant": (
         "Older participant (>65) with multiple comorbidities and complex medication regimen. "
         "Key risks: adverse event sensitivity, visit fatigue, and caregiver dependency. "
         "Recommended approach: simplified scheduling, caregiver involvement, home visit options."
@@ -22,12 +22,12 @@ PERSONA_DESCRIPTIONS = {
         "Key risks: scheduling conflicts and work absenteeism from frequent trial visits. "
         "Recommended approach: flexible scheduling, remote options, and visit consolidation."
     ),
-    "Polypharmacy High-Risk Participant": (
+    "High Burden Polypharmacy Patient": (
         "Participant on ≥8 medications with multiple comorbidities and prior adverse event history. "
         "Key risks: drug-drug interactions, AE cascade, and clinical complexity. "
         "Recommended approach: pharmacist reconciliation, dedicated monitoring, close PI follow-up."
     ),
-    "Long-Distance Rural Participant": (
+    "Transportation-Limited Participant": (
         "Participant residing >80 km from site without transportation access. "
         "Key risk: logistical dropout — no clinical issue, but practically unable to attend. "
         "Recommended approach: transportation reimbursement, home nursing, remote visits."
@@ -58,19 +58,19 @@ def classify_persona(patient_features: pd.Series) -> Tuple[str, str]:
     prior_ae     = str(patient_features.get("prior_adverse_event_history", "no")).lower()
     visit_freq   = float(patient_features.get("visit_frequency_per_month", 0))
 
-    # Long-Distance Rural — logistical dropout risk without clinical cause
+    # Transportation-Limited — logistical dropout risk without clinical cause
     if distance > 80 and transport == "no":
-        name = "Long-Distance Rural Participant"
+        name = "Transportation-Limited Participant"
         return name, PERSONA_DESCRIPTIONS[name]
 
-    # Polypharmacy High-Risk — clinical complexity with AE cascade potential
+    # High Burden Polypharmacy — clinical complexity with AE cascade potential
     if medications >= 8 and comorbidities >= 4 and prior_ae == "yes":
-        name = "Polypharmacy High-Risk Participant"
+        name = "High Burden Polypharmacy Patient"
         return name, PERSONA_DESCRIPTIONS[name]
 
-    # High Burden Elderly — comorbid older participant with visit fatigue risk
+    # High AE Vulnerability — comorbid older participant with visit fatigue risk
     if age > 65 and comorbidities >= 4 and medications >= 6:
-        name = "High Burden Elderly Participant"
+        name = "High AE Vulnerability Participant"
         return name, PERSONA_DESCRIPTIONS[name]
 
     # Young Mobile Professional — scheduling and work absenteeism risk
@@ -80,10 +80,10 @@ def classify_persona(patient_features: pd.Series) -> Tuple[str, str]:
 
     # Default — use closest match heuristic
     scores = {
-        "High Burden Elderly Participant":    (age / 80) * 0.4 + (comorbidities / 8) * 0.3 + (medications / 12) * 0.3,
+        "High AE Vulnerability Participant":  (age / 80) * 0.4 + (comorbidities / 8) * 0.3 + (medications / 12) * 0.3,
         "Young Mobile Professional":          (1 if 25 <= age <= 45 else 0) * 0.4 + (visit_freq / 12) * 0.3 + (distance / 200) * 0.3,
-        "Polypharmacy High-Risk Participant": (medications / 12) * 0.4 + (comorbidities / 8) * 0.3 + (1 if prior_ae == "yes" else 0) * 0.3,
-        "Long-Distance Rural Participant":    (distance / 200) * 0.6 + (0 if transport == "yes" else 0.4),
+        "High Burden Polypharmacy Patient":   (medications / 12) * 0.4 + (comorbidities / 8) * 0.3 + (1 if prior_ae == "yes" else 0) * 0.3,
+        "Transportation-Limited Participant": (distance / 200) * 0.6 + (0 if transport == "yes" else 0.4),
     }
     best_persona = max(scores, key=scores.get)
     return best_persona, PERSONA_DESCRIPTIONS[best_persona]

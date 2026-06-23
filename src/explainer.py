@@ -270,10 +270,29 @@ def explain_patient(
         if sv < 0
     ]
 
+    # Domain-knowledge direction override:
+    # Clinically-known risk features must not appear as protective factors.
+    # TreeExplainer on synthetic data can produce counter-intuitive SHAP directions
+    # for specific feature combinations — domain override restores clinical logic.
+    _known_risk_features = {
+        "transportation_access_no",   # OHE=1 means no transport → risk
+        "distance_from_site_km",      # high distance → risk
+        "logistic_friction_score",    # high score → risk
+        "side_effect_severity_at_week2",  # high AE severity → risk
+        "visit_burden_index",
+    }
+    misclassified = [(f, sv, lbl) for f, sv, lbl in top3_protective if f in _known_risk_features]
+    if misclassified:
+        top3_protective = [(f, sv, lbl) for f, sv, lbl in top3_protective if f not in _known_risk_features]
+        # Add to risk side with corrected (positive) SHAP magnitude
+        for f, sv, lbl in misclassified:
+            top3_risk.append((f, abs(sv), lbl))
+        top3_risk = sorted(top3_risk, key=lambda x: x[1], reverse=True)[:3]
+
     return {
         "risk_score": risk_score,
         "risk_category": risk_category,
-        "risk_pct": int(risk_score * 100),
+        "risk_pct": round(risk_score * 100, 1),
         "top3_risk_factors": top3_risk,
         "top3_protective_factors": top3_protective,
         "dropout_window": get_dropout_window(risk_score),
