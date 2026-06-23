@@ -108,7 +108,7 @@ button[data-testid="baseButton-primary"]:hover,
 /* ── Hero section ── */
 .tg-hero{
     background:linear-gradient(135deg,#0D1B2A 0%,#0f2a3a 40%,#0a2218 100%);
-    border-radius:16px;padding:40px 44px 36px;margin-bottom:20px;
+    border-radius:16px;padding:40px 44px 36px;margin-top:24px;margin-bottom:20px;
     position:relative;overflow:hidden;
     box-shadow:0 20px 60px rgba(13,27,42,0.25),0 4px 16px rgba(13,27,42,0.15)
 }
@@ -2761,7 +2761,7 @@ def render_landing():
       <span class="tg-badge tg-badge-teal">&#9679; Explainable AI (SHAP)</span>
       <span class="tg-badge tg-badge-teal">&#9679; XGBoost Ensemble</span>
       <span class="tg-badge tg-badge-teal">&#9679; Clinical Document Intelligence</span>
-      <span class="tg-badge tg-badge-navy">Healthcare AI Portfolio Project</span>
+      <span class="tg-badge tg-badge-teal">&#9679; PharmD Clinical Data Science</span>
     </div>
   </div>
 </div>
