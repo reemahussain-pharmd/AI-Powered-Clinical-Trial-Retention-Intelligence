@@ -65,6 +65,21 @@ html,body,[class*="css"]{font-family:'Inter',system-ui,-apple-system,sans-serif!
 .main{background:linear-gradient(135deg,#F0F4F8 0%,#E8F0E9 50%,#F0F4F8 100%)!important;min-height:100vh}
 .block-container{padding-top:0.5rem!important;padding-bottom:2rem!important}
 
+/* ── CTA primary button — TrialGuard teal (not Streamlit default red) ── */
+button[data-testid="baseButton-primary"],
+.stButton>button[kind="primary"]{
+    background:linear-gradient(135deg,#1D9E75,#17836A)!important;
+    border:none!important;color:#FFFFFF!important;font-weight:700!important;
+    font-size:15px!important;border-radius:10px!important;padding:12px 28px!important;
+    box-shadow:0 4px 16px rgba(29,158,117,0.35)!important;
+    transition:all .2s ease!important;letter-spacing:0.2px!important
+}
+button[data-testid="baseButton-primary"]:hover,
+.stButton>button[kind="primary"]:hover{
+    background:linear-gradient(135deg,#17836A,#126B56)!important;
+    box-shadow:0 6px 20px rgba(29,158,117,0.45)!important;transform:translateY(-1px)!important
+}
+
 /* ── Sidebar container ── */
 [data-testid="stSidebar"]{background:#0D1B2A!important}
 [data-testid="stSidebar"] .stButton>button{
@@ -378,6 +393,20 @@ html,body,[class*="css"]{font-family:'Inter',system-ui,-apple-system,sans-serif!
 .pipeline-num{font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1px;text-transform:uppercase}
 .pipeline-title{font-size:13px;font-weight:700;color:#0D1B2A}
 .pipeline-desc{font-size:11.5px;color:#6B7280;margin-top:3px;line-height:1.5}
+
+/* ── TrialGuard teal — override Streamlit primary buttons ── */
+div.stButton>button[kind="primary"],
+button[data-testid="baseButton-primary"]{
+    background:linear-gradient(135deg,#1D9E75,#17836A)!important;
+    border-color:#1D9E75!important;color:#FFFFFF!important;
+    font-weight:700!important;letter-spacing:0.3px!important;
+    box-shadow:0 4px 14px rgba(29,158,117,0.35)!important
+}
+div.stButton>button[kind="primary"]:hover,
+button[data-testid="baseButton-primary"]:hover{
+    background:linear-gradient(135deg,#17836A,#145f50)!important;
+    box-shadow:0 6px 20px rgba(29,158,117,0.45)!important;transform:translateY(-1px)!important
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -660,20 +689,20 @@ def render_sidebar_nav():
         "<div style='background:rgba(255,255,255,0.05);border:1px solid rgba(29,158,117,0.2);"
         "border-radius:10px;padding:11px 12px;margin-bottom:6px'>"
         "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
-        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>2,000</span>"
-        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>Participants Modelled</span></div>"
+        "<span style='font-size:13px;font-weight:800;color:#4CD4A0;min-width:44px'>2,000</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.55)'>Participants Modelled</span></div>"
         "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
-        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>5</span>"
-        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>ML Models Trained</span></div>"
+        "<span style='font-size:13px;font-weight:800;color:#4CD4A0;min-width:44px'>$1.6M</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.55)'>Modelled Savings / Cohort</span></div>"
         "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
-        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>SHAP</span>"
-        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>Explainability Engine</span></div>"
+        "<span style='font-size:13px;font-weight:800;color:#4CD4A0;min-width:44px'>XAI</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.55)'>SHAP-Attributed Every Prediction</span></div>"
         "<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"
-        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>7</span>"
-        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>Intervention Strategies</span></div>"
+        "<span style='font-size:13px;font-weight:800;color:#4CD4A0;min-width:44px'>7</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.55)'>Evidence-Based Interventions</span></div>"
         "<div style='display:flex;align-items:center;gap:8px'>"
-        "<span style='font-size:13px;font-weight:800;color:#fff;min-width:44px'>PDF</span>"
-        "<span style='font-size:10px;color:rgba(255,255,255,0.5)'>Clinical Report Engine</span></div>"
+        "<span style='font-size:13px;font-weight:800;color:#4CD4A0;min-width:44px'>PDF</span>"
+        "<span style='font-size:10px;color:rgba(255,255,255,0.55)'>Enterprise Intelligence Report</span></div>"
         "</div>",
         unsafe_allow_html=True,
     )
@@ -2000,8 +2029,8 @@ def render_tab2(config: dict):
     )
     st.markdown("<div style='margin-bottom:12px'></div>", unsafe_allow_html=True)
 
-    # Site performance
-    section_header("Site Performance Analysis")
+    # Site performance — visual executive view
+    section_header("Clinical Site Performance Intelligence")
     site_stats = (
         df.groupby("site_id")
         .agg(enrolled=("patient_id", "count"), dropouts=("dropout", "sum"),
@@ -2010,21 +2039,41 @@ def render_tab2(config: dict):
     )
     site_stats["dropout_rate"] = (site_stats["dropouts"] / site_stats["enrolled"] * 100).round(1)
     site_stats["Status"] = site_stats["dropout_rate"].apply(
-        lambda r: "🔴 Review Recommended" if r > 35 else ("🟡 Monitor" if r > 25 else "🟢 On Track")
+        lambda r: "🔴 Review" if r > 35 else ("🟡 Monitor" if r > 25 else "🟢 On Track")
     )
-    st.dataframe(
-        site_stats[["site_id", "enrolled", "dropouts", "dropout_rate", "avg_risk", "Status"]]
-        .rename(columns={
-            "site_id": "Site", "enrolled": "Enrolled",
-            "dropouts": "Observed Attrition", "dropout_rate": "Attrition Rate (%)",
-            "avg_risk": "Avg Risk Score",
-        })
-        .round({"Avg Risk Score": 3}),
-        use_container_width=True, hide_index=True,
+    site_stats = site_stats.sort_values("dropout_rate", ascending=True)
+    bar_colors = site_stats["dropout_rate"].apply(
+        lambda r: "#EF4444" if r > 35 else ("#F59E0B" if r > 25 else "#10B981")
+    ).tolist()
+    fig_site = go.Figure(go.Bar(
+        x=site_stats["dropout_rate"],
+        y=site_stats["site_id"],
+        orientation="h",
+        marker_color=bar_colors,
+        text=site_stats.apply(
+            lambda row: f"{row['dropout_rate']:.1f}% · {row['Status']} · Risk: {row['avg_risk']:.2f}", axis=1
+        ),
+        textposition="outside",
+        hovertemplate="<b>%{y}</b><br>Attrition: %{x:.1f}%<br>Enrolled: %{customdata[0]}<br>Avg Risk: %{customdata[1]:.3f}<extra></extra>",
+        customdata=site_stats[["enrolled", "avg_risk"]].values,
+    ))
+    fig_site.add_vline(x=35, line_dash="dash", line_color="#EF4444", line_width=1.5,
+                       annotation_text="Review threshold 35%", annotation_font_color="#EF4444",
+                       annotation_position="top right")
+    fig_site.add_vline(x=25, line_dash="dot", line_color="#F59E0B", line_width=1,
+                       annotation_text="Monitor 25%", annotation_font_color="#F59E0B",
+                       annotation_position="top right")
+    fig_site.update_layout(
+        height=max(280, len(site_stats) * 42),
+        xaxis_title="Attrition Rate (%)", yaxis_title="",
+        margin=dict(l=20, r=200, t=20, b=40),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        xaxis=dict(range=[0, site_stats["dropout_rate"].max() * 1.45], gridcolor="rgba(0,0,0,0.05)"),
     )
+    st.plotly_chart(fig_site, use_container_width=True)
     chart_caption(
-        "Sites above 35% attrition flagged for sponsor review. "
-        "Average Risk Score = model-estimated participant vulnerability at each site."
+        "Red — sponsor review recommended (>35%). Amber — enhanced monitoring (25–35%). "
+        "Green — within acceptable thresholds. Risk score = model-estimated vulnerability."
     )
 
     # Operational alerts
@@ -2132,10 +2181,11 @@ def render_tab3():
         else:
             st.info(f"`{path.name}` not yet generated — run the model training pipeline first.")
 
-    section_header("Model Performance Overview")
+    section_header("Predictive Model Validation — Clinical Performance Benchmarking")
     st.markdown(
-        "Five candidate models evaluated on a held-out test set. "
-        "**Recall is prioritised:** a missed dropout (false negative) carries higher cost than a false alarm."
+        "XGBoost ensemble benchmarked against 4 baseline algorithms on a 400-participant holdout set. "
+        "**Clinical priority: maximise recall** — an undetected high-risk participant costs $18K+ in replacement; "
+        "a false-positive intervention costs only coordinator time."
     )
 
     c1, c2 = st.columns(2)
@@ -2158,10 +2208,10 @@ def render_tab3():
                  "Precision-Recall Curve: especially informative for imbalanced datasets. "
                  "Shows the trade-off between recall (catching at-risk participants) and precision.")
 
-    section_header("AI Transparency & Explainability")
+    section_header("SHAP Explainability — Regulatory-Grade Decision Transparency")
     st.markdown(
-        "SHAP (SHapley Additive exPlanations) reveals which characteristics drive predictions "
-        "across the entire population, supporting clinical validation, regulatory transparency, and stakeholder trust."
+        "Every prediction is fully attributed using SHAP TreeExplainer — meeting the interpretability standards "
+        "expected by sponsors, IRBs, and health authority reviewers. No black-box outputs."
     )
 
     c5, c6 = st.columns(2)
@@ -2554,7 +2604,7 @@ def render_tab4():
 
 # ── Landing page — Enterprise hero + all sections ─────────────────────────────
 def render_landing():
-    # ── Full-width hero ───────────────────────────────────────────────────────
+    # ── Hero ──────────────────────────────────────────────────────────────────
     st.markdown("""
 <div class="tg-hero">
   <div style="position:relative;z-index:1">
@@ -2566,7 +2616,7 @@ def render_landing():
     </div>
     <div class="tg-hero-badges">
       <span class="tg-badge tg-badge-teal">&#9679; Explainable AI (SHAP)</span>
-      <span class="tg-badge tg-badge-teal">&#9679; XGBoost &amp; Logistic Regression</span>
+      <span class="tg-badge tg-badge-teal">&#9679; XGBoost Ensemble</span>
       <span class="tg-badge tg-badge-teal">&#9679; Clinical Document Intelligence</span>
       <span class="tg-badge tg-badge-navy">v3.0 &mdash; Current Release</span>
     </div>
@@ -2576,11 +2626,11 @@ def render_landing():
 
     # ── 5 capability cards ────────────────────────────────────────────────────
     caps = [
-        ("🧠", "PREDICT",   "AI-estimated dropout probability per participant with calibrated risk tiers"),
-        ("🔍", "EXPLAIN",   "SHAP attribution — understand exactly which factors drive each prediction"),
-        ("🎯", "INTERVENE", "Evidence-based retention strategies matched to each participant's risk profile"),
-        ("📈", "SIMULATE",  "Protocol change simulator — model the impact of design modifications on attrition"),
-        ("📄", "REPORT",    "Enterprise-grade clinical intelligence PDF for trial sponsors and CROs"),
+        ("🧠", "PREDICT",   "Individual dropout probability with calibrated risk tiers and confidence scores"),
+        ("🔍", "EXPLAIN",   "Per-participant SHAP attribution — full transparency on every prediction"),
+        ("🎯", "INTERVENE", "7 evidence-based retention strategies matched to each participant's risk profile"),
+        ("📈", "SIMULATE",  "Protocol change simulator — model design modifications before implementation"),
+        ("📄", "REPORT",    "Enterprise clinical intelligence PDF for sponsors, CROs, and trial teams"),
     ]
     cols = st.columns(5)
     for col, (icon, title, desc) in zip(cols, caps):
@@ -2592,177 +2642,137 @@ def render_landing():
             f'</div>',
             unsafe_allow_html=True,
         )
-    st.markdown("<div style='margin-bottom:6px'></div>", unsafe_allow_html=True)
+
+    # ── Executive Dashboard — moved directly below hero ───────────────────────
+    st.markdown(
+        "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
+        "text-transform:uppercase;margin:22px 0 10px'>&#9632; Cohort Intelligence Overview</div>",
+        unsafe_allow_html=True,
+    )
+    render_landing_kpis()
+
+    # ── What This Project Demonstrates ────────────────────────────────────────
+    st.markdown(
+        "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
+        "text-transform:uppercase;margin:24px 0 14px'>&#9632; What This Project Demonstrates</div>",
+        unsafe_allow_html=True,
+    )
+    demo_items = [
+        ("📊", "Clinical Trial Analytics",
+         "End-to-end attrition modelling across participant demographics, clinical profile, and trial design variables."),
+        ("🤖", "Healthcare AI",
+         "Production-grade ML pipeline built on XGBoost ensemble with Optuna hyperparameter tuning and calibrated outputs."),
+        ("🔍", "Explainable AI",
+         "SHAP TreeExplainer for per-participant and global attribution — every prediction is interpretable and defensible."),
+        ("💰", "Business Impact Modelling",
+         "ROI calculator translating retained participants into financial value — up to $1.6M modelled savings per cohort."),
+        ("🩺", "PharmD Domain Expertise",
+         "5 composite clinical features encoded from pharmacovigilance, GCP, FDA guidance, and adverse event literature."),
+        ("⚙️", "Clinical Operations Analytics",
+         "Site performance benchmarking, visit burden analysis, protocol complexity scoring, and intervention prioritisation."),
+    ]
+    d1, d2, d3 = st.columns(3)
+    dcols = [d1, d2, d3, d1, d2, d3]
+    for col, (icon, title, body) in zip(dcols, demo_items):
+        col.markdown(
+            f'<div style="background:rgba(255,255,255,0.97);border-radius:10px;padding:16px 18px;'
+            f'border-left:4px solid #1D9E75;box-shadow:0 3px 12px rgba(13,27,42,0.07);margin-bottom:12px;height:100%">'
+            f'<div style="font-size:20px;margin-bottom:7px">{icon}</div>'
+            f'<div style="font-size:12px;font-weight:800;color:#0D1B2A;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px">{title}</div>'
+            f'<div style="font-size:11.5px;color:#4B5563;line-height:1.55">{body}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
     # ── Clinical problem statement ────────────────────────────────────────────
     st.markdown("""
 <div class="problem-card">
   <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">
-    &#9632; The Clinical Trial Attrition Challenge
-  </div>
-  <div style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7;margin-bottom:20px;max-width:780px">
-    Clinical trial attrition is one of the most costly and preventable challenges in drug development.
-    Current retention strategies are <strong style="color:#FCD34D">predominantly reactive</strong> — triggered only after
-    a participant has already disengaged. TrialGuard shifts this paradigm by enabling
-    <strong style="color:#4CD4A0">proactive, data-driven, early identification</strong> of at-risk participants
-    before dropout occurs.
+    &#9632; The Business Case — Clinical Trial Attrition
   </div>
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
     <div class="problem-stat">
       <div class="problem-num">20&ndash;30%</div>
-      <div class="problem-label">Average dropout rate across clinical trials globally</div>
+      <div class="problem-label">Average dropout rate across Phase II–IV trials globally</div>
     </div>
     <div class="problem-stat">
       <div class="problem-num">$18K+</div>
-      <div class="problem-label">Estimated cost to replace a single withdrawn participant</div>
+      <div class="problem-label">Cost to replace a single withdrawn participant (Getz 2016)</div>
     </div>
     <div class="problem-stat">
-      <div class="problem-num">$54M+</div>
-      <div class="problem-label">Estimated industry-wide annual exposure from attrition</div>
+      <div class="problem-num">$1.6M</div>
+      <div class="problem-label">Modelled savings per 600-participant cohort with early intervention</div>
     </div>
     <div class="problem-stat">
       <div class="problem-num">Week 2</div>
-      <div class="problem-label">Highest-risk intervention window — early AE severity is the #1 predictor</div>
+      <div class="problem-label">Optimal intervention window — AE severity is the #1 SHAP predictor</div>
     </div>
   </div>
   <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:14px">
-    Sources: FDA Patient Retention Guidance (2012) &nbsp;|&nbsp; Getz KA et al., Ther Innov Regul Sci (2016) &nbsp;|&nbsp; ICH E6(R2) (2016)
+    FDA Patient Retention Guidance (2012) &nbsp;·&nbsp; Getz KA et al., Ther Innov Regul Sci (2016) &nbsp;·&nbsp; ICH E6(R2) (2016)
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-    # ── Platform vision ───────────────────────────────────────────────────────
-    st.markdown(
-        "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
-        "text-transform:uppercase;margin:20px 0 12px'>&#9632; Platform Vision</div>",
-        unsafe_allow_html=True,
-    )
-    v1, v2, v3, v4 = st.columns(4)
-    visions = [
-        ("🎯", "Predict Early", "Identify dropout risk at the individual participant level before clinical signals become visible"),
-        ("⚡", "Act Fast",      "Match each participant to evidence-based interventions drawn from FDA, ICH E6(R2), and peer-reviewed literature"),
-        ("💰", "Quantify ROI",  "Translate retained participants into financial value — modelled savings up to $1.6M per 600-participant cohort"),
-        ("📊", "Demonstrate AI","Full explainability stack: SHAP, calibrated probabilities, global feature attribution, survival analysis"),
-    ]
-    for col, (icon, title, body) in zip([v1, v2, v3, v4], visions):
-        col.markdown(
-            f'<div class="vision-card">'
-            f'<div class="vision-icon">{icon}</div>'
-            f'<div class="vision-title">{title}</div>'
-            f'<div class="vision-body">{body}</div>'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("<div style='margin-bottom:4px'></div>", unsafe_allow_html=True)
-
-    # ── Technologies demonstrated ─────────────────────────────────────────────
+    # ── Technologies ──────────────────────────────────────────────────────────
     st.markdown("""
 <div class="tech-section">
   <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">
-    &#9632; Technologies &amp; Domains Demonstrated
+    &#9632; Technology Stack
   </div>
-  <div style="margin-bottom:14px">
-    <div class="tech-category">Clinical Research &amp; Analytics</div>
+  <div style="margin-bottom:10px">
+    <div class="tech-category">Clinical &amp; Regulatory</div>
     <span class="tech-chip">&#129514; Clinical Trial Analytics</span>
-    <span class="tech-chip">&#128203; Clinical Operations</span>
     <span class="tech-chip">&#128138; Pharmacovigilance</span>
     <span class="tech-chip">&#128295; GCP / ICH E6(R2)</span>
-    <span class="tech-chip">&#9877; FDA Guidance Alignment</span>
-    <span class="tech-chip">&#128196; CRF Data Extraction</span>
   </div>
-  <div style="margin-bottom:14px">
-    <div class="tech-category">Machine Learning &amp; AI</div>
+  <div style="margin-bottom:10px">
+    <div class="tech-category">AI &amp; Machine Learning</div>
     <span class="tech-chip">&#129302; XGBoost (Optuna-tuned)</span>
-    <span class="tech-chip">&#129302; Logistic Regression Ensemble</span>
-    <span class="tech-chip">&#129302; LightGBM &amp; CatBoost</span>
     <span class="tech-chip">&#9889; SHAP Explainability</span>
     <span class="tech-chip">&#9889; Explainable AI (XAI)</span>
-    <span class="tech-chip">&#128200; SMOTE (Class Balancing)</span>
-    <span class="tech-chip">&#128200; Survival Analysis (Kaplan-Meier)</span>
-    <span class="tech-chip">&#128200; Calibration Curves</span>
-  </div>
-  <div style="margin-bottom:14px">
-    <div class="tech-category">Engineering &amp; Platform</div>
-    <span class="tech-chip">&#128202; Streamlit</span>
-    <span class="tech-chip">&#128202; MLflow (Experiment Tracking)</span>
-    <span class="tech-chip">&#128202; Scikit-learn</span>
-    <span class="tech-chip">&#128202; Plotly &amp; Matplotlib</span>
-    <span class="tech-chip">&#128202; fpdf2 (PDF Generation)</span>
-    <span class="tech-chip">&#128202; pdfplumber / PyMuPDF</span>
-    <span class="tech-chip">&#128202; Python 3.11</span>
   </div>
   <div>
-    <div class="tech-category">AI System Design</div>
-    <span class="tech-chip">&#129302; RAG Systems (Evidence Retrieval)</span>
-    <span class="tech-chip">&#129302; Agentic Pipeline (9-Step)</span>
-    <span class="tech-chip">&#129302; Human-in-the-Loop Validation</span>
-    <span class="tech-chip">&#129302; PDF Report Automation</span>
-    <span class="tech-chip">&#129302; Healthcare AI</span>
+    <div class="tech-category">Platform &amp; Architecture</div>
+    <span class="tech-chip">&#128202; Python 3.11 · Streamlit · MLflow</span>
+    <span class="tech-chip">&#129302; 9-Step Agentic Pipeline</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-    # ── PharmD clinical perspective ───────────────────────────────────────────
+    # ── PharmD Clinical Perspective — 3 cards ─────────────────────────────────
     st.markdown("""
 <div class="pharmd-section">
   <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">
     &#9632; PharmD Clinical Perspective
   </div>
   <div style="font-size:13px;color:#4B5563;margin-bottom:16px;line-height:1.6">
-    Clinical trial dropout is not a single-cause phenomenon. As a PharmD-trained clinical data scientist,
-    I encoded the multi-dimensional burden of trial participation into 5 composite features grounded in
-    pharmacovigilance, GCP, and FDA guidance.
+    Dropout is not a single-cause failure. Five composite features encode the multi-dimensional burden of
+    trial participation — grounded in pharmacovigilance principles, GCP, and FDA guidance.
   </div>
 """, unsafe_allow_html=True)
-
     pc1, pc2, pc3 = st.columns(3)
     pharmd_insights = [
         (
-            "⚠️ Week 2 Side Effect Monitoring",
-            "Early adverse event severity is the single highest-ranked dropout predictor in this model — "
-            "with a SHAP contribution ~3× larger than the next factor. A proactive pharmacovigilance call at "
-            "Week 2 is low-cost and has the highest modelled impact on retention.",
+            "⚠️ Week 2 AE Monitoring",
+            "Early adverse event severity is the single highest-ranked SHAP predictor — contributing ~3× more than the next factor. "
+            "A proactive pharmacovigilance call at Week 2 is the highest-impact, lowest-cost retention intervention.",
             "ICH E6(R2) Good Clinical Practice (2016)",
         ),
         (
-            "🚗 Logistical Friction & Transportation",
-            "Distance beyond 50 km without reliable transport creates a hard logistical barrier independent of "
-            "a participant's clinical profile. Transportation reimbursement delivers significant risk reduction "
-            "at minimal cost — a finding directly aligned with FDA retention guidance.",
-            "FDA Patient Retention Guidance (2012)",
-        ),
-        (
-            "💊 Polypharmacy & Medication Burden",
-            "Participants on ≥8 concomitant medications face compounded pharmacological burden — increased "
-            "drug interaction risk, pill fatigue, and AE complexity. Medication management support and "
-            "simplified regimen counselling are recommended interventions.",
+            "💊 Polypharmacy Burden",
+            "Participants on ≥8 concomitant medications face compounded pharmacological burden — drug interactions, pill fatigue, "
+            "and AE complexity all increase dropout probability. Medication counselling and regimen simplification are first-line interventions.",
             "WHO Technical Report on Polypharmacy (2019)",
         ),
         (
-            "📋 Protocol Complexity & Consent",
-            "ICH E6(R2)'s proportionality principle supports removing non-critical assessments. "
-            "High consent complexity (scored 8–10) signals participant confusion and hesitancy — "
-            "plain-language simplification is the most upstream intervention available.",
-            "Getz KA et al., Ther Innov Regul Sci (2016)",
-        ),
-        (
-            "📅 Visit Burden & Scheduling Adherence",
-            "High visit frequency amplifies scheduling fatigue and competes with occupational and family "
-            "obligations. The Visit Burden Index composite feature captures this interaction. "
-            "Decentralised trial components (FDA DCT 2023) can address this at the design stage.",
-            "FDA Decentralised Clinical Trials Guidance (2023)",
-        ),
-        (
-            "🩺 Comorbidity & Adherence Risk",
-            "Multiple comorbidities increase clinical management complexity and AE monitoring burden. "
-            "Participants with ≥5 comorbidities were modelled as having significantly elevated dropout "
-            "probability — reflecting real-world adherence challenges in complex patient populations.",
+            "📋 Protocol Complexity",
+            "High consent complexity (score 8–10) signals participant confusion and hesitancy upstream of dropout. "
+            "ICH E6(R2)'s proportionality principle directly supports removing non-critical assessments to reduce burden.",
             "Getz KA et al., Ther Innov Regul Sci (2016)",
         ),
     ]
-    all_cols = [pc1, pc2, pc3, pc1, pc2, pc3]
-    for col, (title, body, ref) in zip(all_cols, pharmd_insights):
+    for col, (title, body, ref) in zip([pc1, pc2, pc3], pharmd_insights):
         col.markdown(
             f'<div class="pharmd-insight">'
             f'<div class="pharmd-insight-title">{title}</div>'
@@ -2773,7 +2783,7 @@ def render_landing():
         )
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ── Architecture visual flow diagram ─────────────────────────────────────
+    # ── Intelligence Pipeline ─────────────────────────────────────────────────
     st.markdown(
         "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
         "text-transform:uppercase;margin:20px 0 14px'>&#9632; Intelligence Pipeline</div>",
@@ -2783,121 +2793,132 @@ def render_landing():
     with _mc:
         st.markdown("""
 <div style="display:flex;flex-direction:column;align-items:center;gap:0">
-
   <div style="background:linear-gradient(135deg,#1D9E75,#17836A);color:#FFFFFF;border-radius:10px;
     padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
     box-shadow:0 4px 14px rgba(29,158,117,0.3)">
     📄 &nbsp; Clinical PDF / CRF Upload
   </div>
   <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
-
   <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
     padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
     box-shadow:0 4px 14px rgba(13,27,42,0.2)">
     🔬 &nbsp; Clinical Intake Engine
     <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
-      Rule-based extraction &nbsp;·&nbsp; Confidence scoring &nbsp;·&nbsp; Human-in-the-loop
+      Rule-based extraction &nbsp;·&nbsp; Confidence scoring &nbsp;·&nbsp; Human-in-the-loop review
     </div>
   </div>
   <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
-
   <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
     padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
     box-shadow:0 4px 14px rgba(13,27,42,0.2)">
     ⚙️ &nbsp; Feature Engineering
     <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
-      25 inputs &nbsp;·&nbsp; 5 PharmD composite features &nbsp;·&nbsp; Clinical preprocessing
+      25 clinical inputs &nbsp;·&nbsp; 5 PharmD composite features
     </div>
   </div>
   <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
-
   <div style="background:linear-gradient(135deg,#1D4ED8,#1e40af);color:#FFFFFF;border-radius:10px;
     padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
     box-shadow:0 4px 14px rgba(29,78,216,0.25)">
-    🧠 &nbsp; Risk Prediction Engine
+    🧠 &nbsp; Attrition Risk Engine
     <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.65);margin-top:3px">
-      XGBoost + Logistic Regression ensemble &nbsp;·&nbsp; Calibrated probability
+      XGBoost ensemble &nbsp;·&nbsp; Calibrated dropout probability &nbsp;·&nbsp; Risk tier classification
     </div>
   </div>
   <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
-
   <div style="background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#FFFFFF;border-radius:10px;
     padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
     box-shadow:0 4px 14px rgba(124,58,237,0.25)">
-    🔍 &nbsp; SHAP Explainability
+    🔍 &nbsp; SHAP Explainability Layer
     <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.65);margin-top:3px">
-      TreeExplainer &nbsp;·&nbsp; Per-participant attribution &nbsp;·&nbsp; Global feature importance
+      Per-participant attribution &nbsp;·&nbsp; Global feature importance &nbsp;·&nbsp; Decision transparency
     </div>
   </div>
   <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
-
   <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
     padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
     box-shadow:0 4px 14px rgba(13,27,42,0.2)">
-    🎯 &nbsp; Intervention Engine
+    🎯 &nbsp; Intervention &amp; Business Impact Engine
     <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
-      7 evidence-based strategies &nbsp;·&nbsp; FDA &amp; ICH E6(R2) grounded
+      7 evidence-based strategies &nbsp;·&nbsp; ROI modelling &nbsp;·&nbsp; Protocol simulation
     </div>
   </div>
   <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
-
-  <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
-    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
-    box-shadow:0 4px 14px rgba(13,27,42,0.2)">
-    💰 &nbsp; Business Impact Calculator
-    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
-      ROI modelling &nbsp;·&nbsp; Net savings &nbsp;·&nbsp; Protocol change simulation
-    </div>
-  </div>
-  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
-
-  <div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);color:#FFFFFF;border-radius:10px;
-    padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
-    box-shadow:0 4px 14px rgba(13,27,42,0.2)">
-    🤖 &nbsp; AI Coordinator Copilot
-    <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.55);margin-top:3px">
-      Clinical reasoning engine &nbsp;·&nbsp; Prioritised action plan &nbsp;·&nbsp; Structured summary
-    </div>
-  </div>
-  <div style="font-size:22px;color:#1D9E75;line-height:1.3;font-weight:300">↓</div>
-
   <div style="background:linear-gradient(135deg,#1D9E75,#17836A);color:#FFFFFF;border-radius:10px;
     padding:11px 20px;font-weight:700;font-size:12.5px;width:100%;text-align:center;
     box-shadow:0 4px 14px rgba(29,158,117,0.3)">
     📄 &nbsp; TrialGuard Clinical Intelligence Report
     <div style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.8);margin-top:3px">
-      Enterprise PDF &nbsp;·&nbsp; Risk summary &nbsp;·&nbsp; SHAP &nbsp;·&nbsp; Interventions &nbsp;·&nbsp; Financial impact
+      Enterprise PDF &nbsp;·&nbsp; Risk summary &nbsp;·&nbsp; SHAP attribution &nbsp;·&nbsp; Intervention plan &nbsp;·&nbsp; Financial impact
     </div>
   </div>
-
 </div>
 """, unsafe_allow_html=True)
 
-    # ── Professional footer ───────────────────────────────────────────────────
+    # ── AI Coordinator Summary card ───────────────────────────────────────────
+    st.markdown(
+        "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
+        "text-transform:uppercase;margin:24px 0 14px'>&#9632; AI Coordinator — Sample Intelligence Output</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("""
+<div style="background:linear-gradient(135deg,#0D1B2A,#0f2235);border-left:4px solid #1D9E75;
+  border-radius:12px;padding:24px 28px;box-shadow:0 6px 24px rgba(13,27,42,0.18)">
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px">
+    <div>
+      <div style="font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Risk Classification</div>
+      <div style="font-size:16px;font-weight:900;color:#EF4444">&#9679; HIGH RISK — 78% Dropout Probability</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px">Confidence: 0.82 &nbsp;·&nbsp; SHAP-verified &nbsp;·&nbsp; Tier 1 Priority</div>
+    </div>
+    <div>
+      <div style="font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Primary Risk Driver</div>
+      <div style="font-size:15px;font-weight:700;color:#FCD34D">AE Severity Score: 8.2 / 10</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px">SHAP contribution: +0.34 &nbsp;·&nbsp; 3× above next factor</div>
+    </div>
+    <div>
+      <div style="font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Recommended Intervention</div>
+      <div style="font-size:15px;font-weight:700;color:#4CD4A0">Week 2 Pharmacovigilance Review Call</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px">Evidence: ICH E6(R2) &nbsp;·&nbsp; Estimated risk reduction: 18%</div>
+    </div>
+    <div>
+      <div style="font-size:10px;font-weight:700;color:#1D9E75;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Financial Impact</div>
+      <div style="font-size:15px;font-weight:700;color:#4CD4A0">$18,000 retention value per participant</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px">Cohort-level modelled savings: $1.4M &nbsp;·&nbsp; ROI: 11.2×</div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+    # ── Launch Platform CTA ───────────────────────────────────────────────────
+    st.markdown("<div style='margin:28px 0 10px'></div>", unsafe_allow_html=True)
+    _cl, _cm, _cr = st.columns([1, 2, 1])
+    with _cm:
+        if st.button("🚀  Launch Platform  →", type="primary", use_container_width=True,
+                     key="landing_cta"):
+            st.session_state.page = "assessment"
+            st.rerun()
+
+    # ── Footer ────────────────────────────────────────────────────────────────
     st.markdown("""
 <div class="tg-footer">
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
     <div>
       <div class="tg-footer-brand">🛡️ Trial<span>Guard</span></div>
-      <div class="tg-footer-tagline">AI-Powered Clinical Trial Intelligence Platform &nbsp;|&nbsp; v3.0</div>
-      <div style="margin-top:10px">
+      <div class="tg-footer-tagline">AI-Powered Clinical Trial Intelligence &nbsp;|&nbsp; v3.0</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
         <a class="tg-footer-link" href="https://github.com/reemahussain-pharmd/AI-Powered-Clinical-Trial-Retention-Intelligence" target="_blank">&#128025; GitHub</a>
         <a class="tg-footer-link" href="https://linkedin.com/in/reema-mohamed-sulthan" target="_blank">&#128188; LinkedIn</a>
-        <a class="tg-footer-link" href="mailto:reemahussain2097@gmail.com">&#128140; Email</a>
+        <a class="tg-footer-link" href="mailto:reemahussain2097@gmail.com">&#128140; Contact</a>
       </div>
     </div>
     <div style="text-align:right">
-      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px">Built by</div>
       <div style="font-size:14px;font-weight:800;color:#FFFFFF">Dr. Reema Mohamed Sulthan</div>
-      <div style="font-size:11px;color:#A8D5C4;margin-top:3px">PharmD &nbsp;|&nbsp; Clinical Data Scientist &nbsp;|&nbsp; Healthcare AI &amp; Clinical Research Analytics</div>
+      <div style="font-size:11px;color:#A8D5C4;margin-top:3px">PharmD &nbsp;·&nbsp; Clinical Data Scientist &nbsp;·&nbsp; Healthcare AI</div>
     </div>
   </div>
   <hr class="tg-footer-divider"/>
-  <div class="tg-footer-disclaimer">
-    &#9888; <strong style="color:rgba(255,255,255,0.55)">Disclaimer:</strong>
-    For educational and portfolio demonstration purposes only. All data is fully synthetic.
-    Not for clinical use, patient care decisions, or regulatory submissions.
-    &nbsp;|&nbsp; FDA (2012) &nbsp;·&nbsp; ICH E6(R2) (2016) &nbsp;·&nbsp; Getz KA et al., Ther Innov Regul Sci (2016)
+  <div style="font-size:10px;color:rgba(255,255,255,0.3);text-align:center">
+    Synthetic data only &nbsp;·&nbsp; Not for clinical or regulatory use &nbsp;·&nbsp; FDA (2012) &nbsp;·&nbsp; ICH E6(R2) (2016)
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -2930,19 +2951,6 @@ def main():
     # ── Landing (Overview) ────────────────────────────────────────────────────
     if page == "home":
         render_landing()
-        # Launch Platform CTA
-        st.markdown("<div style='margin:6px 0 14px'></div>", unsafe_allow_html=True)
-        _cta_l, _cta_m, _cta_r = st.columns([1, 1.5, 1])
-        with _cta_m:
-            if st.button("🚀  Launch Platform  →", type="primary", use_container_width=True):
-                st.session_state.page = "assessment"
-                st.rerun()
-        st.markdown(
-            "<div style='font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;"
-            "text-transform:uppercase;margin:20px 0 10px'>&#9632; Executive Dashboard — Live Cohort Metrics</div>",
-            unsafe_allow_html=True,
-        )
-        render_landing_kpis()
 
     # ── Document Intake ───────────────────────────────────────────────────────
     elif page == "intake":
