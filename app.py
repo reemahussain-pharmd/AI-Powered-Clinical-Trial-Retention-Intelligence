@@ -2774,39 +2774,65 @@ def render_landing():
 </div>
 """, unsafe_allow_html=True)
 
-    # ── PharmD Clinical Perspective — 3 cards ─────────────────────────────────
+    # ── PharmD Clinical Perspective — 6 cards ─────────────────────────────────
     st.markdown("""
 <div class="pharmd-section">
   <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">
     &#9632; PharmD Clinical Perspective
   </div>
   <div style="font-size:13px;color:#4B5563;margin-bottom:16px;line-height:1.6">
-    Dropout is not a single-cause failure. Five composite features encode the multi-dimensional burden of
-    trial participation — grounded in pharmacovigilance principles, GCP, and FDA guidance.
+    Clinical trial dropout is not a single-cause phenomenon. As a PharmD-trained clinical data scientist,
+    I encoded the multi-dimensional burden of trial participation into 5 composite features grounded in
+    pharmacovigilance, GCP, and FDA guidance.
   </div>
 """, unsafe_allow_html=True)
     pc1, pc2, pc3 = st.columns(3)
     pharmd_insights = [
         (
-            "⚠️ Week 2 AE Monitoring",
-            "Early adverse event severity is the single highest-ranked SHAP predictor — contributing ~3× more than the next factor. "
-            "A proactive pharmacovigilance call at Week 2 is the highest-impact, lowest-cost retention intervention.",
+            "⚠️ Week 2 Side Effect Monitoring",
+            "Early adverse event severity is the single highest-ranked dropout predictor in this model — "
+            "with a SHAP contribution ~3× larger than the next factor. A proactive pharmacovigilance call at "
+            "Week 2 is low-cost and has the highest modelled impact on retention.",
             "ICH E6(R2) Good Clinical Practice (2016)",
         ),
         (
-            "💊 Polypharmacy Burden",
-            "Participants on ≥8 concomitant medications face compounded pharmacological burden — drug interactions, pill fatigue, "
-            "and AE complexity all increase dropout probability. Medication counselling and regimen simplification are first-line interventions.",
+            "🚗 Logistical Friction & Transportation",
+            "Distance beyond 50 km without reliable transport creates a hard logistical barrier independent of "
+            "a participant's clinical profile. Transportation reimbursement delivers significant risk reduction "
+            "at minimal cost — a finding directly aligned with FDA retention guidance.",
+            "FDA Patient Retention Guidance (2012)",
+        ),
+        (
+            "💊 Polypharmacy & Medication Burden",
+            "Participants on ≥8 concomitant medications face compounded pharmacological burden — increased "
+            "drug interaction risk, pill fatigue, and AE complexity. Medication management support and "
+            "simplified regimen counselling are recommended interventions.",
             "WHO Technical Report on Polypharmacy (2019)",
         ),
         (
-            "📋 Protocol Complexity",
-            "High consent complexity (score 8–10) signals participant confusion and hesitancy upstream of dropout. "
-            "ICH E6(R2)'s proportionality principle directly supports removing non-critical assessments to reduce burden.",
+            "📋 Protocol Complexity & Consent",
+            "ICH E6(R2)'s proportionality principle supports removing non-critical assessments. "
+            "High consent complexity (scored 8–10) signals participant confusion and hesitancy — "
+            "plain-language simplification is the most upstream intervention available.",
+            "Getz KA et al., Ther Innov Regul Sci (2016)",
+        ),
+        (
+            "📅 Visit Burden & Scheduling Adherence",
+            "High visit frequency amplifies scheduling fatigue and competes with occupational and family "
+            "obligations. The Visit Burden Index composite feature captures this interaction. "
+            "Decentralised trial components (FDA DCT 2023) can address this at the design stage.",
+            "FDA Decentralised Clinical Trials Guidance (2023)",
+        ),
+        (
+            "🩺 Comorbidity & Adherence Risk",
+            "Multiple comorbidities increase clinical management complexity and AE monitoring burden. "
+            "Participants with ≥5 comorbidities were modelled as having significantly elevated dropout "
+            "probability — reflecting real-world adherence challenges in complex patient populations.",
             "Getz KA et al., Ther Innov Regul Sci (2016)",
         ),
     ]
-    for col, (title, body, ref) in zip([pc1, pc2, pc3], pharmd_insights):
+    all_cols = [pc1, pc2, pc3, pc1, pc2, pc3]
+    for col, (title, body, ref) in zip(all_cols, pharmd_insights):
         col.markdown(
             f'<div class="pharmd-insight">'
             f'<div class="pharmd-insight-title">{title}</div>'
