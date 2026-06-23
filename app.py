@@ -681,6 +681,11 @@ def render_sidebar_nav():
     if st.sidebar.button("💊  Scenario C — Pharmacological Burden", key="demo_pp", use_container_width=True): _load_demo("polypharmacy")
     if st.sidebar.button("🟢  Scenario D — Low-Risk Benchmark",     key="demo_lr", use_container_width=True): _load_demo("low_risk")
 
+    # On assessment page: participant inputs appear here (injected by main())
+    # so skip Portfolio Snapshot/Skills to avoid pushing inputs off-screen
+    if current == "assessment":
+        return
+
     # ── Portfolio Snapshot ────────────────────────────────────────────────────
     st.sidebar.markdown(
         "<div style='width:100%;height:1px;background:rgba(29,158,117,0.2);margin:14px 0 4px'></div>"
