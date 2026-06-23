@@ -658,8 +658,8 @@ def render_sidebar_nav():
         ("intake",       "📄", "Document Intake"),
         ("assessment",   "⚠️",  "Risk Assessment"),
         ("dashboard",    "📊", "Trial Dashboard"),
-        ("intelligence", "🧠", "AI Intelligence"),
         ("batch",        "📁", "Batch Screening"),
+        ("intelligence", "🧠", "AI Intelligence"),
         ("about",        "ℹ️",  "About"),
     ]
     for page_key, icon, label in nav_items:
