@@ -1642,6 +1642,7 @@ def render_tab_intake():
 
 # ── TAB 1: Risk Assessment ───────────────────────────────────────────────────
 def render_tab1(patient_df: pd.DataFrame, config: dict):
+    st.markdown("<div style='margin-top:20px'></div>", unsafe_allow_html=True)
     run = st.button("🔍 Run Retention Analysis", type="primary", use_container_width=True)
 
     if not run:
