@@ -2052,15 +2052,27 @@ def render_tab_intake():
 
 # ── TAB 1: Risk Assessment ───────────────────────────────────────────────────
 def render_tab1(patient_df: pd.DataFrame, config: dict):
-    st.markdown("<div style='margin-top:20px'></div>", unsafe_allow_html=True)
-    run = st.button("🔍 Run Retention Analysis", type="primary", use_container_width=True)
+    # ── Page header ───────────────────────────────────────────────────────────
+    st.markdown(
+        "<div style='margin-top:8px;margin-bottom:20px'>"
+        "<div style='font-size:24px;font-weight:900;color:#0D1B2A;letter-spacing:-0.5px;margin-bottom:6px'>"
+        "Participant Risk Assessment</div>"
+        "<div style='font-size:14px;color:#4B5563;line-height:1.65;max-width:680px'>"
+        "Predict individual participant dropout risk, identify key clinical risk drivers via SHAP attribution, "
+        "and receive targeted evidence-based retention interventions."
+        "</div>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
-    if not run:
+    if not st.session_state.get("_assessment_run", False):
+        # ── Instructions card ─────────────────────────────────────────────────
         st.markdown(
             "<div style='background:linear-gradient(135deg,#0D1B2A 0%,#0f2336 100%);"
-            "border:1px solid rgba(29,158,117,0.25);border-radius:14px;padding:28px 32px;margin:12px 0 20px'>"
+            "border:1px solid rgba(29,158,117,0.25);border-radius:14px;padding:28px 32px;margin-bottom:20px'>"
             "<div style='font-size:18px;font-weight:800;color:#FFFFFF;margin-bottom:6px'>How to Run a Risk Assessment</div>"
-            "<div style='font-size:13px;color:#A8D5C4;margin-bottom:22px'>Choose one of the two paths below, then click <b style='color:#1D9E75'>Run Retention Analysis</b>.</div>"
+            "<div style='font-size:13px;color:#A8D5C4;margin-bottom:22px'>"
+            "Choose one of the two paths below, then click <b style='color:#1D9E75'>Generate Risk Assessment</b>.</div>"
             "<div style='display:grid;grid-template-columns:1fr 1fr;gap:16px'>"
 
             "<div style='background:rgba(29,158,117,0.08);border:1px solid rgba(29,158,117,0.3);"
@@ -2068,10 +2080,10 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
             "<div style='font-size:22px;margin-bottom:8px'>⚡</div>"
             "<div style='font-size:13px;font-weight:700;color:#1D9E75;margin-bottom:6px'>Quick Start — Demo Scenarios</div>"
             "<div style='font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6'>"
-            "Click any <b style='color:#fff'>Scenario A – D</b> in the left sidebar.<br>"
+            "Click any <b style='color:#fff'>Demo 1 – 4</b> in the left sidebar.<br>"
             "All 20+ parameters are pre-populated instantly.<br>"
-            "Then click <b style='color:#1D9E75'>Run Retention Analysis</b>.</div>"
-            "<div style='margin-top:10px;font-size:11px;color:#4CD4A0;font-weight:600'>↑ Scroll up in sidebar to see scenarios</div>"
+            "Then click <b style='color:#1D9E75'>Generate Risk Assessment</b> below.</div>"
+            "<div style='margin-top:10px;font-size:11px;color:#4CD4A0;font-weight:600'>↑ Scroll up in sidebar to see demo scenarios</div>"
             "</div>"
 
             "<div style='background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);"
@@ -2081,20 +2093,28 @@ def render_tab1(patient_df: pd.DataFrame, config: dict):
             "<div style='font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6'>"
             "Expand <b style='color:#fff'>Demographics</b>, <b style='color:#fff'>Clinical Profile</b>, "
             "and <b style='color:#fff'>Trial Characteristics</b> in the sidebar.<br>"
-            "Adjust sliders to match your participant.<br>"
-            "Then click <b style='color:#1D9E75'>Run Retention Analysis</b>.</div>"
+            "Adjust sliders to match your participant profile.<br>"
+            "Then click <b style='color:#1D9E75'>Generate Risk Assessment</b> below.</div>"
             "<div style='margin-top:10px;font-size:11px;color:rgba(255,255,255,0.4);font-weight:600'>↓ Scroll down in sidebar for parameters</div>"
             "</div>"
 
             "</div>"
             "<div style='margin-top:20px;padding-top:16px;border-top:1px solid rgba(29,158,117,0.15)'>"
             "<div style='font-size:12px;color:rgba(255,255,255,0.4)'>"
-            "📊 Output: Dropout probability · Risk category · SHAP explainability · 7 intervention strategies · Financial impact · Exportable PDF report"
+            "📊 Output: Dropout probability · Risk category · SHAP explainability · "
+            "7 intervention strategies · Financial impact · Exportable PDF report"
             "</div></div>"
             "</div>",
             unsafe_allow_html=True,
         )
-        return
+
+        # ── Primary action button — below instructions ─────────────────────
+        run = st.button("🔍 Generate Risk Assessment", type="primary", use_container_width=True)
+        if not run:
+            return
+        st.session_state["_assessment_run"] = True
+    else:
+        run = True
 
     try:
         model, preprocessor = load_model_artefacts()
