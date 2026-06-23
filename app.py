@@ -2054,56 +2054,42 @@ def render_tab_intake():
 def render_tab1(patient_df: pd.DataFrame, config: dict):
     # ── Page header ───────────────────────────────────────────────────────────
     st.markdown(
-        "<div style='margin-top:8px;margin-bottom:20px'>"
-        "<div style='font-size:24px;font-weight:900;color:#0D1B2A;letter-spacing:-0.5px;margin-bottom:6px'>"
+        "<div style='margin-top:28px;margin-bottom:14px'>"
+        "<div style='font-size:20px;font-weight:800;color:#0D1B2A;letter-spacing:-0.3px;margin-bottom:4px'>"
         "Participant Risk Assessment</div>"
-        "<div style='font-size:14px;color:#4B5563;line-height:1.65;max-width:680px'>"
-        "Predict individual participant dropout risk, identify key clinical risk drivers via SHAP attribution, "
-        "and receive targeted evidence-based retention interventions."
+        "<div style='font-size:12px;color:#6B7280;line-height:1.5'>"
+        "Predict dropout risk · Identify clinical risk drivers · Receive evidence-based interventions"
         "</div>"
         "</div>",
         unsafe_allow_html=True,
     )
 
     if not st.session_state.get("_assessment_run", False):
-        # ── Instructions card ─────────────────────────────────────────────────
+        # ── Compact instructions card ─────────────────────────────────────────
         st.markdown(
             "<div style='background:linear-gradient(135deg,#0D1B2A 0%,#0f2336 100%);"
-            "border:1px solid rgba(29,158,117,0.25);border-radius:14px;padding:28px 32px;margin-bottom:20px'>"
-            "<div style='font-size:18px;font-weight:800;color:#FFFFFF;margin-bottom:6px'>How to Run a Risk Assessment</div>"
-            "<div style='font-size:13px;color:#A8D5C4;margin-bottom:22px'>"
-            "Choose one of the two paths below, then click <b style='color:#1D9E75'>Generate Risk Assessment</b>.</div>"
-            "<div style='display:grid;grid-template-columns:1fr 1fr;gap:16px'>"
+            "border:1px solid rgba(29,158,117,0.25);border-radius:12px;padding:16px 20px;margin-bottom:12px'>"
+            "<div style='font-size:13px;font-weight:700;color:#FFFFFF;margin-bottom:10px'>How to Run a Risk Assessment</div>"
+            "<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>"
 
             "<div style='background:rgba(29,158,117,0.08);border:1px solid rgba(29,158,117,0.3);"
-            "border-radius:10px;padding:16px'>"
-            "<div style='font-size:22px;margin-bottom:8px'>⚡</div>"
-            "<div style='font-size:13px;font-weight:700;color:#1D9E75;margin-bottom:6px'>Quick Start — Demo Scenarios</div>"
-            "<div style='font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6'>"
-            "Click any <b style='color:#fff'>Demo 1 – 4</b> in the left sidebar.<br>"
-            "All 20+ parameters are pre-populated instantly.<br>"
-            "Then click <b style='color:#1D9E75'>Generate Risk Assessment</b> below.</div>"
-            "<div style='margin-top:10px;font-size:11px;color:#4CD4A0;font-weight:600'>↑ Scroll up in sidebar to see demo scenarios</div>"
+            "border-radius:8px;padding:10px 12px'>"
+            "<div style='font-size:11px;font-weight:700;color:#1D9E75;margin-bottom:4px'>⚡ Quick Start — Demo Scenarios</div>"
+            "<div style='font-size:11px;color:rgba(255,255,255,0.6);line-height:1.5'>"
+            "Select <b style='color:#fff'>Demo 1–4</b> in the sidebar — parameters pre-populate instantly.</div>"
             "</div>"
 
             "<div style='background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);"
-            "border-radius:10px;padding:16px'>"
-            "<div style='font-size:22px;margin-bottom:8px'>🎛️</div>"
-            "<div style='font-size:13px;font-weight:700;color:#FFFFFF;margin-bottom:6px'>Manual Configuration</div>"
-            "<div style='font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6'>"
-            "Expand <b style='color:#fff'>Demographics</b>, <b style='color:#fff'>Clinical Profile</b>, "
-            "and <b style='color:#fff'>Trial Characteristics</b> in the sidebar.<br>"
-            "Adjust sliders to match your participant profile.<br>"
-            "Then click <b style='color:#1D9E75'>Generate Risk Assessment</b> below.</div>"
-            "<div style='margin-top:10px;font-size:11px;color:rgba(255,255,255,0.4);font-weight:600'>↓ Scroll down in sidebar for parameters</div>"
+            "border-radius:8px;padding:10px 12px'>"
+            "<div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>🎛️ Manual Configuration</div>"
+            "<div style='font-size:11px;color:rgba(255,255,255,0.6);line-height:1.5'>"
+            "Expand <b style='color:#fff'>Demographics · Clinical · Trial</b> in the sidebar and adjust sliders.</div>"
             "</div>"
 
             "</div>"
-            "<div style='margin-top:20px;padding-top:16px;border-top:1px solid rgba(29,158,117,0.15)'>"
-            "<div style='font-size:12px;color:rgba(255,255,255,0.4)'>"
-            "📊 Output: Dropout probability · Risk category · SHAP explainability · "
-            "7 intervention strategies · Financial impact · Exportable PDF report"
-            "</div></div>"
+            "<div style='margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35)'>"
+            "📊 Output: Dropout probability · SHAP attribution · 7 interventions · Financial impact · PDF report"
+            "</div>"
             "</div>",
             unsafe_allow_html=True,
         )
