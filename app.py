@@ -3458,11 +3458,13 @@ def render_tab4():
     section_header("PharmD Intervention Intelligence Layer")
     st.markdown(
         "<div style='font-size:13px;color:#4B5563;margin-bottom:16px;line-height:1.6'>"
-        "Risk signals translated into targeted clinical actions using PharmD-validated intervention logic — "
-        "not generic ML recommendations."
+        "Five risk signals translated into targeted clinical actions using PharmD-validated intervention logic. "
+        "Each action is grounded in pharmacist scope of practice — distinguishing this platform from generic data science output."
         "</div>",
         unsafe_allow_html=True,
     )
+
+    # Row 1 — 3 cards
     p1, p2, p3 = st.columns(3)
     p1.markdown(
         "<div class='about-card' style='border-left-color:#EF4444'>"
@@ -3470,13 +3472,13 @@ def render_tab4():
         "<div style='font-weight:800;font-size:13px;margin:6px 0 2px;color:#0D1B2A'>Week 2 Adverse Event Severity</div>"
         "<div style='font-size:10px;font-weight:700;color:#EF4444;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px'>Highest-Impact Risk Driver</div>"
         "<div style='font-size:12px;color:#6B7280;line-height:1.55'>SHAP contribution ~3× larger than the next predictor. "
-        "A proactive pharmacovigilance call at Week 2 is the lowest-cost, highest-return intervention available to coordinators.</div>"
+        "A proactive pharmacovigilance call at Week 2 is the lowest-cost, highest-return intervention available.</div>"
         "<div style='margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6'>"
         "<span style='font-size:10px;font-weight:700;color:#1D9E75'>Intervention: </span>"
-        "<span style='font-size:10px;color:#4B5563'>Week 2 review call · AE monitoring protocol · Dose adjustment discussion</span></div>"
+        "<span style='font-size:10px;color:#4B5563'>Week 2 safety call · AE monitoring protocol · Dose adjustment discussion</span></div>"
         "<div style='margin-top:6px;padding:5px 8px;background:#FEF2F2;border-radius:5px'>"
         "<span style='font-size:10px;font-weight:700;color:#DC2626'>PharmD Action: </span>"
-        "<span style='font-size:10px;color:#7F1D1D'>Medication review · Pharmacovigilance assessment · Tolerability optimisation</span></div>"
+        "<span style='font-size:10px;color:#7F1D1D'>Medication review · Pharmacovigilance assessment · Drug tolerability evaluation · Dose optimisation</span></div>"
         "<div style='font-size:10px;color:#9CA3AF;margin-top:4px'>ICH E6(R2) GCP, 2016</div></div>",
         unsafe_allow_html=True,
     )
@@ -3485,14 +3487,15 @@ def render_tab4():
         "<div style='font-size:18px'>🚗</div>"
         "<div style='font-weight:800;font-size:13px;margin:6px 0 2px;color:#0D1B2A'>Logistical Access Barrier</div>"
         "<div style='font-size:10px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px'>Site Distance & Transport</div>"
-        "<div style='font-size:12px;color:#6B7280;line-height:1.55'>Elevated travel burden without reliable transport creates a hard logistical barrier "
-        "independent of clinical profile. Transportation reimbursement delivers measurable risk reduction at minimal programme cost.</div>"
+        "<div style='font-size:12px;color:#6B7280;line-height:1.55'>Elevated travel burden without reliable transport creates a logistical barrier "
+        "that can interrupt medication continuity and increase treatment non-adherence risk.</div>"
         "<div style='margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6'>"
         "<span style='font-size:10px;font-weight:700;color:#1D9E75'>Intervention: </span>"
-        "<span style='font-size:10px;color:#4B5563'>Transport reimbursement · Decentralised visit options · Home visit scheduling</span></div>"
+        "<span style='font-size:10px;color:#4B5563'>Transport reimbursement · Decentralised visit options · Site coordinator flag</span></div>"
         "<div style='margin-top:6px;padding:5px 8px;background:#FFFBEB;border-radius:5px'>"
         "<span style='font-size:10px;font-weight:700;color:#B45309'>PharmD Action: </span>"
-        "<span style='font-size:10px;color:#78350F'>Logistics barrier assessment · Site coordinator escalation · DCT eligibility review</span></div>"
+        "<span style='font-size:10px;color:#78350F'>Medication access assessment · Adherence risk review · "
+        "Transportation-related treatment interruption evaluation · Site escalation recommendation</span></div>"
         "<div style='font-size:10px;color:#9CA3AF;margin-top:4px'>FDA Patient Retention Guidance, 2012</div></div>",
         unsafe_allow_html=True,
     )
@@ -3501,15 +3504,64 @@ def render_tab4():
         "<div style='font-size:18px'>📋</div>"
         "<div style='font-weight:800;font-size:13px;margin:6px 0 2px;color:#0D1B2A'>Protocol Complexity & Consent Burden</div>"
         "<div style='font-size:10px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px'>Design-Stage Risk Factor</div>"
-        "<div style='font-size:12px;color:#6B7280;line-height:1.55'>High consent complexity (8–10/10) signals participant hesitancy upstream of dropout. "
-        "ICH E6(R2) proportionality supports eliminating non-critical assessments — the most upstream intervention available.</div>"
+        "<div style='font-size:12px;color:#6B7280;line-height:1.55'>High consent complexity signals participant hesitancy upstream of dropout. "
+        "Excessive medication schedules and assessment load compound participant burden and dropout risk.</div>"
         "<div style='margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6'>"
         "<span style='font-size:10px;font-weight:700;color:#1D9E75'>Intervention: </span>"
-        "<span style='font-size:10px;color:#4B5563'>Plain-language consent · Protocol simplification · Assessment load reduction</span></div>"
+        "<span style='font-size:10px;color:#4B5563'>Plain-language consent · Assessment load reduction · Sponsor flag for protocol review</span></div>"
         "<div style='margin-top:6px;padding:5px 8px;background:#F0FDF4;border-radius:5px'>"
         "<span style='font-size:10px;font-weight:700;color:#166534'>PharmD Action: </span>"
-        "<span style='font-size:10px;color:#14532D'>Consent readability review · Phase-proportional protocol design · Participant literacy assessment</span></div>"
+        "<span style='font-size:10px;color:#14532D'>Medication schedule simplification recommendations · Participant burden assessment · "
+        "Consent comprehension review · Excessive regimen complexity flagging</span></div>"
         "<div style='font-size:10px;color:#9CA3AF;margin-top:4px'>Getz KA et al., Ther Innov Regul Sci, 2016</div></div>",
+        unsafe_allow_html=True,
+    )
+
+    # Row 2 — 2 new high-PharmD-impact cards
+    st.markdown("<div style='margin-top:12px'></div>", unsafe_allow_html=True)
+    p4, p5 = st.columns(2)
+    p4.markdown(
+        "<div class='about-card' style='border-left-color:#7C3AED'>"
+        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:4px'>"
+        "<span style='font-size:18px'>💊</span>"
+        "<span style='background:#7C3AED;color:#FFF;font-size:9px;font-weight:700;padding:2px 8px;"
+        "border-radius:20px;text-transform:uppercase;letter-spacing:0.5px'>High PharmD Impact</span></div>"
+        "<div style='font-weight:800;font-size:13px;margin:4px 0 2px;color:#0D1B2A'>Medication Adherence Risk</div>"
+        "<div style='font-size:10px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px'>Polypharmacy · Pill Burden · Dosing Complexity</div>"
+        "<div style='font-size:12px;color:#6B7280;line-height:1.55'>"
+        "Participants receiving multiple concomitant medications, complex dosing schedules, or high pill burden show "
+        "increased risk of treatment fatigue, protocol deviation, and trial discontinuation. "
+        "Polypharmacy Risk Score captures this as a PharmD-engineered composite feature.</div>"
+        "<div style='margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6'>"
+        "<span style='font-size:10px;font-weight:700;color:#1D9E75'>Intervention: </span>"
+        "<span style='font-size:10px;color:#4B5563'>Medication reconciliation · Simplified dosing strategy review · Adherence counselling · Medication schedule optimisation</span></div>"
+        "<div style='margin-top:6px;padding:5px 8px;background:#F5F3FF;border-radius:5px'>"
+        "<span style='font-size:10px;font-weight:700;color:#6D28D9'>PharmD Action: </span>"
+        "<span style='font-size:10px;color:#4C1D95'>Polypharmacy assessment · Drug-related problem (DRP) review · "
+        "Adherence barrier evaluation · Concomitant medication burden scoring</span></div>"
+        "<div style='font-size:10px;color:#9CA3AF;margin-top:4px'>WHO Technical Report — Polypharmacy (2019) · ICH E6(R2)</div></div>",
+        unsafe_allow_html=True,
+    )
+    p5.markdown(
+        "<div class='about-card' style='border-left-color:#0369A1'>"
+        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:4px'>"
+        "<span style='font-size:18px'>🔬</span>"
+        "<span style='background:#0369A1;color:#FFF;font-size:9px;font-weight:700;padding:2px 8px;"
+        "border-radius:20px;text-transform:uppercase;letter-spacing:0.5px'>High PharmD Impact</span></div>"
+        "<div style='font-weight:800;font-size:13px;margin:4px 0 2px;color:#0D1B2A'>Drug Safety Monitoring Signal</div>"
+        "<div style='font-size:10px;font-weight:700;color:#0369A1;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px'>Pharmacovigilance · AE Trends · Tolerability</div>"
+        "<div style='font-size:12px;color:#6B7280;line-height:1.55'>"
+        "Participants experiencing repeated adverse events, dose interruptions, or emerging safety concerns demonstrate "
+        "elevated dropout risk. Early pharmacovigilance review can preserve both participant safety and trial integrity "
+        "before formal discontinuation occurs.</div>"
+        "<div style='margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6'>"
+        "<span style='font-size:10px;font-weight:700;color:#1D9E75'>Intervention: </span>"
+        "<span style='font-size:10px;color:#4B5563'>Safety follow-up call · Dose adjustment review · AE management plan · Investigator safety alert</span></div>"
+        "<div style='margin-top:6px;padding:5px 8px;background:#F0F9FF;border-radius:5px'>"
+        "<span style='font-size:10px;font-weight:700;color:#075985'>PharmD Action: </span>"
+        "<span style='font-size:10px;color:#0C4A6E'>Pharmacovigilance assessment · Safety signal trend review · "
+        "Drug tolerability evaluation · Benefit-risk profile reassessment</span></div>"
+        "<div style='font-size:10px;color:#9CA3AF;margin-top:4px'>ICH E2A Clinical Safety Data Management · ICH E6(R2) GCP</div></div>",
         unsafe_allow_html=True,
     )
 
