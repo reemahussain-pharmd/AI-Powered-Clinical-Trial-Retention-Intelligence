@@ -1,4 +1,4 @@
-# Python
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
@@ -6,20 +6,55 @@ __pycache__/
 *.egg-info/
 dist/
 build/
-.env
 
-# MLflow tracking (training artefacts, not needed for serving)
+# ── Virtual environments ───────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ── Secrets & credentials (NEVER commit these) ────────────────────────────────
+.env
+.env.*
+*.env
+secrets.toml
+.streamlit/secrets.toml
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# ── Streamlit ─────────────────────────────────────────────────────────────────
+.streamlit/secrets.toml
+
+# ── MLflow tracking (training artefacts, not needed for serving) ──────────────
 mlruns/
 catboost_info/
 
-# Test cache
-.pytest_cache/
+# ── Database files ────────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
 
-# Jupyter
+# ── Jupyter ───────────────────────────────────────────────────────────────────
 .ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
 
-# Reports (regenerated at runtime)
+# ── Test cache ────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Reports (regenerated at runtime) ─────────────────────────────────────────
 reports/*.pdf
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────────────────────────
 *.log
+logs/
+
+# ── OS metadata ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
